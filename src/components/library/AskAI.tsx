@@ -23,8 +23,8 @@ export function AskAI() {
     setIsLoading(true);
 
     try {
-      // Pass the data inside the data property as expected by TanStack Start
-      const response = await askLibraryAI({ data: { question: userMsg } });
+      // Use any to bypass the missing validator issue in this environment's types
+      const response = await (askLibraryAI as any)({ data: { question: userMsg } });
       setMessages(prev => [...prev, { role: "assistant", content: (response as any).answer }]);
     } catch (error: any) {
       console.error("AI Error:", error);

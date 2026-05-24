@@ -7,17 +7,20 @@ export const askLibraryAI = createServerFn({
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }: { data: any, context: any }) => {
     const { supabase } = context;
-    const question = (data as any)?.question || (typeof data === 'string' ? data : '');
+    const question = data?.question || "";
 
     let contextText = "";
     
-    // Simple search for context
-    const { data: docs } = await supabase
-      .from("documents")
-      .select("content_text, name")
-      .limit(5);
-    
-    contextText = docs?.map((d: any) => `Documento: ${d.name}\nConteúdo: ${d.content_text?.substring(0, 3000)}`).join("\n\n") || "";
+    try {
+      const { data: docs } = await supabase
+        .from("documents")
+        .select("content_text, name")
+        .limit(5);
+      
+      contextText = docs?.map((d: any) => `Documento: ${d.name}\nConteúdo: ${d.content_text?.substring(0, 3000)}`).join("\n\n") || "";
+    } catch (e) {
+      console.error("Error fetching docs for context:", e);
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
