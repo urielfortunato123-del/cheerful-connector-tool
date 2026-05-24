@@ -1,23 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { z } from "zod";
-
-const askSchema = z.object({
-  question: z.string(),
-  documentId: z.string().optional(),
-});
 
 export const askLibraryAI = createServerFn({
   method: "POST",
 })
-  .validator(askSchema)
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }) => {
-    const { supabase } = context;
+  .handler(async (ctx: any) => {
+    const data = ctx.data as { question: string; documentId?: string };
+    const { supabase } = ctx.context;
 
     let contextText = "";
     
-    if (data.documentId) {
+    if (data?.documentId) {
       const { data: doc } = await supabase
         .from("documents")
         .select("content_text, name")
@@ -55,7 +49,7 @@ export const askLibraryAI = createServerFn({
           },
           {
             role: "user",
-            content: data.question,
+            content: data?.question || "",
           },
         ],
       }),
