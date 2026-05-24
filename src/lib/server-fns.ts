@@ -1,0 +1,60 @@
+import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+export const askLibraryAI = createServerFn({
+  method: "POST",
+})
+  .validator((data: { question: string; documentId?: string }) => data)
+  .handler(async ({ data }) => {
+    const { user, supabase } = await requireSupabaseAuth();
+
+    let context = "";
+    
+    if (data.documentId) {
+      const { data: doc } = await supabase
+        .from("documents")
+        .select("content_text, name")
+        .eq("id", data.documentId)
+        .single();
+      
+      if (doc) {
+        context = `Documento: ${doc.name}\nConteúdo: ${doc.content_text?.substring(0, 10000)}`;
+      }
+    } else {
+      // Search across all user documents (simplified RAG)
+      const { data: docs } = await supabase
+        .from("documents")
+        .select("content_text, name")
+        .limit(5); // In a real app, we'd use vector search
+      
+      context = docs?.map(d => `Documento: ${d.name}\nConteúdo: ${d.content_text?.substring(0, 2000)}`).join("\n\n") || "";
+    }
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.LOVABLE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: `Você é o assistente técnico da InfraFlow. Use o contexto abaixo para responder à pergunta do usuário. 
+            Responda de forma técnica, profissional e baseada estritamente nos documentos fornecidos.
+            Contexto:
+            ${context}`,
+          },
+          {
+            role: "user",
+            content: data.question,
+          },
+        ],
+      }),
+    });
+
+    const result = await response.json();
+    return { answer: result.choices[0].message.content };
+  });
