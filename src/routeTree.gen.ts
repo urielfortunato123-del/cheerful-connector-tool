@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as BudgetsRouteImport } from './routes/budgets'
 import { Route as AiAssistantRouteImport } from './routes/ai-assistant'
 import { Route as IndexRouteImport } from './routes/index'
 
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BudgetsRoute = BudgetsRouteImport.update({
   id: '/budgets',
   path: '/budgets',
@@ -33,34 +39,45 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/budgets': typeof BudgetsRoute
+  '/map': typeof MapRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/budgets': typeof BudgetsRoute
+  '/map': typeof MapRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/budgets': typeof BudgetsRoute
+  '/map': typeof MapRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ai-assistant' | '/budgets'
+  fullPaths: '/' | '/ai-assistant' | '/budgets' | '/map'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ai-assistant' | '/budgets'
-  id: '__root__' | '/' | '/ai-assistant' | '/budgets'
+  to: '/' | '/ai-assistant' | '/budgets' | '/map'
+  id: '__root__' | '/' | '/ai-assistant' | '/budgets' | '/map'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AiAssistantRoute: typeof AiAssistantRoute
   BudgetsRoute: typeof BudgetsRoute
+  MapRoute: typeof MapRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/budgets': {
       id: '/budgets'
       path: '/budgets'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AiAssistantRoute: AiAssistantRoute,
   BudgetsRoute: BudgetsRoute,
+  MapRoute: MapRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
