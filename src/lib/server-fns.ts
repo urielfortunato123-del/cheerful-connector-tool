@@ -4,7 +4,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const askLibraryAI = createServerFn({
   method: "POST",
 })
-  .validator((data: { question: string; documentId?: string }) => data)
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }: { data: { question: string; documentId?: string }, context: any }) => {
     const { supabase } = context;
