@@ -23,11 +23,12 @@ export function AskAI() {
     setIsLoading(true);
 
     try {
-      // In this version of TanStack Start, we pass the data directly
-      const response = await askLibraryAI(userMsg as any);
+      // Pass the data inside the data property as expected by TanStack Start
+      const response = await askLibraryAI({ data: { question: userMsg } });
       setMessages(prev => [...prev, { role: "assistant", content: (response as any).answer }]);
     } catch (error: any) {
-      toast.error("Erro ao consultar a IA: " + error.message);
+      console.error("AI Error:", error);
+      toast.error("Erro ao consultar a IA. Verifique se você está logado.");
     } finally {
       setIsLoading(false);
     }
@@ -70,16 +71,23 @@ export function AskAI() {
                 </div>
               </motion.div>
             ))}
-            {isLoading && (
-              <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-muted border border-border/50 flex items-center justify-center">
-                  <Bot className="h-4 w-4" />
-                </div>
-                <div className="bg-muted/50 border border-border/50 p-3 rounded-2xl rounded-tl-none">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {isLoading && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex gap-3"
+                >
+                  <div className="h-8 w-8 rounded-full bg-muted border border-border/50 flex items-center justify-center">
+                    <Bot className="h-4 w-4" />
+                  </div>
+                  <div className="bg-muted/50 border border-border/50 p-3 rounded-2xl rounded-tl-none">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </ScrollArea>
