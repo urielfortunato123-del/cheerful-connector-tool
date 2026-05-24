@@ -1,38 +1,38 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 
-// Using the simpler syntax for now to avoid builder issues
-export const askLibraryAI = createServerFn("POST", async (data: { question: string; documentId?: string }) => {
-    // Manually get session since we can't easily use middleware with this syntax
-    // In TanStack Start, we can use getRequest() to get headers
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: `Você é o assistente técnico da InfraFlow. Use o contexto abaixo para responder à pergunta do usuário. 
-            Responda de forma técnica, profissional e baseada estritamente nos documentos fornecidos.
-            Se a resposta não estiver no contexto, informe que não encontrou essa informação nos documentos carregados.`,
-          },
-          {
-            role: "user",
-            content: data.question,
-          },
-        ],
-      }),
-    });
+export const askLibraryAI = createServerFn({
+  method: "POST",
+})
+.handler(async (args) => {
+  const data = args as unknown as { question: string; documentId?: string };
+  
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.LOVABLE_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        {
+          role: "system",
+          content: `Você é o assistente técnico da InfraFlow. Use o contexto abaixo para responder à pergunta do usuário. 
+          Responda de forma técnica, profissional e baseada estritamente nos documentos fornecidos.`,
+        },
+        {
+          role: "user",
+          content: data.question,
+        },
+      ],
+    }),
+  });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`AI Gateway error: ${JSON.stringify(error)}`);
-    }
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`AI Gateway error: ${JSON.stringify(error)}`);
+  }
 
-    const result = await response.json();
-    return { answer: result.choices[0].message.content };
+  const result = await response.json();
+  return { answer: result.choices[0].message.content };
 });

@@ -23,8 +23,9 @@ export function AskAI() {
     setIsLoading(true);
 
     try {
-      const response = await askLibraryAI({ data: { question: userMsg } });
-      setMessages(prev => [...prev, { role: "assistant", content: response.answer }]);
+      // In this version of TanStack Start, we pass the data directly
+      const response = await askLibraryAI(userMsg as any);
+      setMessages(prev => [...prev, { role: "assistant", content: (response as any).answer }]);
     } catch (error: any) {
       toast.error("Erro ao consultar a IA: " + error.message);
     } finally {
