@@ -32,11 +32,12 @@ import {
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, path: "/" },
   { title: "Assistente Técnico IA", icon: Bot, path: "/ai-assistant" },
+  { title: "Biblioteca Inteligente", icon: Library, path: "/library" },
   { title: "Orçamentos", icon: Calculator, path: "/budgets" },
   { title: "Projetos", icon: FolderKanban, path: "/projects" },
   { title: "As-Built", icon: FileCheck, path: "/as-built" },
   { title: "Memorial Descritivo", icon: FileText, path: "/memorial" },
-  { title: "Normas Técnicas", icon: Library, path: "/standards" },
+  { title: "Normas Técnicas", icon: BookOpen, path: "/standards" },
   { title: "Medições", icon: Ruler, path: "/measurements" },
   { title: "Diário de Obra", icon: BookOpen, path: "/daily-log" },
   { title: "Financeiro", icon: BarChart3, path: "/financial" },
