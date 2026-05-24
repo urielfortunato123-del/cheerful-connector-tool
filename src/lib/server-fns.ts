@@ -1,11 +1,18 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
+
+const askSchema = z.object({
+  question: z.string(),
+  documentId: z.string().optional(),
+});
 
 export const askLibraryAI = createServerFn({
   method: "POST",
 })
+  .validator(askSchema)
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }: { data: { question: string; documentId?: string }, context: any }) => {
+  .handler(async ({ data, context }) => {
     const { supabase } = context;
 
     let contextText = "";
@@ -21,7 +28,6 @@ export const askLibraryAI = createServerFn({
         contextText = `Documento: ${doc.name}\nConteúdo: ${doc.content_text?.substring(0, 10000)}`;
       }
     } else {
-      // Search across all user documents (simplified RAG)
       const { data: docs } = await supabase
         .from("documents")
         .select("content_text, name")
