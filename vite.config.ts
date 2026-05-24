@@ -12,4 +12,16 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        external: ['canvas'],
+      },
+    },
+    resolve: {
+      alias: {
+        canvas: 'false',
+      },
+    },
+  },
 });
