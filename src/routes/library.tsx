@@ -15,11 +15,7 @@ function LibraryPage() {
   const [activeTab, setActiveTab] = useState("documents");
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       <LibraryHeader />
 
       <Tabs defaultValue="documents" value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -43,6 +39,6 @@ function LibraryPage() {
           <AskAI />
         </TabsContent>
       </Tabs>
-    </motion.div>
+    </div>
   );
 }

@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// ReactQueryDevtools removed to avoid dependency issue
 import {
   Outlet,
   Link,

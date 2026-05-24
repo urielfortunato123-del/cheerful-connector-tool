@@ -72,7 +72,7 @@ export function AppSidebar() {
                 asChild
                 isActive={location.pathname === item.path}
                 tooltip={item.title}
-                className="transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className="transition-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               >
                 <Link to={item.path}>
                   <item.icon className="h-5 w-5" />
@@ -90,7 +90,7 @@ export function AppSidebar() {
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
-                className="transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className="transition-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               >
                 <Link to={item.path}>
                   <item.icon className="h-5 w-5" />
@@ -110,7 +110,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background text-foreground">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto scroll-smooth">
           <header className="sticky top-0 z-10 flex h-16 items-center border-b border-border bg-background/80 px-6 backdrop-blur-md">
             <SidebarTrigger className="mr-4" />
             <div className="flex flex-1 items-center justify-between">
