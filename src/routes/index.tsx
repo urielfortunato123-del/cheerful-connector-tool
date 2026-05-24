@@ -8,7 +8,15 @@ import {
   Library,
   Clock,
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { lazy, Suspense } from "react";
+const BarChart = lazy(() => import("recharts").then(m => ({ default: m.BarChart })));
+const Bar = lazy(() => import("recharts").then(m => ({ default: m.Bar })));
+const XAxis = lazy(() => import("recharts").then(m => ({ default: m.XAxis })));
+const YAxis = lazy(() => import("recharts").then(m => ({ default: m.YAxis })));
+const CartesianGrid = lazy(() => import("recharts").then(m => ({ default: m.CartesianGrid })));
+const Tooltip = lazy(() => import("recharts").then(m => ({ default: m.Tooltip })));
+const ResponsiveContainer = lazy(() => import("recharts").then(m => ({ default: m.ResponsiveContainer })));
+const Cell = lazy(() => import("recharts").then(m => ({ default: m.Cell })));
 
 export const Route = createFileRoute("/")({
   component: Dashboard,
@@ -56,19 +64,21 @@ function Dashboard() {
             <CardTitle>Custos Financeiros por Trecho</CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="name" stroke="#888" />
-                <YAxis stroke="#888" />
-                <Tooltip contentStyle={{ backgroundColor: "#1E1E1E", border: "none" }} />
-                <Bar dataKey="val" fill="#FF6B00">
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index % 2 === 0 ? "#FF6B00" : "#0066CC"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-muted-foreground">Carregando gráfico...</div>}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                  <XAxis dataKey="name" stroke="#888" />
+                  <YAxis stroke="#888" />
+                  <Tooltip contentStyle={{ backgroundColor: "#1E1E1E", border: "none" }} />
+                  <Bar dataKey="val" fill="#FF6B00">
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={index % 2 === 0 ? "#FF6B00" : "#0066CC"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </Suspense>
           </CardContent>
         </Card>
 

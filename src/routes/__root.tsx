@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
   Outlet,
   Link,
@@ -114,6 +115,7 @@ function RootComponent() {
         <Outlet />
       </AppLayout>
       <Toaster position="top-right" theme="dark" />
+      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }

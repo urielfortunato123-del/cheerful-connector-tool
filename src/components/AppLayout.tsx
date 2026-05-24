@@ -110,7 +110,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background text-foreground">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto scroll-smooth">
           <header className="sticky top-0 z-10 flex h-16 items-center border-b border-border bg-background/80 px-6 backdrop-blur-md">
             <SidebarTrigger className="mr-4" />
             <div className="flex flex-1 items-center justify-between">
