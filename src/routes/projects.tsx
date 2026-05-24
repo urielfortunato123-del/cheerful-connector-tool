@@ -2,16 +2,21 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HardHat } from "lucide-react";
 
-const Placeholder = ({ title }: { title: string }) => (
-  <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-    <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center">
-      <HardHat className="h-8 w-8 text-muted-foreground" />
-    </div>
-    <div className="text-center">
-      <h2 className="text-2xl font-bold">{title}</h2>
-      <p className="text-muted-foreground">Módulo em desenvolvimento técnico.</p>
-    </div>
-  </div>
-);
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
-export const Route = createFileRoute("/projects")({ component: () => <Placeholder title="Projetos" /> });
+export const Route = createFileRoute("/projects")({
+  component: () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold tracking-tight">Projetos</h1>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" /> Novo Projeto
+        </Button>
+      </div>
+      <div className="rounded-xl border bg-card p-8 text-center text-muted-foreground">
+        Nenhum projeto cadastrado. Comece criando o primeiro.
+      </div>
+    </div>
+  ),
+});
