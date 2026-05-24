@@ -72,7 +72,7 @@ export function AppSidebar() {
                 asChild
                 isActive={location.pathname === item.path}
                 tooltip={item.title}
-                className="transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className="transition-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               >
                 <Link to={item.path}>
                   <item.icon className="h-5 w-5" />
@@ -90,7 +90,7 @@ export function AppSidebar() {
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
-                className="transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className="transition-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               >
                 <Link to={item.path}>
                   <item.icon className="h-5 w-5" />
