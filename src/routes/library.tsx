@@ -53,7 +53,7 @@ function Library() {
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<SyncLog[]>([]);
 
   useEffect(() => {
     loadDocs();
