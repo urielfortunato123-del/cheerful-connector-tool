@@ -4,6 +4,8 @@ export const askGeneralAI = createServerFn({
   method: "POST",
 })
   .handler(async (ctx: any) => {
+    // Check if we are in server-side context where context might exist
+    // For TanStack Start, we need to handle both local and remote calls
     const data = ctx.data as { question: string; context?: string };
     const question = data?.question || "";
     const extraContext = data?.context || "";
