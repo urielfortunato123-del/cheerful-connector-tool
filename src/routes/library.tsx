@@ -293,7 +293,7 @@ function Library() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          {doc.indexed && <CheckCircle2 className="h-4 w-4 text-green-500" title="Indexado para IA" />}
+                          {doc.indexed && <CheckCircle2 className="h-4 w-4 text-green-500" />}
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handlePreview(doc)}>
                             <Eye className="h-4 w-4" />
                           </Button>
