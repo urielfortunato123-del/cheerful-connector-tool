@@ -50,5 +50,4 @@ export const askGeneralAI = createServerFn({
     return { answer: result.choices[0].message.content };
   });
 
-// Re-export existing function
 export { askLibraryAI } from "./server-fns-library";
