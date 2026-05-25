@@ -1,10 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const askGeneralAI = createServerFn({
   method: "POST",
 })
-  .middleware([requireSupabaseAuth])
   .handler(async (ctx: any) => {
     const { data } = ctx;
     const question = (data as any)?.question || "";
