@@ -31,6 +31,9 @@ ${extraContext ? `CONTEXTO ATUAL DA PÁGINA: ${extraContext}` : ""}`;
     let lastError = "";
 
     while (retryCount <= maxRetries) {
+      const requestId = Math.random().toString(36).substring(7);
+      const startTime = Date.now();
+      
       try {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
@@ -49,6 +52,9 @@ ${extraContext ? `CONTEXTO ATUAL DA PÁGINA: ${extraContext}` : ""}`;
           }),
         });
 
+        const duration = Date.now() - startTime;
+        console.log(`[OpenRouter][${requestId}] Status: ${response.status} | Tempo: ${duration}ms | Tentativa: ${retryCount + 1}`);
+
         if (response.ok) {
           const result = await response.json();
           const answer = result?.choices?.[0]?.message?.content ?? "Sem resposta.";
@@ -58,23 +64,26 @@ ${extraContext ? `CONTEXTO ATUAL DA PÁGINA: ${extraContext}` : ""}`;
         if (response.status === 429 && retryCount < maxRetries) {
           retryCount++;
           const delay = Math.pow(2, retryCount) * 1000;
-          console.log(`OpenRouter Rate Limit (429). Tentativa ${retryCount} após ${delay}ms...`);
+          console.log(`[OpenRouter][${requestId}] Rate Limit (429). Retry em ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
 
         const text = await response.text().catch(() => "");
         if (response.status === 429) {
-          return { answer: "⚠️ Limite de requisições atingido. Por favor, aguarde um momento." };
+          return { answer: "⚠️ Limite de requisições atingido na OpenRouter. Por favor, aguarde um momento." };
         }
         if (response.status === 402) {
           return { answer: "⚠️ Créditos de IA esgotados na OpenRouter." };
         }
         
-        console.error("OpenRouter error:", response.status, text);
+        console.error(`[OpenRouter][${requestId}] Erro detalhado:`, response.status, text);
         return { answer: "⚠️ Serviço de IA temporariamente indisponível." };
       } catch (err) {
+        const duration = Date.now() - startTime;
         lastError = String(err);
+        console.error(`[OpenRouter][${requestId}] Exceção:`, lastError, `| Tempo: ${duration}ms`);
+        
         if (retryCount < maxRetries) {
           retryCount++;
           const delay = Math.pow(2, retryCount) * 1000;

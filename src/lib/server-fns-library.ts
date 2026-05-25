@@ -53,6 +53,9 @@ ${contextText}`;
     let lastError = "";
 
     while (retryCount <= maxRetries) {
+      const requestId = Math.random().toString(36).substring(7);
+      const startTime = Date.now();
+
       try {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
@@ -71,6 +74,9 @@ ${contextText}`;
           }),
         });
 
+        const duration = Date.now() - startTime;
+        console.log(`[OpenRouter-Lib][${requestId}] Status: ${response.status} | Tempo: ${duration}ms | Tentativa: ${retryCount + 1}`);
+
         if (response.ok) {
           const result = await response.json();
           const answer = result?.choices?.[0]?.message?.content ?? "Sem resposta.";
@@ -80,7 +86,7 @@ ${contextText}`;
         if (response.status === 429 && retryCount < maxRetries) {
           retryCount++;
           const delay = Math.pow(2, retryCount) * 1000;
-          console.log(`OpenRouter (Library) Rate Limit (429). Tentativa ${retryCount} após ${delay}ms...`);
+          console.log(`[OpenRouter-Lib][${requestId}] Rate Limit (429). Retry em ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
@@ -93,10 +99,13 @@ ${contextText}`;
           return { answer: "⚠️ Créditos de IA esgotados na OpenRouter." };
         }
         
-        console.error("OpenRouter (Library) error:", response.status, text);
+        console.error(`[OpenRouter-Lib][${requestId}] Erro detalhado:`, response.status, text);
         return { answer: "⚠️ Serviço de IA temporariamente indisponível." };
       } catch (err) {
+        const duration = Date.now() - startTime;
         lastError = String(err);
+        console.error(`[OpenRouter-Lib][${requestId}] Exceção:`, lastError, `| Tempo: ${duration}ms`);
+
         if (retryCount < maxRetries) {
           retryCount++;
           const delay = Math.pow(2, retryCount) * 1000;
