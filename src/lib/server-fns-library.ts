@@ -11,56 +11,74 @@ export const askLibraryAI = createServerFn({
     const question = (data as any)?.question || "";
 
     let contextText = "";
-    
+
     try {
       const { data: docs } = await supabase
         .from("documents")
         .select("content_text, name")
         .limit(5);
-      
-      contextText = docs?.map((d: any) => `Documento: ${d.name}\nConteúdo: ${d.content_text?.substring(0, 3000)}`).join("\n\n") || "";
+
+      contextText =
+        docs
+          ?.map(
+            (d: any) =>
+              `Documento: ${d.name}\nConteúdo: ${d.content_text?.substring(0, 3000)}`,
+          )
+          .join("\n\n") || "";
     } catch (e) {
       console.error("Error fetching docs for context:", e);
     }
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://lovable.dev",
-        "X-Title": "InfraFlow Biblioteca Técnica",
-      },
-      body: JSON.stringify({
-        model: "deepseek/deepseek-v4-flash:free",
-        messages: [
-          {
-            role: "system",
-            content: `Você é o assistente técnico especializado da InfraFlow, expert em infraestrutura brasileira (DER, DNIT, etc). 
-            Use o contexto técnico abaixo para responder à pergunta do usuário de forma extremamente precisa e profissional.
-            
-            DIRETRIZES:
-            1. Use termos técnicos adequados (normas, especificações, etc).
-            2. Se a resposta estiver nos documentos, cite qual documento ou órgão (se disponível no contexto).
-            3. Se a informação não estiver no contexto, seja honesto e diga que não encontrou nos manuais carregados, mas pode oferecer conhecimento geral de engenharia se solicitado.
-            4. Responda em Português do Brasil.
-            
-            Contexto dos Documentos Técnicos:
-            ${contextText}`,
-          },
-          {
-            role: "user",
-            content: question,
-          },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`OpenRouter error: ${JSON.stringify(errorData)}`);
+    const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
+    if (!LOVABLE_API_KEY) {
+      return { answer: "⚠️ Serviço de IA não configurado (LOVABLE_API_KEY ausente)." };
     }
 
-    const result = await response.json();
-    return { answer: result.choices[0].message.content };
+    const systemPrompt = `Você é o assistente técnico especializado da InfraFlow, expert em infraestrutura brasileira (DER, DNIT, etc).
+Use o contexto técnico abaixo para responder à pergunta do usuário de forma extremamente precisa e profissional.
+
+DIRETRIZES:
+1. Use termos técnicos adequados (normas, especificações, etc).
+2. Se a resposta estiver nos documentos, cite qual documento ou órgão (se disponível no contexto).
+3. Se a informação não estiver no contexto, seja honesto e diga que não encontrou nos manuais carregados, mas pode oferecer conhecimento geral de engenharia se solicitado.
+4. Responda em Português do Brasil.
+
+Contexto dos Documentos Técnicos:
+${contextText}`;
+
+    try {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: question },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        if (response.status === 429) {
+          return { answer: "⚠️ Limite de requisições atingido. Aguarde alguns instantes." };
+        }
+        if (response.status === 402) {
+          return { answer: "⚠️ Créditos de IA esgotados. Adicione créditos no workspace Lovable." };
+        }
+        console.error("AI gateway error:", response.status, text);
+        return { answer: "⚠️ Serviço de IA temporariamente indisponível." };
+      }
+
+      const result = await response.json();
+      const answer = result?.choices?.[0]?.message?.content ?? "Sem resposta.";
+      return { answer };
+    } catch (err) {
+      console.error("askLibraryAI error:", err);
+      return { answer: "⚠️ Erro inesperado ao consultar a IA." };
+    }
   });
