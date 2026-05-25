@@ -150,6 +150,14 @@ function Budgets() {
     exportToExcel(items, `Orcamento_${contractInfo.contract}`);
   };
 
+  const totals = useMemo(() => {
+    const total = items.reduce((acc, item) => acc + item.totalPrice, 0);
+    return {
+      total,
+      perKm: contractInfo.extension > 0 ? total / contractInfo.extension : 0
+    };
+  }, [items, contractInfo.extension]);
+
   const getAiHelp = async () => {
     setIsAiLoading(true);
     try {
