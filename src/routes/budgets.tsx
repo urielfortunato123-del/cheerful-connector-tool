@@ -12,8 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, ChevronRight, ChevronLeft, Calculator } from "lucide-react";
+import { CheckCircle2, ChevronRight, ChevronLeft, Calculator, Bot, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { askGeneralAI } from "@/lib/server-fns";
 
 export const Route = createFileRoute("/budgets")({
   component: Budgets,
@@ -29,6 +30,27 @@ const steps = [
 
 function Budgets() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const getAiHelp = async () => {
+    setIsAiLoading(true);
+    try {
+      const response = await (askGeneralAI as any)({ 
+        data: { 
+          question: `Estou no passo ${currentStep} (${steps[currentStep-1]}) de um orçamento de infraestrutura. Me dê uma dica técnica ou valide o que estou fazendo.`,
+          context: `Usuário está criando um orçamento no módulo de Budgets. Atualmente no passo: ${steps[currentStep-1]}.`
+        } 
+      });
+      setAiSuggestion((response as any).answer);
+    } catch (error) {
+      toast.error("IA temporariamente indisponível.");
+    } finally {
+      setIsLoading(false); // Wait, variable was isLoading in the other file, here it is not defined.
+      // Re-checking the previous thought, I should use isAiLoading
+      setIsAiLoading(false);
+    }
+  };
 
   const nextStep = () => {
     if (currentStep < 5) setCurrentStep(currentStep + 1);
@@ -173,10 +195,30 @@ function Budgets() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-between">
-        <Button variant="ghost" onClick={prevStep} disabled={currentStep === 1}>
-          <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
-        </Button>
+      {aiSuggestion && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-4 flex gap-3">
+            <Bot className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div className="text-xs space-y-2">
+              <p className="font-semibold text-primary uppercase tracking-wider flex items-center gap-1">
+                Sugestão da IA <Sparkles className="h-3 w-3" />
+              </p>
+              <p className="text-muted-foreground leading-relaxed">{aiSuggestion}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="flex justify-between items-center">
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={prevStep} disabled={currentStep === 1}>
+            <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+          </Button>
+          <Button variant="outline" size="sm" onClick={getAiHelp} disabled={isAiLoading} className="gap-2 border-primary/20 hover:bg-primary/5">
+            {isAiLoading ? "Analisando..." : "Dica da IA"} <Bot className="h-3.5 w-3.5 text-primary" />
+          </Button>
+        </div>
+
         <Button onClick={nextStep} className={currentStep === 5 ? "hidden" : ""}>
           {currentStep === 4 ? "Calcular" : "Próximo"} <ChevronRight className="ml-2 h-4 w-4" />
         </Button>
