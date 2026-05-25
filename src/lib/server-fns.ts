@@ -3,11 +3,9 @@ import { createServerFn } from "@tanstack/react-start";
 export const askGeneralAI = createServerFn({
   method: "POST",
 })
-  .validator((data: { question: string; context?: string }) => data)
-  .handler(async (ctx: any) => {
-    const { data } = ctx;
-    const question = (data as any)?.question || "";
-    const extraContext = (data as any)?.context || "";
+  .handler(async ({ data }: { data: { question: string; context?: string } }) => {
+    const question = data.question || "";
+    const extraContext = data.context || "";
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
