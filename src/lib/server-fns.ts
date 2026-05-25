@@ -1,26 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export const askLibraryAI = createServerFn({
+export const askGeneralAI = createServerFn({
   method: "POST",
 })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }: { data: any, context: any }) => {
-    const { supabase } = context;
-    const question = data?.question || "";
-
-    let contextText = "";
-    
-    try {
-      const { data: docs } = await supabase
-        .from("documents")
-        .select("content_text, name")
-        .limit(5);
-      
-      contextText = docs?.map((d: any) => `Documento: ${d.name}\nConteúdo: ${d.content_text?.substring(0, 3000)}`).join("\n\n") || "";
-    } catch (e) {
-      console.error("Error fetching docs for context:", e);
-    }
+  .handler(async (ctx: any) => {
+    const { data } = ctx;
+    const question = (data as any)?.question || "";
+    const extraContext = (data as any)?.context || "";
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -28,24 +16,23 @@ export const askLibraryAI = createServerFn({
         "Content-Type": "application/json",
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "HTTP-Referer": "https://lovable.dev",
-        "X-Title": "InfraFlow Biblioteca Técnica",
+        "X-Title": "InfraFlow AI Assistant",
       },
       body: JSON.stringify({
         model: "deepseek/deepseek-v4-flash:free",
         messages: [
           {
             role: "system",
-            content: `Você é o assistente técnico especializado da InfraFlow, expert em infraestrutura brasileira (DER, DNIT, etc). 
-            Use o contexto técnico abaixo para responder à pergunta do usuário de forma extremamente precisa e profissional.
+            content: `Você é o Assistente Global da InfraFlow, um sistema premium de infraestrutura rodoviária brasileira.
+            Seu objetivo é auxiliar em todas as camadas do programa: engenharia, financeiro, medições e normas.
             
             DIRETRIZES:
-            1. Use termos técnicos adequados (normas, especificações, etc).
-            2. Se a resposta estiver nos documentos, cite qual documento ou órgão (se disponível no contexto).
-            3. Se a informação não estiver no contexto, seja honesto e diga que não encontrou nos manuais carregados, mas pode oferecer conhecimento geral de engenharia se solicitado.
-            4. Responda em Português do Brasil.
+            1. Responda de forma executiva, técnica e precisa.
+            2. Se o usuário estiver em um contexto específico (ex: medições), foque suas respostas nesse tema.
+            3. Use o conhecimento das normas DNIT e DER para fundamentar suas respostas.
+            4. Se solicitado cálculos, explique a memória de cálculo.
             
-            Contexto dos Documentos Técnicos:
-            ${contextText}`,
+            ${extraContext ? `CONTEXTO ATUAL DA PÁGINA: ${extraContext}` : ""}`,
           },
           {
             role: "user",
@@ -63,3 +50,5 @@ export const askLibraryAI = createServerFn({
     const result = await response.json();
     return { answer: result.choices[0].message.content };
   });
+
+export { askLibraryAI } from "./server-fns-library";

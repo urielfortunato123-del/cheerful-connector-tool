@@ -9,6 +9,9 @@ import {
   Clock,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { Sparkles, Bot } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   component: Dashboard,
@@ -90,6 +93,31 @@ function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-primary/20 bg-primary/5 shadow-2xl shadow-primary/5">
+        <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+              <Bot className="h-10 w-10 text-primary-foreground" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                Análise de Inteligência Geral
+                <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+              </h3>
+              <p className="text-muted-foreground max-w-xl">
+                O DeepSeek V4 Flash analisou seus dados. Você tem 12 obras ativas e 3 alertas técnicos. 
+                Deseja gerar um resumo executivo ou tirar dúvidas sobre as normas DNIT vigentes?
+              </p>
+            </div>
+          </div>
+          <Button asChild size="lg" className="shrink-0 gap-2 font-bold shadow-xl shadow-primary/20">
+            <Link to="/ai-assistant">
+              Falar com Assistente Global
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
