@@ -30,6 +30,10 @@ export interface Document {
   textContent?: string;
   metadata?: any;
   createdAt: number;
+  size?: string;
+  url?: string;
+  downloadedAt?: number;
+  indexed?: boolean;
 }
 
 export interface LibraryChunk {
@@ -56,12 +60,14 @@ export class InfraFlowDB extends Dexie {
 
   constructor() {
     super('InfraFlowDB');
-    this.version(1).stores({
+    this.version(2).stores({
       projects: '++id, name, category, status',
       budgets: '++id, projectId, contractNumber',
-      documents: '++id, name, type, category',
+      documents: '++id, name, type, category, indexed',
       libraryChunks: '++id, docId',
       chatHistory: '++id, role, timestamp'
+    }).upgrade(tx => {
+       // Handle migration logic if needed
     });
   }
 }
