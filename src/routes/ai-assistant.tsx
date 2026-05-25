@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+
 import { Bot, Send, Download, FileText, LayoutList, User, Loader2, Sparkles, Database } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { askGeneralAI } from "@/lib/server-fns";
