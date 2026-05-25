@@ -4,9 +4,11 @@ export const askGeneralAI = createServerFn({
   method: "POST",
 })
   .handler(async (ctx: any) => {
-    const { data } = ctx;
-    const question = (data as any)?.question || "";
-    const extraContext = (data as any)?.context || "";
+    // Check if we are in server-side context where context might exist
+    // For TanStack Start, we need to handle both local and remote calls
+    const data = ctx.data as { question: string; context?: string };
+    const question = data?.question || "";
+    const extraContext = data?.context || "";
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
