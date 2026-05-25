@@ -113,7 +113,7 @@ function DailyLogs() {
       .first();
 
     if (existing) {
-      await db.dailyLogs.update(existing.id!, logData);
+      await db.dailyLogs.put({ ...logData, id: existing.id });
       toast.success("Diário atualizado com sucesso!");
     } else {
       await db.dailyLogs.add(logData);
