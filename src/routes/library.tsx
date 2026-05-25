@@ -24,7 +24,7 @@ import {
   FileIcon
 } from "lucide-react";
 import { toast } from "sonner";
-import { db, Document } from "@/lib/db";
+import { db, Document, SyncLog } from "@/lib/db";
 import { indexDocument, searchDocuments } from "@/lib/document-processor";
 import { format } from "date-fns";
 import {
