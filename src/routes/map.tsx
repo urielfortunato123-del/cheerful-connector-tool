@@ -7,6 +7,7 @@ const MapView = lazy(() => import("@/components/MapView"));
 
 export const Route = createFileRoute("/map")({
   component: RoadMap,
+  ssr: false,
 });
 
 function RoadMap() {
