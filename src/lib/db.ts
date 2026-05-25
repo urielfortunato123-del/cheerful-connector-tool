@@ -1,73 +1,117 @@
 import Dexie, { type Table } from 'dexie';
 
+export interface Document {
+  id?: number;
+  nome: string;
+  tipo: string;
+  categoria: string;
+  orgao: string;
+  tamanho: string;
+  dataUpload: number;
+  textoExtraido?: string;
+  tags: string[];
+  caminhoVirtual: string;
+  fileBlob?: Blob;
+  indexed: boolean;
+}
+
 export interface Project {
   id?: number;
-  name: string;
-  description: string;
-  category: string;
-  status: string;
-  createdAt: number;
+  nome: string;
+  rodovia: string;
+  kmInicial: number;
+  kmFinal: number;
+  lado: 'N' | 'S' | 'L' | 'O' | 'Crescente' | 'Decrescente';
+  status: 'Em Planejamento' | 'Em Execução' | 'Concluído' | 'Paralisado';
+  dataCriacao: number;
 }
 
 export interface Budget {
   id?: number;
-  projectId?: number;
-  contractObject: string;
-  contractNumber: string;
-  baseDate: string;
-  extensionKm: number;
-  items: any[];
-  totalAmount: number;
-  updatedAt: number;
+  projectId: number;
+  itens: any[];
+  valorTotal: number;
+  dataBase: string;
+  observacoes?: string;
 }
 
-export interface Document {
+export interface Measurement {
   id?: number;
-  name: string;
-  type: string;
-  category: string;
-  fileData: Blob;
-  textContent?: string;
-  metadata?: any;
-  createdAt: number;
-  size?: string;
-  url?: string;
-  downloadedAt?: number;
-  indexed?: boolean;
+  projectId: number;
+  tipoServico: string;
+  quantidade: number;
+  unidade: string;
+  valor: number;
+  data: number;
+  fotos?: string[]; // base64 strings
 }
 
-export interface LibraryChunk {
+export interface Memorial {
   id?: number;
-  docId: number;
-  content: string;
-  metadata: any;
+  projectId: number;
+  conteudo: string;
+  pdfGerado?: Blob;
+  dataCriacao: number;
 }
 
-export interface ChatHistory {
+export interface AsBuilt {
+  id?: number;
+  projectId: number;
+  arquivos: { nome: string; blob: Blob; tipo: string }[];
+  observacoes?: string;
+  dataUpload: number;
+}
+
+export interface DailyLog {
+  id?: number;
+  projectId: number;
+  data: number;
+  clima: string;
+  equipe: string;
+  observacoes: string;
+  fotos?: string[];
+}
+
+export interface Financial {
+  id?: number;
+  projectId: number;
+  tipo: 'Entrada' | 'Saída';
+  valor: number;
+  descricao: string;
+  data: number;
+}
+
+export interface ChatMessage {
   id?: number;
   role: 'user' | 'assistant';
   content: string;
   timestamp: number;
-  context?: string;
+  contextDocs?: number[]; // IDs of documents used for context
 }
 
 export class InfraFlowDB extends Dexie {
+  documents!: Table<Document>;
   projects!: Table<Project>;
   budgets!: Table<Budget>;
-  documents!: Table<Document>;
-  libraryChunks!: Table<LibraryChunk>;
-  chatHistory!: Table<ChatHistory>;
+  measurements!: Table<Measurement>;
+  memorials!: Table<Memorial>;
+  asbuilt!: Table<AsBuilt>;
+  dailyLogs!: Table<DailyLog>;
+  financial!: Table<Financial>;
+  chatHistory!: Table<ChatMessage>;
 
   constructor() {
-    super('InfraFlowDB');
-    this.version(2).stores({
-      projects: '++id, name, category, status',
-      budgets: '++id, projectId, contractNumber',
-      documents: '++id, name, type, category, indexed',
-      libraryChunks: '++id, docId',
-      chatHistory: '++id, role, timestamp'
-    }).upgrade(tx => {
-       // Handle migration logic if needed
+    super('InfraFlowDB_V3');
+    this.version(1).stores({
+      documents: '++id, nome, tipo, categoria, orgao, indexed',
+      projects: '++id, nome, rodovia, status',
+      budgets: '++id, projectId',
+      measurements: '++id, projectId',
+      memorials: '++id, projectId',
+      asbuilt: '++id, projectId',
+      dailyLogs: '++id, projectId, data',
+      financial: '++id, projectId, tipo',
+      chatHistory: '++id, timestamp'
     });
   }
 }

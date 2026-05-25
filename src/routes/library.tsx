@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { 
   FileText, 
   Download, 
@@ -16,122 +17,125 @@ import {
   FileArchive,
   FileSpreadsheet,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Upload,
+  Trash2,
+  Eye,
+  FileIcon
 } from "lucide-react";
 import { toast } from "sonner";
-import { db } from "@/lib/db";
+import { db, Document } from "@/lib/db";
+import { indexDocument, searchDocuments } from "@/lib/document-processor";
+import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/library")({
   component: Library,
 });
 
-type DocCategory = 
-  | "Técnicas" 
-  | "Projetos" 
-  | "Manuais" 
-  | "Conservação" 
-  | "Pavimentação" 
-  | "Drenagem" 
-  | "Taludes" 
-  | "Obras de Arte" 
-  | "Geotecnia" 
-  | "Sinalização";
-
-interface DocumentRecord {
-  id?: string;
-  title: string;
-  category: DocCategory;
-  type: string;
-  size: string;
-  url: string;
-  downloadedAt: number;
-  indexed: boolean;
-}
-
 function Library() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [documents, setDocuments] = useState<DocumentRecord[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [stats, setStats] = useState({
     totalCount: 0,
     totalSize: "0 MB",
     indexedCount: 0,
     iaStatus: "Pronta"
   });
+  const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    loadLocalDocs();
-  }, []);
+    loadDocs();
+  }, [searchTerm]);
 
-  const loadLocalDocs = async () => {
+  const loadDocs = async () => {
     try {
-      // In a real app, we'd query Dexie here
-      // For this prototype, we'll simulate loading from DB
-      const count = await (db as any).documents?.count() || 0;
-      setStats(prev => ({ ...prev, totalCount: count }));
+      const results = searchTerm 
+        ? await searchDocuments(searchTerm)
+        : await db.documents.toArray();
+      
+      setDocuments(results as Document[]);
+      
+      const indexedCount = results.filter(d => d.indexed).length;
+      const totalBytes = results.reduce((acc, d) => {
+        const sizeStr = d.tamanho.split(' ')[0];
+        return acc + (parseFloat(sizeStr) || 0) * 1024 * 1024;
+      }, 0);
+
+      setStats({
+        totalCount: results.length,
+        totalSize: `${(totalBytes / 1024 / 1024).toFixed(2)} MB`,
+        indexedCount,
+        iaStatus: indexedCount === results.length && results.length > 0 ? "Atualizada" : "Processando"
+      });
     } catch (e) {
       console.error(e);
     }
   };
 
-  const handleSync = async () => {
-    setIsSyncing(true);
-    setProgress(0);
-    toast.info("Iniciando coleta de documentos DER-SP...");
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    // Simulando navegação e download em lote
-    const steps = 5;
-    for (let i = 1; i <= steps; i++) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setProgress((i / steps) * 100);
+    setIsSyncing(true);
+    let completed = 0;
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setProgress(((i) / files.length) * 100);
       
-      if (i === 1) toast.info("Acessando portal DER...");
-      if (i === 2) toast.info("Identificando novos manuais e normas...");
-      if (i === 3) toast.info("Baixando arquivos em lote (PDF/XLSX)...");
-      if (i === 4) toast.info("Organizando em categorias técnicas...");
+      try {
+        const docId = await db.documents.add({
+          nome: file.name,
+          tipo: file.name.split('.').pop()?.toLowerCase() || 'bin',
+          categoria: 'Uploads',
+          orgao: 'Manual',
+          tamanho: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          dataUpload: Date.now(),
+          tags: ['Manual', 'Importado'],
+          caminhoVirtual: `/user/${file.name}`,
+          fileBlob: file,
+          indexed: false
+        });
+
+        await indexDocument(docId);
+        completed++;
+      } catch (err) {
+        toast.error(`Erro ao subir ${file.name}`);
+      }
     }
 
-    const newDocs: DocumentRecord[] = [
-      { 
-        title: "Manual de Drenagem Rodoviária", 
-        category: "Drenagem", 
-        type: "PDF", 
-        size: "12.4 MB", 
-        url: "#", 
-        downloadedAt: Date.now(),
-        indexed: true 
-      },
-      { 
-        title: "Tabela de Preços Unitários - DER", 
-        category: "Técnicas", 
-        type: "XLSX", 
-        size: "4.2 MB", 
-        url: "#", 
-        downloadedAt: Date.now(),
-        indexed: true 
-      },
-      { 
-        title: "Norma de Pavimentação Asfáltica", 
-        category: "Pavimentação", 
-        type: "PDF", 
-        size: "2.8 MB", 
-        url: "#", 
-        downloadedAt: Date.now(),
-        indexed: true 
-      }
-    ];
-
-    setDocuments(prev => [...newDocs, ...prev]);
-    setStats({
-      totalCount: documents.length + newDocs.length,
-      totalSize: "19.4 MB",
-      indexedCount: documents.length + newDocs.length,
-      iaStatus: "Atualizada"
-    });
-
-    setIsSyncing(false);
     setProgress(100);
-    toast.success("Sincronização concluída com sucesso!");
+    setTimeout(() => {
+      setIsSyncing(false);
+      setProgress(0);
+      loadDocs();
+      toast.success(`${completed} documentos importados e indexados.`);
+    }, 500);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm("Excluir este documento da base local?")) {
+      await db.documents.delete(id);
+      loadDocs();
+      toast.info("Documento removido.");
+    }
+  };
+
+  const handlePreview = (doc: Document) => {
+    if (doc.fileBlob) {
+      const url = URL.createObjectURL(doc.fileBlob);
+      setPreviewUrl(url);
+      setSelectedDoc(doc);
+    }
   };
 
   const getFileIcon = (type: string) => {
@@ -140,7 +144,7 @@ function Library() {
       case "XLS":
       case "XLSX": return <FileSpreadsheet className="h-4 w-4 text-green-500" />;
       case "ZIP": return <FileArchive className="h-4 w-4 text-amber-500" />;
-      default: return <FileText className="h-4 w-4 text-blue-500" />;
+      default: return <FileIcon className="h-4 w-4 text-blue-500" />;
     }
   };
 
@@ -150,27 +154,33 @@ function Library() {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Database className="h-6 w-6 text-primary" />
-            DER Document Collector
+            Biblioteca Inteligente
           </h1>
-          <p className="text-sm text-muted-foreground">Coleta e indexação automática de base técnica DER-SP</p>
+          <p className="text-sm text-muted-foreground">Repositório técnico oficial DER-SP / DNIT (Offline)</p>
         </div>
-        <Button 
-          onClick={handleSync} 
-          disabled={isSyncing}
-          className="gap-2 shadow-lg shadow-primary/20"
-        >
-          {isSyncing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          Sincronizar DER
-        </Button>
+        <div className="flex gap-2">
+           <div className="relative">
+             <Button className="gap-2 shadow-lg shadow-primary/20">
+               <Upload className="h-4 w-4" /> Importar Documentos
+             </Button>
+             <input 
+               type="file" 
+               multiple 
+               className="absolute inset-0 opacity-0 cursor-pointer" 
+               onChange={handleFileUpload}
+               accept=".pdf,.xlsx,.xls,.docx,.txt"
+             />
+           </div>
+        </div>
       </div>
 
       {isSyncing && (
-        <Card className="border-primary/20 bg-primary/5 animate-pulse">
+        <Card className="border-primary/20 bg-primary/5">
           <CardContent className="pt-6 space-y-4">
             <div className="flex justify-between items-center text-sm">
               <span className="font-medium text-primary flex items-center gap-2">
                 <RefreshCw className="h-4 w-4 animate-spin" />
-                Sincronizando base técnica...
+                Indexando arquivos...
               </span>
               <span className="text-muted-foreground">{Math.round(progress)}%</span>
             </div>
@@ -200,7 +210,7 @@ function Library() {
                 <Database className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-[10px] uppercase font-bold text-muted-foreground">Volume Total</p>
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">Volume Local</p>
                 <p className="text-xl font-bold">{stats.totalSize}</p>
               </div>
             </div>
@@ -216,7 +226,7 @@ function Library() {
                 <p className="text-[10px] uppercase font-bold text-muted-foreground">Indexação</p>
                 <div className="flex items-center gap-2">
                   <p className="text-xl font-bold">{stats.indexedCount}</p>
-                  <Badge variant="outline" className="text-[8px] h-4 bg-green-500/5 text-green-600 border-green-500/20">OK</Badge>
+                  <Badge variant="outline" className="text-[8px] h-4 bg-green-500/5 text-green-600 border-green-500/20">Sincronizado</Badge>
                 </div>
               </div>
             </div>
@@ -229,7 +239,7 @@ function Library() {
                 <Bot className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-[10px] uppercase font-bold text-muted-foreground">IA Documental</p>
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">IA Técnica</p>
                 <p className="text-xl font-bold text-primary">{stats.iaStatus}</p>
               </div>
             </div>
@@ -240,17 +250,19 @@ function Library() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card className="glass-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
               <div className="space-y-1">
-                <CardTitle className="text-lg">Biblioteca Técnica</CardTitle>
-                <CardDescription>Arquivos oficiais organizados por categoria</CardDescription>
+                <CardTitle className="text-lg">Biblioteca Técnica Local</CardTitle>
+                <CardDescription>Busca textual em PDFs e planilhas armazenadas no navegador</CardDescription>
               </div>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <input 
+                <Input 
                   type="text" 
-                  placeholder="Buscar documentos..." 
-                  className="pl-9 h-9 w-64 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  placeholder="Pesquisar conteúdo..." 
+                  className="pl-9 h-9 w-full md:w-64 bg-background"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
                 />
               </div>
             </CardHeader>
@@ -260,30 +272,33 @@ function Library() {
                   <div className="text-center py-12 space-y-3">
                     <AlertCircle className="h-12 w-12 text-muted-foreground/30 mx-auto" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">Nenhum documento sincronizado</p>
-                      <p className="text-xs text-muted-foreground">Clique em "Sincronizar DER" para alimentar sua base técnica local.</p>
+                      <p className="text-sm font-medium">Nenhum documento encontrado</p>
+                      <p className="text-xs text-muted-foreground">Importe normas ou manuais para iniciar sua base offline.</p>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {documents.map((doc, i) => (
-                      <div key={i} className="group flex items-center justify-between p-3 rounded-lg border border-transparent hover:border-primary/20 hover:bg-primary/5 transition-all cursor-pointer">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                            {getFileIcon(doc.type)}
+                    {documents.map((doc) => (
+                      <div key={doc.id} className="group flex items-center justify-between p-3 rounded-lg border border-transparent hover:border-primary/20 hover:bg-primary/5 transition-all">
+                        <div className="flex items-center gap-3" onClick={() => handlePreview(doc)}>
+                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center cursor-pointer">
+                            {getFileIcon(doc.tipo)}
                           </div>
-                          <div>
-                            <p className="text-sm font-semibold group-hover:text-primary transition-colors">{doc.title}</p>
+                          <div className="cursor-pointer">
+                            <p className="text-sm font-semibold group-hover:text-primary transition-colors">{doc.nome}</p>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <Badge variant="secondary" className="text-[9px] h-4 py-0">{doc.category}</Badge>
-                              <span className="text-[10px] text-muted-foreground">{doc.size} • {doc.type}</span>
+                              <Badge variant="secondary" className="text-[9px] h-4 py-0">{doc.categoria}</Badge>
+                              <span className="text-[10px] text-muted-foreground">{doc.tamanho} • {doc.tipo.toUpperCase()} • {format(doc.dataUpload, 'dd/MM/yy')}</span>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           {doc.indexed && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100">
-                            <Download className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handlePreview(doc)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100" onClick={() => handleDelete(doc.id!)}>
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -298,16 +313,20 @@ function Library() {
         <div className="space-y-6">
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="text-sm">Categorias</CardTitle>
+              <CardTitle className="text-sm font-bold uppercase tracking-wider">Filtros Técnicos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
               {[
-                "Técnicas", "Projetos", "Manuais", "Conservação", 
-                "Pavimentação", "Drenagem", "Taludes", "Obras de Arte", 
-                "Geotecnia", "Sinalização"
+                "DER-SP", "DNIT", "ABNT", "Tabelas TPU", 
+                "Manuais", "Projetos", "As-Built", "Drenagem", 
+                "Pavimentação", "Sinalização"
               ].map(cat => (
-                <button key={cat} className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted text-xs transition-colors group">
-                  <span className="text-muted-foreground group-hover:text-foreground">{cat}</span>
+                <button 
+                  key={cat} 
+                  onClick={() => setSearchTerm(cat)}
+                  className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted text-xs transition-colors group"
+                >
+                  <span className={`${searchTerm === cat ? "text-primary font-bold" : "text-muted-foreground"} group-hover:text-foreground`}>{cat}</span>
                   <ChevronRight className="h-3 w-3 text-muted-foreground" />
                 </button>
               ))}
@@ -318,29 +337,66 @@ function Library() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Últimas Atualizações
+                Status da Base Local
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2">
-                <div className="flex justify-between items-start">
-                  <p className="text-[10px] font-medium">Manual de Pavimentação</p>
-                  <span className="text-[9px] text-muted-foreground">Hoje, 10:45</span>
+                <div className="flex justify-between items-start text-xs">
+                  <span className="text-muted-foreground">Capacidade IA:</span>
+                  <span className="font-bold text-green-500">Alta</span>
                 </div>
-                <div className="flex justify-between items-start">
-                  <p className="text-[10px] font-medium">TPU Setembro/2021</p>
-                  <span className="text-[9px] text-muted-foreground">Ontem</span>
+                <div className="flex justify-between items-start text-xs">
+                  <span className="text-muted-foreground">Documentos Indexados:</span>
+                  <span className="font-bold">{stats.indexedCount}</span>
                 </div>
               </div>
               <div className="pt-2 border-t border-primary/10">
-                <p className="text-[9px] text-muted-foreground italic">
-                  A IA utiliza automaticamente estes documentos para fundamentar orçamentos e análises técnicas.
+                <p className="text-[9px] text-muted-foreground italic leading-relaxed">
+                  O sistema InfraFlow processa todos os documentos localmente. Seus dados nunca saem do seu dispositivo sem permissão.
                 </p>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <Dialog open={!!selectedDoc} onOpenChange={(open) => !open && setSelectedDoc(null)}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 overflow-hidden glass-card">
+          <DialogHeader className="p-4 border-b border-border/50">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2">
+                {selectedDoc && getFileIcon(selectedDoc.tipo)}
+                {selectedDoc?.nome}
+              </DialogTitle>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => selectedDoc?.fileBlob && window.open(URL.createObjectURL(selectedDoc.fileBlob))}>
+                <Download className="h-4 w-4" /> Baixar
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 bg-muted/20">
+            {previewUrl && selectedDoc?.tipo === 'pdf' ? (
+              <iframe 
+                src={`${previewUrl}#toolbar=0`} 
+                className="w-full h-full border-none"
+                title="PDF Preview"
+              />
+            ) : previewUrl && (selectedDoc?.tipo === 'jpg' || selectedDoc?.tipo === 'png') ? (
+              <div className="flex items-center justify-center h-full p-8">
+                <img src={previewUrl} alt="Preview" className="max-w-full max-h-full rounded-lg shadow-xl" />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
+                <AlertCircle className="h-12 w-12 opacity-20" />
+                <p className="text-sm">Pré-visualização não disponível para este formato.</p>
+                <Button variant="outline" onClick={() => selectedDoc?.fileBlob && window.open(URL.createObjectURL(selectedDoc.fileBlob))}>
+                  Baixar para visualizar
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

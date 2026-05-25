@@ -13,14 +13,18 @@ export const processExcelFile = async (file: File) => {
         const worksheet = workbook.Sheets[firstSheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        // Salvar metadados no DB local
+        // Salvar metadados no DB local usando o novo esquema
         const docId = await db.documents.add({
-          name: file.name,
-          type: 'xlsx',
-          category: 'Planilhas',
-          fileData: file,
-          metadata: { rowCount: jsonData.length },
-          createdAt: Date.now()
+          nome: file.name,
+          tipo: 'xlsx',
+          categoria: 'Planilhas',
+          orgao: 'Interno',
+          tamanho: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          dataUpload: Date.now(),
+          tags: ['Excel', 'Planilha'],
+          caminhoVirtual: `/downloads/${file.name}`,
+          fileBlob: file,
+          indexed: true
         });
 
         resolve({ docId, data: jsonData });
@@ -36,18 +40,21 @@ export const processExcelFile = async (file: File) => {
 };
 
 export const processPDFFile = async (file: File) => {
-  // Simulação de extração de texto para POC
-  // Em uma implementação real, usaríamos pdf.js para extrair chunks
+  // O processamento real do PDF será feito pelo DocumentProcessor
   const docId = await db.documents.add({
-    name: file.name,
-    type: 'pdf',
-    category: 'Biblioteca Técnica',
-    fileData: file,
-    textContent: "Conteúdo extraído do PDF...", // Placeholder
-    createdAt: Date.now()
+    nome: file.name,
+    tipo: 'pdf',
+    categoria: 'Biblioteca Técnica',
+    orgao: 'DER-SP', // Default
+    tamanho: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+    dataUpload: Date.now(),
+    tags: ['PDF', 'Manual'],
+    caminhoVirtual: `/documents/${file.name}`,
+    fileBlob: file,
+    indexed: false // Será indexado após extração de texto
   });
   
-  toast.success(`PDF ${file.name} indexado na biblioteca local.`);
+  toast.success(`PDF ${file.name} salvo. Extraindo texto...`);
   return docId;
 };
 

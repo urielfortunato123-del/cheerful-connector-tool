@@ -39,6 +39,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
 import { processExcelFile, exportToExcel } from "@/lib/offline-processor";
+import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
+
 
 export const Route = createFileRoute("/budgets")({
   component: Budgets,
@@ -98,13 +101,13 @@ function Budgets() {
     const loadData = async () => {
       const savedBudget = await db.budgets.orderBy('id').last();
       if (savedBudget) {
-        setItems(savedBudget.items);
+        setItems(savedBudget.itens);
         setContractInfo({
-          object: savedBudget.contractObject,
-          contract: savedBudget.contractNumber,
-          baseDate: savedBudget.baseDate,
+          object: savedBudget.observacoes || "Sem objeto",
+          contract: "N/A",
+          baseDate: savedBudget.dataBase,
           highway: "Não especificado",
-          extension: savedBudget.extensionKm
+          extension: 0
         });
         toast.info("Orçamento local recuperado.");
       }
@@ -116,17 +119,16 @@ function Budgets() {
   useEffect(() => {
     const saveData = async () => {
       await db.budgets.add({
-        contractObject: contractInfo.object,
-        contractNumber: contractInfo.contract,
-        baseDate: contractInfo.baseDate,
-        extensionKm: contractInfo.extension,
-        items: items,
-        totalAmount: totals.total,
-        updatedAt: Date.now()
+        projectId: 1, // Mock project ID
+        dataBase: contractInfo.baseDate,
+        itens: items,
+        valorTotal: totals.total,
+        observacoes: contractInfo.object,
       });
     };
     if (items.length > 0) saveData();
-  }, [items, contractInfo]);
+  }, [items, contractInfo, totals.total]);
+
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -156,7 +158,31 @@ function Budgets() {
 
   const handleExport = () => {
     exportToExcel(items, `Orcamento_${contractInfo.contract}`);
+    toast.success("Excel exportado com sucesso.");
   };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("ORÇAMENTO TÉCNICO - INFRAFLOW", 10, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Objeto: ${contractInfo.object}`, 10, 30);
+    doc.text(`Data Base: ${contractInfo.baseDate}`, 10, 36);
+    doc.text(`Total: R$ ${totals.total.toLocaleString('pt-BR')}`, 10, 42);
+
+    autoTable(doc, {
+      startY: 50,
+      head: [['Código', 'Descrição', 'Und', 'Qtd', 'Unit (R$)', 'Total (R$)']],
+      body: items.map(i => [i.code, i.description, i.unit, i.quantity, i.unitPrice.toFixed(2), i.totalPrice.toFixed(2)]),
+      theme: 'striped',
+      headStyles: { fillStyle: '#FF6B00' } as any
+    });
+
+    doc.save(`Orcamento_${contractInfo.object}.pdf`);
+    toast.success("PDF exportado com sucesso.");
+  };
+
 
 
   const getAiHelp = async () => {
@@ -230,9 +256,13 @@ function Budgets() {
           <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info("Histórico em breve")}>
             <History className="h-4 w-4" /> Histórico
           </Button>
-          <Button size="sm" className="gap-2" onClick={handleExport}>
-            <Download className="h-4 w-4" /> Exportar Excel
+          <Button variant="outline" size="sm" className="gap-2" onClick={handleExportPDF}>
+            <Download className="h-4 w-4" /> Exportar PDF
           </Button>
+          <Button size="sm" className="gap-2" onClick={handleExport}>
+            <FileSpreadsheet className="h-4 w-4" /> Exportar Excel
+          </Button>
+
           <div className="relative">
             <Button size="sm" variant="secondary" className="gap-2">
               <Upload className="h-4 w-4" /> Importar DER
