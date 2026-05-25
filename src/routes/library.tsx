@@ -249,29 +249,41 @@ function Library() {
           <p className="text-sm text-muted-foreground">Repositório técnico oficial DER-SP / DNIT (Offline)</p>
         </div>
         <div className="flex gap-2">
+            <div className="relative">
+               <Button variant="outline" className="gap-2 h-10">
+                 <Upload className="h-4 w-4" /> Importar
+               </Button>
+               <input 
+                 type="file" 
+                 multiple 
+                 className="absolute inset-0 opacity-0 cursor-pointer" 
+                 onChange={handleFileUpload}
+                 accept=".pdf,.xlsx,.xls,.docx,.txt"
+               />
+             </div>
             <Button 
               variant="outline" 
-              className="gap-2" 
+              className="gap-2 h-10" 
               onClick={() => handleSync('DER-SP')}
               disabled={isSyncing}
             >
-              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> Sincronizar DER
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> DER
             </Button>
             <Button 
               variant="outline" 
-              className="gap-2" 
+              className="gap-2 h-10" 
               onClick={() => handleSync('DNIT')}
               disabled={isSyncing}
             >
-              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> Sincronizar DNIT
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> DNIT
             </Button>
             <Button 
               variant="outline" 
-              className="gap-2" 
+              className="gap-2 h-10" 
               onClick={() => handleSync('ABNT')}
               disabled={isSyncing}
             >
-              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> Sincronizar ABNT
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> ABNT
             </Button>
         </div>
       </div>
