@@ -87,9 +87,6 @@ ${extraContext ? `CONTEXTO ATUAL DA PÁGINA: ${extraContext}` : ""}`;
 
     console.error("askGeneralAI max retries reached:", lastError);
     return { answer: "⚠️ Erro ao consultar a IA após várias tentativas." };
-      console.error("askGeneralAI error:", err);
-      return { answer: "⚠️ Erro inesperado ao consultar a IA. Tente novamente." };
-    }
   });
 
 export { askLibraryAI } from "./server-fns-library";

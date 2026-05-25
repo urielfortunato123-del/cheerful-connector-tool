@@ -109,7 +109,4 @@ ${contextText}`;
 
     console.error("askLibraryAI max retries reached:", lastError);
     return { answer: "⚠️ Erro ao consultar a biblioteca via IA após várias tentativas." };
-      console.error("askLibraryAI error:", err);
-      return { answer: "⚠️ Erro inesperado ao consultar a IA." };
-    }
   });
