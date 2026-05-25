@@ -276,13 +276,19 @@ function Library() {
         </div>
       </div>
 
+      <div className="flex justify-end">
+        <Button variant="ghost" size="sm" className="text-xs gap-2" onClick={() => setShowHistory(true)}>
+          <Clock className="h-3 w-3" /> Ver Histórico de Sincronização
+        </Button>
+      </div>
+
       {isSyncing && (
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-primary/20 bg-primary/5 animate-pulse">
           <CardContent className="pt-6 space-y-4">
             <div className="flex justify-between items-center text-sm">
               <span className="font-medium text-primary flex items-center gap-2">
                 <RefreshCw className="h-4 w-4 animate-spin" />
-                Indexando arquivos...
+                {syncStatus}
               </span>
               <span className="text-muted-foreground">{Math.round(progress)}%</span>
             </div>
