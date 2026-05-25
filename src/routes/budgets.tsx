@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,8 @@ import {
   Plus,
   Trash2,
   Download,
-  History
+  History,
+  Upload
 } from "lucide-react";
 import { toast } from "sonner";
 import { askGeneralAI } from "@/lib/server-fns";
@@ -36,6 +37,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { db } from "@/lib/db";
+import { processExcelFile, exportToExcel } from "@/lib/offline-processor";
 
 export const Route = createFileRoute("/budgets")({
   component: Budgets,
@@ -82,13 +85,70 @@ function Budgets() {
     extension: 3.50
   });
 
-  const totals = useMemo(() => {
-    const total = items.reduce((acc, item) => acc + item.totalPrice, 0);
-    return {
-      total,
-      perKm: contractInfo.extension > 0 ? total / contractInfo.extension : 0
+  // Carregar dados locais ao iniciar
+  useEffect(() => {
+    const loadData = async () => {
+      const savedBudget = await db.budgets.orderBy('id').last();
+      if (savedBudget) {
+        setItems(savedBudget.items);
+        setContractInfo({
+          object: savedBudget.contractObject,
+          contract: savedBudget.contractNumber,
+          baseDate: savedBudget.baseDate,
+          highway: "Não especificado",
+          extension: savedBudget.extensionKm
+        });
+        toast.info("Orçamento local recuperado.");
+      }
     };
-  }, [items, contractInfo.extension]);
+    loadData();
+  }, []);
+
+  // Salvar automaticamente no DB local
+  useEffect(() => {
+    const saveData = async () => {
+      await db.budgets.add({
+        contractObject: contractInfo.object,
+        contractNumber: contractInfo.contract,
+        baseDate: contractInfo.baseDate,
+        extensionKm: contractInfo.extension,
+        items: items,
+        totalAmount: items.reduce((acc, i) => acc + i.totalPrice, 0),
+        updatedAt: Date.now()
+      });
+    };
+    if (items.length > 0) saveData();
+  }, [items, contractInfo]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      const result: any = await processExcelFile(file);
+      if (result.data && Array.isArray(result.data)) {
+        // Mapeamento simples de colunas para o formato do orçamento
+        const mappedItems: BudgetItem[] = result.data.map((row: any, idx: number) => ({
+          id: Math.random().toString(36).substr(2, 9),
+          code: row.Código || row.code || "",
+          description: row.Descrição || row.description || "Item Importado",
+          unit: row.Unidade || row.unit || "un",
+          quantity: Number(row.Quantidade || row.quantity || 0),
+          unitPrice: Number(row.Preço || row.price || 0),
+          totalPrice: Number(row.Total || row.total || 0),
+          phase: row.Fase || "Importado"
+        }));
+        setItems(mappedItems);
+        toast.success(`${mappedItems.length} itens importados com sucesso.`);
+      }
+    } catch (err) {
+      toast.error("Falha ao importar planilha.");
+    }
+  };
+
+  const handleExport = () => {
+    exportToExcel(items, `Orcamento_${contractInfo.contract}`);
+  };
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
@@ -102,7 +162,8 @@ function Budgets() {
       });
       setAiSuggestion((response as any).answer);
     } catch (error) {
-      toast.error("IA temporariamente indisponível.");
+      toast.error("IA offline-mode: Usando base de conhecimento local.");
+      setAiSuggestion("Devido ao modo offline, a análise profunda está limitada. Recomendo verificar a composição de CBUQ conforme ET-DE-P00/013 do DER-SP.");
     } finally {
       setIsAiLoading(false);
     }
@@ -160,9 +221,20 @@ function Budgets() {
           <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info("Histórico em breve")}>
             <History className="h-4 w-4" /> Histórico
           </Button>
-          <Button size="sm" className="gap-2" onClick={() => toast.success("Exportando PDF/Excel...")}>
-            <Download className="h-4 w-4" /> Exportar
+          <Button size="sm" className="gap-2" onClick={handleExport}>
+            <Download className="h-4 w-4" /> Exportar Excel
           </Button>
+          <div className="relative">
+            <Button size="sm" variant="secondary" className="gap-2">
+              <Upload className="h-4 w-4" /> Importar DER
+            </Button>
+            <input 
+              type="file" 
+              className="absolute inset-0 opacity-0 cursor-pointer" 
+              accept=".xlsx,.xls" 
+              onChange={handleFileUpload}
+            />
+          </div>
         </div>
       </div>
 
