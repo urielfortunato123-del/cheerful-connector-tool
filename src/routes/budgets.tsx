@@ -113,7 +113,7 @@ function Budgets() {
         baseDate: contractInfo.baseDate,
         extensionKm: contractInfo.extension,
         items: items,
-        totalAmount: items.reduce((acc, i) => acc + i.totalPrice, 0),
+        totalAmount: totals.total,
         updatedAt: Date.now()
       });
     };
