@@ -256,9 +256,13 @@ function Budgets() {
           <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info("Histórico em breve")}>
             <History className="h-4 w-4" /> Histórico
           </Button>
-          <Button size="sm" className="gap-2" onClick={handleExport}>
-            <Download className="h-4 w-4" /> Exportar Excel
+          <Button variant="outline" size="sm" className="gap-2" onClick={handleExportPDF}>
+            <Download className="h-4 w-4" /> Exportar PDF
           </Button>
+          <Button size="sm" className="gap-2" onClick={handleExport}>
+            <FileSpreadsheet className="h-4 w-4" /> Exportar Excel
+          </Button>
+
           <div className="relative">
             <Button size="sm" variant="secondary" className="gap-2">
               <Upload className="h-4 w-4" /> Importar DER
