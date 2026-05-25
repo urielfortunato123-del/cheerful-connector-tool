@@ -198,8 +198,9 @@ function Memorials() {
 
       <div className="space-y-4">
         <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-          <History className="h-4 w-4" /> Memoriais Arquivados
+          <HistoryIcon className="h-4 w-4" /> Memoriais Arquivados
         </h3>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {memorials.map(m => (
             <Card key={m.id} className="glass-card hover:border-primary/30 transition-all group">
