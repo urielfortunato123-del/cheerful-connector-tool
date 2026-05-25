@@ -470,6 +470,10 @@ function Library() {
                   <span className="text-muted-foreground">Documentos Indexados:</span>
                   <span className="font-bold">{stats.indexedCount}</span>
                 </div>
+                <div className="flex justify-between items-start text-xs">
+                  <span className="text-muted-foreground">Reindexação:</span>
+                  <span className="font-bold text-primary">Automática</span>
+                </div>
               </div>
               <div className="pt-2 border-t border-primary/10">
                 <p className="text-[9px] text-muted-foreground italic leading-relaxed">
