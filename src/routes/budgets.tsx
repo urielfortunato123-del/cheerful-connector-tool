@@ -155,7 +155,31 @@ function Budgets() {
 
   const handleExport = () => {
     exportToExcel(items, `Orcamento_${contractInfo.contract}`);
+    toast.success("Excel exportado com sucesso.");
   };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("ORÇAMENTO TÉCNICO - INFRAFLOW", 10, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Objeto: ${contractInfo.object}`, 10, 30);
+    doc.text(`Data Base: ${contractInfo.baseDate}`, 10, 36);
+    doc.text(`Total: R$ ${totals.total.toLocaleString('pt-BR')}`, 10, 42);
+
+    autoTable(doc, {
+      startY: 50,
+      head: [['Código', 'Descrição', 'Und', 'Qtd', 'Unit (R$)', 'Total (R$)']],
+      body: items.map(i => [i.code, i.description, i.unit, i.quantity, i.unitPrice.toFixed(2), i.totalPrice.toFixed(2)]),
+      theme: 'striped',
+      headStyles: { fillStyle: '#FF6B00' } as any
+    });
+
+    doc.save(`Orcamento_${contractInfo.object}.pdf`);
+    toast.success("PDF exportado com sucesso.");
+  };
+
 
 
   const getAiHelp = async () => {
