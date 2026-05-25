@@ -26,43 +26,67 @@ DIRETRIZES:
 
 ${extraContext ? `CONTEXTO ATUAL DA PÁGINA: ${extraContext}` : ""}`;
 
-    try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-          "HTTP-Referer": "https://lovable.dev", // Opcional, mas recomendado pela OpenRouter
-          "X-Title": "InfraFlow",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.0-flash-001",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: question },
-          ],
-        }),
-      });
+    const maxRetries = 3;
+    let retryCount = 0;
+    let lastError = "";
 
-      if (!response.ok) {
+    while (retryCount <= maxRetries) {
+      try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+            "HTTP-Referer": "https://lovable.dev",
+            "X-Title": "InfraFlow",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.0-flash-001",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: question },
+            ],
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const answer = result?.choices?.[0]?.message?.content ?? "Sem resposta.";
+          return { answer };
+        }
+
+        if (response.status === 429 && retryCount < maxRetries) {
+          retryCount++;
+          const delay = Math.pow(2, retryCount) * 1000;
+          console.log(`OpenRouter Rate Limit (429). Tentativa ${retryCount} após ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+
         const text = await response.text().catch(() => "");
         if (response.status === 429) {
-          return { answer: "⚠️ Limite de requisições atingido. Aguarde alguns instantes e tente novamente." };
+          return { answer: "⚠️ Limite de requisições atingido. Por favor, aguarde um momento." };
         }
         if (response.status === 402) {
-          return { answer: "⚠️ Créditos de IA esgotados. Adicione créditos no workspace Lovable." };
+          return { answer: "⚠️ Créditos de IA esgotados na OpenRouter." };
         }
-        console.error("AI gateway error:", response.status, text);
-        return { answer: "⚠️ Serviço de IA temporariamente indisponível. Tente novamente em instantes." };
+        
+        console.error("OpenRouter error:", response.status, text);
+        return { answer: "⚠️ Serviço de IA temporariamente indisponível." };
+      } catch (err) {
+        lastError = String(err);
+        if (retryCount < maxRetries) {
+          retryCount++;
+          const delay = Math.pow(2, retryCount) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        break;
       }
-
-      const result = await response.json();
-      const answer = result?.choices?.[0]?.message?.content ?? "Sem resposta.";
-      return { answer };
-    } catch (err) {
-      console.error("askGeneralAI error:", err);
-      return { answer: "⚠️ Erro inesperado ao consultar a IA. Tente novamente." };
     }
+
+    console.error("askGeneralAI max retries reached:", lastError);
+    return { answer: "⚠️ Erro ao consultar a IA após várias tentativas." };
   });
 
 export { askLibraryAI } from "./server-fns-library";
