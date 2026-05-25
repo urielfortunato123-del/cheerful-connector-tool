@@ -57,7 +57,13 @@ function Library() {
 
   useEffect(() => {
     loadDocs();
+    loadHistory();
   }, [searchTerm]);
+
+  const loadHistory = async () => {
+    const logs = await db.syncHistory.orderBy('timestamp').reverse().toArray();
+    setHistory(logs);
+  };
 
   const loadDocs = async () => {
     try {
@@ -81,6 +87,87 @@ function Library() {
       });
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleSync = async (agency: string) => {
+    setIsSyncing(true);
+    setSyncStatus(`Conectando ao portal ${agency}...`);
+    setProgress(10);
+    
+    const startTime = Date.now();
+    let downloaded = 0;
+    let totalSizeBytes = 0;
+    const errors: string[] = [];
+
+    try {
+      // Mocking scraping and downloading
+      await new Promise(r => setTimeout(r, 1500));
+      setSyncStatus(`Buscando novos documentos em ${agency}...`);
+      setProgress(30);
+
+      // Simulating finding 1-3 new documents
+      const newDocsCount = Math.floor(Math.random() * 3) + 1;
+      
+      for (let i = 0; i < newDocsCount; i++) {
+        setProgress(30 + ((i + 1) / newDocsCount) * 40);
+        const fileName = `${agency}_NORMA_${Math.floor(Math.random() * 1000)}.pdf`;
+        
+        // Check duplication
+        const exists = await db.documents.where('nome').equals(fileName).first();
+        if (exists) {
+          errors.push(`Documento ${fileName} já existe na base local.`);
+          continue;
+        }
+
+        const size = (Math.random() * 5 + 1).toFixed(2);
+        totalSizeBytes += parseFloat(size) * 1024 * 1024;
+
+        const docId = await db.documents.add({
+          nome: fileName,
+          tipo: 'pdf',
+          categoria: 'Normas',
+          orgao: agency,
+          tamanho: `${size} MB`,
+          dataUpload: Date.now(),
+          tags: [agency, 'Sincronizado', 'Norma'],
+          caminhoVirtual: `/sync/${agency}/${fileName}`,
+          indexed: false
+        });
+
+        // Automatic reindexing
+        setSyncStatus(`Indexando ${fileName}...`);
+        await indexDocument(docId);
+        downloaded++;
+      }
+
+      await db.syncHistory.add({
+        agency,
+        timestamp: Date.now(),
+        status: 'Sucesso',
+        filesDownloaded: downloaded,
+        totalSize: `${(totalSizeBytes / 1024 / 1024).toFixed(2)} MB`,
+        errors: errors.length > 0 ? errors : undefined
+      });
+
+      toast.success(`Sincronização ${agency} concluída! ${downloaded} novos arquivos.`);
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : "Erro desconhecido");
+      await db.syncHistory.add({
+        agency,
+        timestamp: Date.now(),
+        status: 'Erro',
+        filesDownloaded: downloaded,
+        totalSize: "0 MB",
+        errors
+      });
+      toast.error(`Falha na sincronização ${agency}`);
+    } finally {
+      setIsSyncing(false);
+      setSyncStatus("");
+      setProgress(0);
+      loadDocs();
+      loadHistory();
     }
   };
 
