@@ -1,11 +1,23 @@
-import * as pdfjsLib from 'pdfjs-dist';
 import { db } from './db';
 import { toast } from 'sonner';
 
-// Set up the worker for PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Lazy-load pdfjs-dist only in the browser (it references DOMMatrix etc.)
+let pdfjsLibPromise: Promise<typeof import('pdfjs-dist')> | null = null;
+const getPdfjs = async () => {
+  if (typeof window === 'undefined') {
+    throw new Error('PDF processing is only available in the browser');
+  }
+  if (!pdfjsLibPromise) {
+    pdfjsLibPromise = import('pdfjs-dist').then((lib) => {
+      lib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${lib.version}/pdf.worker.min.js`;
+      return lib;
+    });
+  }
+  return pdfjsLibPromise;
+};
 
 export const extractTextFromPDF = async (blob: Blob): Promise<string> => {
+  const pdfjsLib = await getPdfjs();
   const arrayBuffer = await blob.arrayBuffer();
   const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
   const pdf = await loadingTask.promise;
