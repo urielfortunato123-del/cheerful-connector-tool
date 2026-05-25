@@ -46,8 +46,6 @@ function Budgets() {
     } catch (error) {
       toast.error("IA temporariamente indisponível.");
     } finally {
-      setIsLoading(false); // Wait, variable was isLoading in the other file, here it is not defined.
-      // Re-checking the previous thought, I should use isAiLoading
       setIsAiLoading(false);
     }
   };
