@@ -159,18 +159,30 @@ function Library() {
           <p className="text-sm text-muted-foreground">Repositório técnico oficial DER-SP / DNIT (Offline)</p>
         </div>
         <div className="flex gap-2">
-           <div className="relative">
-             <Button className="gap-2 shadow-lg shadow-primary/20">
-               <Upload className="h-4 w-4" /> Importar Documentos
-             </Button>
-             <input 
-               type="file" 
-               multiple 
-               className="absolute inset-0 opacity-0 cursor-pointer" 
-               onChange={handleFileUpload}
-               accept=".pdf,.xlsx,.xls,.docx,.txt"
-             />
-           </div>
+            <Button 
+              variant="outline" 
+              className="gap-2" 
+              onClick={() => handleSync('DER-SP')}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> Sincronizar DER
+            </Button>
+            <Button 
+              variant="outline" 
+              className="gap-2" 
+              onClick={() => handleSync('DNIT')}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> Sincronizar DNIT
+            </Button>
+            <Button 
+              variant="outline" 
+              className="gap-2" 
+              onClick={() => handleSync('ABNT')}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> Sincronizar ABNT
+            </Button>
         </div>
       </div>
 
