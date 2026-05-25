@@ -98,13 +98,13 @@ function Budgets() {
     const loadData = async () => {
       const savedBudget = await db.budgets.orderBy('id').last();
       if (savedBudget) {
-        setItems(savedBudget.items);
+        setItems(savedBudget.itens);
         setContractInfo({
-          object: savedBudget.contractObject,
-          contract: savedBudget.contractNumber,
-          baseDate: savedBudget.baseDate,
+          object: savedBudget.observacoes || "Sem objeto",
+          contract: "N/A",
+          baseDate: savedBudget.dataBase,
           highway: "Não especificado",
-          extension: savedBudget.extensionKm
+          extension: 0
         });
         toast.info("Orçamento local recuperado.");
       }
@@ -116,17 +116,16 @@ function Budgets() {
   useEffect(() => {
     const saveData = async () => {
       await db.budgets.add({
-        contractObject: contractInfo.object,
-        contractNumber: contractInfo.contract,
-        baseDate: contractInfo.baseDate,
-        extensionKm: contractInfo.extension,
-        items: items,
-        totalAmount: totals.total,
-        updatedAt: Date.now()
+        projectId: 1, // Mock project ID
+        dataBase: contractInfo.baseDate,
+        itens: items,
+        valorTotal: totals.total,
+        observacoes: contractInfo.object,
       });
     };
     if (items.length > 0) saveData();
-  }, [items, contractInfo]);
+  }, [items, contractInfo, totals.total]);
+
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
