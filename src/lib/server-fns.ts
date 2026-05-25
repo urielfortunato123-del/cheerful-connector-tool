@@ -8,9 +8,9 @@ export const askGeneralAI = createServerFn({
     const question = data?.question || "";
     const extraContext = data?.context || "";
 
-    const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
-    if (!LOVABLE_API_KEY) {
-      return { answer: "⚠️ Serviço de IA não configurado (LOVABLE_API_KEY ausente)." };
+    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+    if (!OPENROUTER_API_KEY) {
+      return { answer: "⚠️ Serviço de IA não configurado (OPENROUTER_API_KEY ausente)." };
     }
 
     const systemPrompt = `Você é o Assistente Global da InfraFlow, um sistema premium de infraestrutura rodoviária brasileira.
@@ -25,14 +25,16 @@ DIRETRIZES:
 ${extraContext ? `CONTEXTO ATUAL DA PÁGINA: ${extraContext}` : ""}`;
 
     try {
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "HTTP-Referer": "https://lovable.dev", // Opcional, mas recomendado pela OpenRouter
+          "X-Title": "InfraFlow",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "google/gemini-2.0-flash-001",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: question },
