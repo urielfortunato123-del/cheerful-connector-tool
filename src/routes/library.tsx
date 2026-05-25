@@ -24,7 +24,7 @@ import {
   FileIcon
 } from "lucide-react";
 import { toast } from "sonner";
-import { db, Document } from "@/lib/db";
+import { db, Document, SyncLog } from "@/lib/db";
 import { indexDocument, searchDocuments } from "@/lib/document-processor";
 import { format } from "date-fns";
 import {
@@ -40,6 +40,7 @@ export const Route = createFileRoute("/library")({
 
 function Library() {
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("");
   const [progress, setProgress] = useState(0);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,10 +52,18 @@ function Library() {
   });
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<SyncLog[]>([]);
 
   useEffect(() => {
     loadDocs();
+    loadHistory();
   }, [searchTerm]);
+
+  const loadHistory = async () => {
+    const logs = await db.syncHistory.orderBy('timestamp').reverse().toArray();
+    setHistory(logs);
+  };
 
   const loadDocs = async () => {
     try {
@@ -78,6 +87,87 @@ function Library() {
       });
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleSync = async (agency: string) => {
+    setIsSyncing(true);
+    setSyncStatus(`Conectando ao portal ${agency}...`);
+    setProgress(10);
+    
+    const startTime = Date.now();
+    let downloaded = 0;
+    let totalSizeBytes = 0;
+    const errors: string[] = [];
+
+    try {
+      // Mocking scraping and downloading
+      await new Promise(r => setTimeout(r, 1500));
+      setSyncStatus(`Buscando novos documentos em ${agency}...`);
+      setProgress(30);
+
+      // Simulating finding 1-3 new documents
+      const newDocsCount = Math.floor(Math.random() * 3) + 1;
+      
+      for (let i = 0; i < newDocsCount; i++) {
+        setProgress(30 + ((i + 1) / newDocsCount) * 40);
+        const fileName = `${agency}_NORMA_${Math.floor(Math.random() * 1000)}.pdf`;
+        
+        // Check duplication
+        const exists = await db.documents.where('nome').equals(fileName).first();
+        if (exists) {
+          errors.push(`Documento ${fileName} já existe na base local.`);
+          continue;
+        }
+
+        const size = (Math.random() * 5 + 1).toFixed(2);
+        totalSizeBytes += parseFloat(size) * 1024 * 1024;
+
+        const docId = await db.documents.add({
+          nome: fileName,
+          tipo: 'pdf',
+          categoria: 'Normas',
+          orgao: agency,
+          tamanho: `${size} MB`,
+          dataUpload: Date.now(),
+          tags: [agency, 'Sincronizado', 'Norma'],
+          caminhoVirtual: `/sync/${agency}/${fileName}`,
+          indexed: false
+        });
+
+        // Automatic reindexing
+        setSyncStatus(`Indexando ${fileName}...`);
+        await indexDocument(docId);
+        downloaded++;
+      }
+
+      await db.syncHistory.add({
+        agency,
+        timestamp: Date.now(),
+        status: 'Sucesso',
+        filesDownloaded: downloaded,
+        totalSize: `${(totalSizeBytes / 1024 / 1024).toFixed(2)} MB`,
+        errors: errors.length > 0 ? errors : undefined
+      });
+
+      toast.success(`Sincronização ${agency} concluída! ${downloaded} novos arquivos.`);
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : "Erro desconhecido");
+      await db.syncHistory.add({
+        agency,
+        timestamp: Date.now(),
+        status: 'Erro',
+        filesDownloaded: downloaded,
+        totalSize: "0 MB",
+        errors
+      });
+      toast.error(`Falha na sincronização ${agency}`);
+    } finally {
+      setIsSyncing(false);
+      setSyncStatus("");
+      setProgress(0);
+      loadDocs();
+      loadHistory();
     }
   };
 
@@ -159,28 +249,58 @@ function Library() {
           <p className="text-sm text-muted-foreground">Repositório técnico oficial DER-SP / DNIT (Offline)</p>
         </div>
         <div className="flex gap-2">
-           <div className="relative">
-             <Button className="gap-2 shadow-lg shadow-primary/20">
-               <Upload className="h-4 w-4" /> Importar Documentos
-             </Button>
-             <input 
-               type="file" 
-               multiple 
-               className="absolute inset-0 opacity-0 cursor-pointer" 
-               onChange={handleFileUpload}
-               accept=".pdf,.xlsx,.xls,.docx,.txt"
-             />
-           </div>
+            <div className="relative">
+               <Button variant="outline" className="gap-2 h-10">
+                 <Upload className="h-4 w-4" /> Importar
+               </Button>
+               <input 
+                 type="file" 
+                 multiple 
+                 className="absolute inset-0 opacity-0 cursor-pointer" 
+                 onChange={handleFileUpload}
+                 accept=".pdf,.xlsx,.xls,.docx,.txt"
+               />
+             </div>
+            <Button 
+              variant="outline" 
+              className="gap-2 h-10" 
+              onClick={() => handleSync('DER-SP')}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> DER
+            </Button>
+            <Button 
+              variant="outline" 
+              className="gap-2 h-10" 
+              onClick={() => handleSync('DNIT')}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> DNIT
+            </Button>
+            <Button 
+              variant="outline" 
+              className="gap-2 h-10" 
+              onClick={() => handleSync('ABNT')}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} /> ABNT
+            </Button>
         </div>
       </div>
 
+      <div className="flex justify-end">
+        <Button variant="ghost" size="sm" className="text-xs gap-2" onClick={() => setShowHistory(true)}>
+          <Clock className="h-3 w-3" /> Ver Histórico de Sincronização
+        </Button>
+      </div>
+
       {isSyncing && (
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-primary/20 bg-primary/5 animate-pulse">
           <CardContent className="pt-6 space-y-4">
             <div className="flex justify-between items-center text-sm">
               <span className="font-medium text-primary flex items-center gap-2">
                 <RefreshCw className="h-4 w-4 animate-spin" />
-                Indexando arquivos...
+                {syncStatus}
               </span>
               <span className="text-muted-foreground">{Math.round(progress)}%</span>
             </div>
@@ -350,6 +470,10 @@ function Library() {
                   <span className="text-muted-foreground">Documentos Indexados:</span>
                   <span className="font-bold">{stats.indexedCount}</span>
                 </div>
+                <div className="flex justify-between items-start text-xs">
+                  <span className="text-muted-foreground">Reindexação:</span>
+                  <span className="font-bold text-primary">Automática</span>
+                </div>
               </div>
               <div className="pt-2 border-t border-primary/10">
                 <p className="text-[9px] text-muted-foreground italic leading-relaxed">
@@ -360,6 +484,56 @@ function Library() {
           </Card>
         </div>
       </div>
+
+      <Dialog open={showHistory} onOpenChange={setShowHistory}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col glass-card">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              Histórico de Sincronizações
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-4 py-4">
+            {history.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhum registro de sincronização.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {history.map((log) => (
+                  <div key={log.id} className="p-4 rounded-lg border bg-muted/30 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm">{log.agency}</span>
+                          <Badge variant={log.status === 'Sucesso' ? 'default' : 'destructive'} className="text-[10px] h-4">
+                            {log.status}
+                          </Badge>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">{format(log.timestamp, 'dd/MM/yyyy HH:mm:ss')}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-medium">{log.filesDownloaded} arquivos</p>
+                        <p className="text-[10px] text-muted-foreground">{log.totalSize}</p>
+                      </div>
+                    </div>
+                    {log.errors && log.errors.length > 0 && (
+                      <div className="pt-2 border-t border-border/50">
+                        <p className="text-[10px] font-bold text-destructive uppercase">Erros/Alertas:</p>
+                        <ul className="text-[10px] text-muted-foreground list-disc list-inside">
+                          {log.errors.map((err: string, idx: number) => (
+                            <li key={idx}>{err}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!selectedDoc} onOpenChange={(open) => !open && setSelectedDoc(null)}>
         <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 overflow-hidden glass-card">

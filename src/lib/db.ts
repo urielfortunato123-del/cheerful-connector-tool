@@ -89,6 +89,16 @@ export interface ChatMessage {
   contextDocs?: number[]; // IDs of documents used for context
 }
 
+export interface SyncLog {
+  id?: number;
+  agency: string;
+  timestamp: number;
+  status: 'Sucesso' | 'Erro' | 'Em andamento';
+  filesDownloaded: number;
+  totalSize: string;
+  errors?: string[];
+}
+
 export class InfraFlowDB extends Dexie {
   documents!: Table<Document>;
   projects!: Table<Project>;
@@ -99,6 +109,7 @@ export class InfraFlowDB extends Dexie {
   dailyLogs!: Table<DailyLog>;
   financial!: Table<Financial>;
   chatHistory!: Table<ChatMessage>;
+  syncHistory!: Table<SyncLog>;
 
   constructor() {
     super('InfraFlowDB_V3');
@@ -111,7 +122,8 @@ export class InfraFlowDB extends Dexie {
       asbuilt: '++id, projectId',
       dailyLogs: '++id, projectId, data',
       financial: '++id, projectId, tipo',
-      chatHistory: '++id, timestamp'
+      chatHistory: '++id, timestamp',
+      syncHistory: '++id, timestamp, agency'
     });
   }
 }
