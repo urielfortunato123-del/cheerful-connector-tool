@@ -85,6 +85,14 @@ function Budgets() {
     extension: 3.50
   });
 
+  const totals = useMemo(() => {
+    const total = items.reduce((acc, item) => acc + item.totalPrice, 0);
+    return {
+      total,
+      perKm: contractInfo.extension > 0 ? total / contractInfo.extension : 0
+    };
+  }, [items, contractInfo.extension]);
+
   // Carregar dados locais ao iniciar
   useEffect(() => {
     const loadData = async () => {
