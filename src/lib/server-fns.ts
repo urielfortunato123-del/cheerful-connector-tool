@@ -9,8 +9,10 @@ export const askGeneralAI = createServerFn({
     const extraContext = data?.context || "";
 
     const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+    console.log("Verificando OPENROUTER_API_KEY:", OPENROUTER_API_KEY ? "Presente (protegido)" : "AUSENTE");
+    
     if (!OPENROUTER_API_KEY) {
-      return { answer: "⚠️ Serviço de IA não configurado (OPENROUTER_API_KEY ausente)." };
+      return { answer: "⚠️ Erro de Configuração: A chave OPENROUTER_API_KEY não foi encontrada nas variáveis de ambiente do projeto." };
     }
 
     const systemPrompt = `Você é o Assistente Global da InfraFlow, um sistema premium de infraestrutura rodoviária brasileira.
