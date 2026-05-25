@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 export const askGeneralAI = createServerFn({
   method: "POST",
 })
+  .validator((data: { question: string; context?: string }) => data)
   .handler(async (ctx: any) => {
     const { data } = ctx;
     const question = (data as any)?.question || "";
