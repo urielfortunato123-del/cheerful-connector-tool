@@ -132,8 +132,8 @@ function AIAssistant() {
           <div>
             <h2 className="font-bold text-lg">Engenheiro IA InfraFlow</h2>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-              Sincronizado com Biblioteca Local
+              <span className={`h-1.5 w-1.5 rounded-full ${messages.some(m => m.contextDocs?.length) ? 'bg-primary' : 'bg-green-500'} animate-pulse`} />
+              IA Documental: {messages.some(m => m.contextDocs?.length) ? 'Modo RAG Ativo' : 'Sincronizado'}
             </p>
           </div>
         </div>

@@ -467,6 +467,12 @@ function Library() {
                   <span className="font-bold text-green-500">Alta</span>
                 </div>
                 <div className="flex justify-between items-start text-xs">
+                  <span className="text-muted-foreground">IA Documental:</span>
+                  <span className={`font-bold ${stats.indexedCount > 0 ? 'text-primary' : 'text-amber-500 animate-pulse'}`}>
+                    {stats.indexedCount > 0 ? 'Ativa' : 'Aguardando Índice'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-start text-xs">
                   <span className="text-muted-foreground">Documentos Indexados:</span>
                   <span className="font-bold">{stats.indexedCount}</span>
                 </div>
