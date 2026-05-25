@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,34 +12,92 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, ChevronRight, ChevronLeft, Calculator, Bot, Sparkles } from "lucide-react";
+import { 
+  CheckCircle2, 
+  ChevronRight, 
+  ChevronLeft, 
+  Calculator, 
+  Bot, 
+  Sparkles, 
+  FileSpreadsheet,
+  Plus,
+  Trash2,
+  Download,
+  History
+} from "lucide-react";
 import { toast } from "sonner";
 import { askGeneralAI } from "@/lib/server-fns";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/budgets")({
   component: Budgets,
 });
 
-const steps = [
-  "Órgão & Rodovia",
-  "Segmento",
-  "Serviço",
-  "Parâmetros Técnicos",
-  "Resultado",
+type BudgetItem = {
+  id: string;
+  code: string;
+  description: string;
+  unit: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  phase: string;
+};
+
+const DER_PHASES = [
+  "Fase 21 - SERVIÇOS PRELIMINARES",
+  "Fase 22 - TERRAPLENAGEM",
+  "Fase 23 - PAVIMENTAÇÃO",
+  "Fase 24 - OBRAS DE ARTE E DRENAGEM",
+  "Fase 28 - SINALIZAÇÃO E ELEMENTOS DE SEGURANÇA",
+  "Fase 30 - SERVIÇOS DE PROTEÇÃO AO MEIO AMBIENTE",
+  "Fase 36 - CANTEIRO DE OBRAS"
+];
+
+const INITIAL_ITEMS: BudgetItem[] = [
+  { id: "1", code: "23.02.01", description: "MELH/PREPARO SUB-LEITO - 100% EN", unit: "m2", quantity: 2137.00, unitPrice: 2.47, totalPrice: 5278.39, phase: "Fase 23 - PAVIMENTAÇÃO" },
+  { id: "2", code: "23.04.01.04.01", description: "SUB BASE OU BASE SOLO CIM.6%-USINA COM TRANSP. JAZIDA ATE LOCAL APLICACAO", unit: "m3", quantity: 320.55, unitPrice: 185.23, totalPrice: 59375.47, phase: "Fase 23 - PAVIMENTAÇÃO" },
+  { id: "3", code: "23.08.03.01", description: "CAMADA ROLAMENTO-CBUQ GRADUACAO C-S/DOP", unit: "m3", quantity: 8804.22, unitPrice: 1601.11, totalPrice: 14096524.68, phase: "Fase 23 - PAVIMENTAÇÃO" },
+  { id: "4", code: "24.16.17", description: "TUBO DE CONCRETO D=1,00M CLASSE PA-3", unit: "m", quantity: 230.00, unitPrice: 1037.60, totalPrice: 238648.00, phase: "Fase 24 - OBRAS DE ARTE E DRENAGEM" },
 ];
 
 function Budgets() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [items, setItems] = useState<BudgetItem[]>(INITIAL_ITEMS);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [contractInfo, setContractInfo] = useState({
+    object: "Estudo LIN-030",
+    contract: "21.829-7",
+    baseDate: "Set 2021",
+    highway: "LIN-030",
+    extension: 3.50
+  });
+
+  const totals = useMemo(() => {
+    const total = items.reduce((acc, item) => acc + item.totalPrice, 0);
+    return {
+      total,
+      perKm: contractInfo.extension > 0 ? total / contractInfo.extension : 0
+    };
+  }, [items, contractInfo.extension]);
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
     try {
+      const budgetSummary = items.map(i => `${i.code}: ${i.description} (${i.unit})`).join(", ");
       const response = await (askGeneralAI as any)({ 
         data: { 
-          question: `Estou no passo ${currentStep} (${steps[currentStep-1]}) de um orçamento de infraestrutura. Me dê uma dica técnica ou valide o que estou fazendo.`,
-          context: `Usuário está criando um orçamento no módulo de Budgets. Atualmente no passo: ${steps[currentStep-1]}.`
+          question: `Análise técnica deste orçamento do DER-SP: Objeto ${contractInfo.object}, Rodovia ${contractInfo.highway}. Total: R$ ${totals.total.toLocaleString("pt-BR")}. Itens: ${budgetSummary.substring(0, 500)}... Me dê insights sobre produtividade ou possíveis omissões baseadas em normas DNIT/DER.`,
+          context: "O usuário está visualizando a planilha de orçamento digitalizada do DER."
         } 
       });
       setAiSuggestion((response as any).answer);
@@ -50,175 +108,283 @@ function Budgets() {
     }
   };
 
-  const nextStep = () => {
-    if (currentStep < 5) setCurrentStep(currentStep + 1);
-    if (currentStep === 4) toast.success("Cálculo realizado com sucesso!");
-  };
-  
-  const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  const addItem = () => {
+    const newItem: BudgetItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      code: "",
+      description: "Novo Item",
+      unit: "un",
+      quantity: 0,
+      unitPrice: 0,
+      totalPrice: 0,
+      phase: DER_PHASES[0]
+    };
+    setItems([...items, newItem]);
+    toast.success("Novo item adicionado");
   };
 
+  const removeItem = (id: string) => {
+    setItems(items.filter(item => item.id !== id));
+  };
+
+  const updateItem = (id: string, field: keyof BudgetItem, value: any) => {
+    setItems(items.map(item => {
+      if (item.id === id) {
+        const updated = { ...item, [field]: value };
+        if (field === "quantity" || field === "unitPrice") {
+          updated.totalPrice = (updated.quantity || 0) * (updated.unitPrice || 0);
+        }
+        return updated;
+      }
+      return item;
+    }));
+  };
+
+  const steps = [
+    { title: "Dados do Contrato", icon: FileSpreadsheet },
+    { title: "Planilha de Itens", icon: Calculator },
+    { title: "Resumo & IA", icon: Bot },
+  ];
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Gerador de Orçamento Inteligente</h1>
-          <span className="text-sm text-muted-foreground">Passo {currentStep} de 5</span>
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Calculator className="h-6 w-6 text-primary" />
+            Orçamento Digital DER
+          </h1>
+          <p className="text-sm text-muted-foreground">Sistema de substituição de planilhas físicas do DER-SP</p>
         </div>
-        <Progress value={(currentStep / 5) * 100} className="h-2" />
-        <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground">
-          {steps.map((step, i) => (
-            <span key={i} className={currentStep === i + 1 ? "text-primary font-bold" : ""}>
-              {step}
-            </span>
-          ))}
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info("Histórico em breve")}>
+            <History className="h-4 w-4" /> Histórico
+          </Button>
+          <Button size="sm" className="gap-2" onClick={() => toast.success("Exportando PDF/Excel...")}>
+            <Download className="h-4 w-4" /> Exportar
+          </Button>
         </div>
       </div>
 
-      <Card className="glass-card min-h-[400px]">
-        <CardHeader>
-          <CardTitle>{steps[currentStep - 1]}</CardTitle>
-          <CardDescription>Preencha as informações para o cálculo técnico.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <div className="grid grid-cols-3 gap-2">
+        {steps.map((step, i) => (
+          <div 
+            key={i} 
+            className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all ${
+              currentStep === i + 1 
+                ? "bg-primary/10 border-primary text-primary shadow-sm" 
+                : "bg-muted/50 border-transparent text-muted-foreground"
+            }`}
+          >
+            <step.icon className="h-5 w-5" />
+            <span className="text-[10px] uppercase font-bold tracking-wider">{step.title}</span>
+          </div>
+        ))}
+      </div>
+
+      <Card className="glass-card overflow-hidden">
+        <CardContent className="p-0">
           {currentStep === 1 && (
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label>Órgão Responsável</Label>
-                <Select>
-                  <SelectTrigger><SelectValue placeholder="Selecione o órgão" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="der">DER-SP</SelectItem>
-                    <SelectItem value="dnit">DNIT</SelectItem>
-                    <SelectItem value="artesp">ARTESP</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="p-6 space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Objeto / Estudo</Label>
+                    <Input 
+                      value={contractInfo.object} 
+                      onChange={(e) => setContractInfo({...contractInfo, object: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Contrato nº</Label>
+                    <Input 
+                      value={contractInfo.contract}
+                      onChange={(e) => setContractInfo({...contractInfo, contract: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Data Base</Label>
+                    <Input 
+                      value={contractInfo.baseDate}
+                      onChange={(e) => setContractInfo({...contractInfo, baseDate: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Extensão (km)</Label>
+                    <Input 
+                      type="number"
+                      value={contractInfo.extension}
+                      onChange={(e) => setContractInfo({...contractInfo, extension: parseFloat(e.target.value)})}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Rodovia</Label>
-                <Input placeholder="Ex: SP-300 (Marechal Rondon)" />
+              <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-primary mt-1" />
+                <div className="text-xs space-y-1">
+                  <p className="font-bold text-primary">Dica de Configuração</p>
+                  <p className="text-muted-foreground">A Data Base influencia diretamente nos índices de reajuste (IGP/IMO/IGE) aplicados às fases do DER.</p>
+                </div>
               </div>
             </div>
           )}
 
           {currentStep === 2 && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>KM Inicial</Label>
-                <Input type="number" placeholder="0" />
-              </div>
-              <div className="space-y-2">
-                <Label>KM Final</Label>
-                <Input type="number" placeholder="10" />
-              </div>
-              <div className="space-y-2 col-span-2">
-                <Label>Lado</Label>
-                <Select>
-                  <SelectTrigger><SelectValue placeholder="Selecione o lado" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="n">Norte (Direito)</SelectItem>
-                    <SelectItem value="s">Sul (Esquerdo)</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead className="w-[120px]">Código</TableHead>
+                    <TableHead>Descrição do Subitem</TableHead>
+                    <TableHead className="w-[80px]">Und</TableHead>
+                    <TableHead className="w-[100px] text-right">Qtd</TableHead>
+                    <TableHead className="w-[120px] text-right">Unit (R$)</TableHead>
+                    <TableHead className="w-[120px] text-right">Total (R$)</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.map((item) => (
+                    <TableRow key={item.id} className="hover:bg-primary/5 transition-colors">
+                      <TableCell>
+                        <Input 
+                          className="h-8 text-xs font-mono" 
+                          value={item.code} 
+                          onChange={(e) => updateItem(item.id, "code", e.target.value)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          className="h-8 text-xs" 
+                          value={item.description} 
+                          onChange={(e) => updateItem(item.id, "description", e.target.value)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          className="h-8 text-xs uppercase" 
+                          value={item.unit} 
+                          onChange={(e) => updateItem(item.id, "unit", e.target.value)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          type="number" 
+                          className="h-8 text-xs text-right" 
+                          value={item.quantity} 
+                          onChange={(e) => updateItem(item.id, "quantity", parseFloat(e.target.value))}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          type="number" 
+                          className="h-8 text-xs text-right" 
+                          value={item.unitPrice} 
+                          onChange={(e) => updateItem(item.id, "unitPrice", parseFloat(e.target.value))}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right text-xs font-bold">
+                        {item.totalPrice.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7 text-destructive"
+                          onClick={() => removeItem(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="p-4 bg-muted/20 border-t flex justify-between items-center">
+                <Button variant="outline" size="sm" className="gap-2" onClick={addItem}>
+                  <Plus className="h-4 w-4" /> Adicionar Item
+                </Button>
+                <div className="text-right space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Parcial</p>
+                  <p className="text-lg font-bold text-primary">R$ {totals.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                </div>
               </div>
             </div>
           )}
 
           {currentStep === 3 && (
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label>Tipo de Serviço</Label>
-                <Select>
-                  <SelectTrigger><SelectValue placeholder="Selecione o serviço" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fresagem">Fresagem e Recomposição</SelectItem>
-                    <SelectItem value="tapa">Tapa-Buraco</SelectItem>
-                    <SelectItem value="drenagem">Drenagem Profunda</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="p-6 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Geral</p>
+                  <p className="text-2xl font-black text-primary">R$ {totals.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div className="bg-muted/50 p-4 rounded-xl border border-transparent space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold">Custo por KM</p>
+                  <p className="text-2xl font-black">R$ {totals.perKm.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div className="bg-muted/50 p-4 rounded-xl border border-transparent space-y-1">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold">Status do Orçamento</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Finalizado</Badge>
+                    <span className="text-[10px] text-muted-foreground">Pronto para exportar</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
 
-          {currentStep === 4 && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Espessura (cm)</Label>
-                <Input type="number" defaultValue="5" />
-              </div>
-              <div className="space-y-2">
-                <Label>Largura da Faixa (m)</Label>
-                <Input type="number" defaultValue="3.5" />
-              </div>
-              <div className="space-y-2">
-                <Label>DMT (km)</Label>
-                <Input type="number" placeholder="Distância de transporte" />
-              </div>
-              <div className="space-y-2">
-                <Label>Tipo de CBUQ</Label>
-                <Select>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fa">Faixa A</SelectItem>
-                    <SelectItem value="fb">Faixa B</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 5 && (
-            <div className="space-y-6">
-              <div className="p-6 bg-primary/10 border border-primary/20 rounded-xl space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Volume Estimado:</span>
-                  <span className="text-xl font-bold">1.250 m³</span>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold flex items-center gap-2">
+                    <Bot className="h-4 w-4 text-primary" />
+                    Análise Técnica da IA (Consultoria)
+                  </h3>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={getAiHelp} 
+                    disabled={isAiLoading}
+                    className="gap-2 border-primary/20 hover:bg-primary/10"
+                  >
+                    {isAiLoading ? "Analisando planilha..." : "Refazer Análise"} <Sparkles className="h-3 w-3" />
+                  </Button>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Tonelagem:</span>
-                  <span className="text-xl font-bold">3.000 t</span>
+                
+                <div className="bg-primary/5 rounded-xl border border-primary/20 p-5 min-h-[150px]">
+                  {aiSuggestion ? (
+                    <div className="prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed text-muted-foreground">
+                      {aiSuggestion.split('\n').map((line, i) => <p key={i}>{line}</p>)}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full space-y-3 py-4">
+                      <Bot className="h-10 w-10 text-primary/20 animate-pulse" />
+                      <p className="text-xs text-muted-foreground text-center max-w-[250px]">
+                        Clique em "Refazer Análise" para que a IA analise a coerência técnica dos seus itens com as normas do DER-SP.
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div className="pt-4 border-t border-primary/20 flex justify-between items-center">
-                  <span className="text-lg font-bold">Custo Estimado:</span>
-                  <span className="text-2xl font-bold text-primary">R$ 1.450.000,00</span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Button className="w-full gap-2"><CheckCircle2 className="h-4 w-4" /> Salvar Projeto</Button>
-                <Button variant="outline" className="w-full gap-2"><Calculator className="h-4 w-4" /> Exportar Planilha</Button>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {aiSuggestion && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="p-4 flex gap-3">
-            <Bot className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-            <div className="text-xs space-y-2">
-              <p className="font-semibold text-primary uppercase tracking-wider flex items-center gap-1">
-                Sugestão da IA <Sparkles className="h-3 w-3" />
-              </p>
-              <p className="text-muted-foreground leading-relaxed">{aiSuggestion}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="flex justify-between items-center">
-        <div className="flex gap-2">
-          <Button variant="ghost" onClick={prevStep} disabled={currentStep === 1}>
-            <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
-          </Button>
-          <Button variant="outline" size="sm" onClick={getAiHelp} disabled={isAiLoading} className="gap-2 border-primary/20 hover:bg-primary/5">
-            {isAiLoading ? "Analisando..." : "Dica da IA"} <Bot className="h-3.5 w-3.5 text-primary" />
-          </Button>
-        </div>
-
-        <Button onClick={nextStep} className={currentStep === 5 ? "hidden" : ""}>
-          {currentStep === 4 ? "Calcular" : "Próximo"} <ChevronRight className="ml-2 h-4 w-4" />
+      <div className="flex justify-between items-center pb-8">
+        <Button 
+          variant="ghost" 
+          onClick={() => setCurrentStep(currentStep - 1)} 
+          disabled={currentStep === 1}
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" /> Voltar
+        </Button>
+        <Button 
+          onClick={() => currentStep < 3 ? setCurrentStep(currentStep + 1) : toast.success("Orçamento finalizado!")}
+          className="gap-2 shadow-lg shadow-primary/20"
+        >
+          {currentStep === 3 ? "Finalizar Orçamento" : "Próximo Passo"} 
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>
