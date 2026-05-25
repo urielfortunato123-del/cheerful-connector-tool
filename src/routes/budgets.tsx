@@ -39,6 +39,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
 import { processExcelFile, exportToExcel } from "@/lib/offline-processor";
+import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
+
 
 export const Route = createFileRoute("/budgets")({
   component: Budgets,
