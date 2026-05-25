@@ -1,4 +1,4 @@
-import { FileText, MoreVertical, Download, Eye, Bot, Trash2 } from "lucide-react";
+import { FileText, MoreVertical, Download, Eye, Bot, Trash2, ListChecks, Sparkles } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -80,6 +80,12 @@ export function DocumentCard({ document }: { document: Document }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => toast.info("Resumo sendo gerado...", { description: "Em breve você poderá visualizar resumos automáticos." })}>
+                <Sparkles className="mr-2 h-4 w-4" /> Gerar Resumo
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.info("Extraindo tópicos...", { description: "Funcionalidade em desenvolvimento." })}>
+                <ListChecks className="mr-2 h-4 w-4" /> Tópicos Importantes
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDownload}>
                 <Download className="mr-2 h-4 w-4" /> Download
               </DropdownMenuItem>
