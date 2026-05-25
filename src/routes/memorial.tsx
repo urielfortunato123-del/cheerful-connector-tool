@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { 
   Select, 
   SelectContent, 
@@ -20,13 +21,15 @@ import {
   Printer,
   ChevronLeft,
   Settings2,
-  Trash2
+  Trash2,
+  History as HistoryIcon
 } from "lucide-react";
 import { db, Memorial, Project } from "@/lib/db";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
+
 
 export const Route = createFileRoute("/memorial")({
   component: Memorials,
