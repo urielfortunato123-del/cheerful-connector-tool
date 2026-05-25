@@ -40,6 +40,7 @@ export const Route = createFileRoute("/library")({
 
 function Library() {
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("");
   const [progress, setProgress] = useState(0);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,6 +52,8 @@ function Library() {
   });
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
     loadDocs();
