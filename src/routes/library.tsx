@@ -481,6 +481,56 @@ function Library() {
         </div>
       </div>
 
+      <Dialog open={showHistory} onOpenChange={setShowHistory}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col glass-card">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              Histórico de Sincronizações
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-4 py-4">
+            {history.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhum registro de sincronização.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {history.map((log) => (
+                  <div key={log.id} className="p-4 rounded-lg border bg-muted/30 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm">{log.agency}</span>
+                          <Badge variant={log.status === 'Sucesso' ? 'default' : 'destructive'} className="text-[10px] h-4">
+                            {log.status}
+                          </Badge>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">{format(log.timestamp, 'dd/MM/yyyy HH:mm:ss')}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-medium">{log.filesDownloaded} arquivos</p>
+                        <p className="text-[10px] text-muted-foreground">{log.totalSize}</p>
+                      </div>
+                    </div>
+                    {log.errors && log.errors.length > 0 && (
+                      <div className="pt-2 border-t border-border/50">
+                        <p className="text-[10px] font-bold text-destructive uppercase">Erros/Alertas:</p>
+                        <ul className="text-[10px] text-muted-foreground list-disc list-inside">
+                          {log.errors.map((err: string, idx: number) => (
+                            <li key={idx}>{err}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={!!selectedDoc} onOpenChange={(open) => !open && setSelectedDoc(null)}>
         <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 overflow-hidden glass-card">
           <DialogHeader className="p-4 border-b border-border/50">
