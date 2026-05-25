@@ -87,6 +87,7 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
   contextDocs?: number[]; // IDs of documents used for context
+  contextChunks?: { docName: string; category: string; text: string; docId?: number }[];
 }
 
 export interface SyncLog {
