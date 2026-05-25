@@ -121,7 +121,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
           </header>
-          <div className="p-6">{children}</div>
+          <div className="flex-1 p-6">{children}</div>
+          <footer className="mt-auto border-t border-border bg-sidebar/50 py-4 px-6 text-center">
+            <p className="text-xs text-muted-foreground">
+              Desenvolvido por <span className="inline-block animate-pulse font-medium text-primary">Uriel da Fonseca Fortunato</span>
+            </p>
+          </footer>
         </main>
       </div>
     </SidebarProvider>
