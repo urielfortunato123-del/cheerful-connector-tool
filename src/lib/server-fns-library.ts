@@ -5,9 +5,10 @@ export const askLibraryAI = createServerFn({
   method: "POST",
 })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }: { data: { question: string }, context: any }) => {
+  .handler(async (ctx: any) => {
+    const { data, context } = ctx;
     const { supabase } = context;
-    const question = data?.question || "";
+    const question = (data as any)?.question || "";
 
     let contextText = "";
     

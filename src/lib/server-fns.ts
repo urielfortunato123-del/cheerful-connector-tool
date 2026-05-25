@@ -5,9 +5,10 @@ export const askGeneralAI = createServerFn({
   method: "POST",
 })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ data }: { data: { question: string, context?: string } }) => {
-    const question = data?.question || "";
-    const extraContext = data?.context || "";
+  .handler(async (ctx: any) => {
+    const { data } = ctx;
+    const question = (data as any)?.question || "";
+    const extraContext = (data as any)?.context || "";
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
