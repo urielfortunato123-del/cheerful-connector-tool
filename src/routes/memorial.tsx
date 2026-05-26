@@ -69,14 +69,26 @@ function Memorials() {
     const project = projects.find(p => p.id === parseInt(selectedProjectId));
     if (!project) return;
 
-    toast.info("IA analisando projeto e gerando memorial...");
+    toast.info("IA analisando projeto e gerando memorial técnico...");
     
-    // Simulating IA generation based on project details
-    setTimeout(() => {
-      const generated = `MEMORIAL DESCRITIVO TÉCNICO\n\n1. OBJETO\nEste memorial refere-se ao projeto de ${project.nome}, localizado na rodovia ${project.rodovia}, entre o KM ${project.kmInicial} e o KM ${project.kmFinal}, no lado ${project.lado}.\n\n2. NORMAS APLICÁVEIS\nSerão seguidas rigorosamente as instruções do manual de pavimentação do DER-SP (ET-DE-P00/013) e normas ABNT NBR pertinentes.\n\n3. ESPECIFICAÇÕES TÉCNICAS\nO revestimento asfáltico será executado em CBUQ (Concreto Betuminoso Usinado a Quente), com espessura de projeto de 5cm após compactação.`;
-      setContent(generated);
+    try {
+      const response = await (askGeneralAI as any)({
+        data: {
+          question: `Gere um Memorial Descritivo Técnico COMPLETO para o projeto: ${project.nome}. 
+          Rodovia: ${project.rodovia}, KM ${project.kmInicial} ao ${project.kmFinal}. 
+          Template: ${template}. 
+          Siga rigorosamente as normas técnicas do órgão competente e use linguagem de engenharia pesada brasileira.`,
+          context: "Geração de Memorial Descritivo via IA."
+        }
+      });
+      
+      setContent((response as any).answer);
       toast.success("Memorial gerado pela IA com sucesso!");
-    }, 1500);
+    } catch (err) {
+      toast.error("Erro ao gerar memorial via IA. Usando fallback offline.");
+      const generated = `MEMORIAL DESCRITIVO TÉCNICO\n\n1. OBJETO\nEste memorial refere-se ao projeto de ${project.nome}, localizado na rodovia ${project.rodovia}, entre o KM ${project.kmInicial} e o KM ${project.kmFinal}, no lado ${project.lado}.\n\n2. NORMAS APLICÁVEIS\nSerão seguidas rigorosamente as instruções do manual de pavimentação do DER-SP (ET-DE-P00/013) e normas ABNT NBR pertinentes.`;
+      setContent(generated);
+    }
   };
 
   const handleSave = async () => {

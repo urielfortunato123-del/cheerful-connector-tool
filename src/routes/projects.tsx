@@ -240,11 +240,11 @@ function Projects() {
                     <span className="font-bold text-primary">ID: #{project.id}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" size="sm" className="w-full text-[11px] h-8 uppercase font-bold tracking-wider">
-                      Detalhes
+                    <Button variant="outline" size="sm" className="w-full text-[11px] h-8 uppercase font-bold tracking-wider" asChild>
+                      <Link to="/ai-assistant">IA Analisar</Link>
                     </Button>
-                    <Button variant="secondary" size="sm" className="w-full text-[11px] h-8 uppercase font-bold tracking-wider">
-                      Gerenciar
+                    <Button variant="secondary" size="sm" className="w-full text-[11px] h-8 uppercase font-bold tracking-wider" asChild>
+                      <Link to="/measurements">Medições</Link>
                     </Button>
                   </div>
                 </div>
