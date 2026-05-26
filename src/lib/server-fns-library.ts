@@ -4,30 +4,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const askLibraryAI = createServerFn({
   method: "POST",
 })
-  .middleware([requireSupabaseAuth])
   .handler(async (ctx: any) => {
-    const { data, context } = ctx;
-    const { supabase } = context;
-    const question = (data as any)?.question || "";
-
-    let contextText = "";
-
-    try {
-      const { data: docs } = await supabase
-        .from("documents")
-        .select("content_text, name")
-        .limit(5);
-
-      contextText =
-        docs
-          ?.map(
-            (d: any) =>
-              `Documento: ${d.name}\nConteúdo: ${d.content_text?.substring(0, 3000)}`,
-          )
-          .join("\n\n") || "";
-    } catch (e) {
-      console.error("Error fetching docs for context:", e);
-    }
+    const data = ctx.data as { question: string; context?: string };
+    const question = data?.question || "";
+    const contextText = data?.context || "";
 
     const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
     console.log("Verificando OPENROUTER_API_KEY (Library):", OPENROUTER_API_KEY ? "Presente (protegido)" : "AUSENTE");

@@ -118,15 +118,23 @@ function Budgets() {
   // Salvar automaticamente no DB local
   useEffect(() => {
     const saveData = async () => {
-      await db.budgets.add({
-        projectId: 1, // Mock project ID
+      // Find current project if any, otherwise use a generic ID or allow creating one
+      const budgetData = {
+        projectId: 1, // Mock project ID for now, should be connected to actual project
         dataBase: contractInfo.baseDate,
         itens: items,
         valorTotal: totals.total,
         observacoes: contractInfo.object,
-      });
+      };
+      
+      const existing = await db.budgets.where('observacoes').equals(contractInfo.object).first();
+      if (existing) {
+        await db.budgets.update(existing.id!, budgetData);
+      } else {
+        await db.budgets.add(budgetData);
+      }
     };
-    if (items.length > 0) saveData();
+    if (items.length > 0 && contractInfo.object) saveData();
   }, [items, contractInfo, totals.total]);
 
 
