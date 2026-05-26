@@ -21,11 +21,13 @@ import {
   Upload,
   Trash2,
   Eye,
-  FileIcon
+  FileIcon,
+  Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
 import { db, Document, SyncLog } from "@/lib/db";
 import { indexDocument, searchDocuments } from "@/lib/document-processor";
+import { askGeneralAI } from "@/lib/server-fns";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -431,6 +433,44 @@ function Library() {
         </div>
 
         <div className="space-y-6">
+          <Card className="glass-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                IA Documental
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                A IA pode analisar seus documentos locais para extrair normas, resumir capítulos e identificar tags automáticas.
+              </p>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="w-full gap-2 text-[10px]"
+                onClick={async () => {
+                  const docs = await db.documents.toArray();
+                  if (docs.length === 0) {
+                    toast.error("Nenhum documento para analisar.");
+                    return;
+                  }
+                  toast.info("IA analisando base documental...");
+                  const summary = docs.map(d => d.nome).join(", ");
+                  const response = await (askGeneralAI as any)({
+                    data: {
+                      question: `Faça um resumo executivo desta biblioteca técnica: ${summary}. Identifique as principais áreas de engenharia cobertas.`,
+                      context: "Usuário solicitou auditoria da biblioteca técnica."
+                    }
+                  });
+                  toast.success("Análise concluída!");
+                  console.log("IA Analysis:", (response as any).answer);
+                }}
+              >
+                Auditoria de Base via IA
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card className="glass-card">
             <CardHeader>
               <CardTitle className="text-sm font-bold uppercase tracking-wider">Filtros Técnicos</CardTitle>

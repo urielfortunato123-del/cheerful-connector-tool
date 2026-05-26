@@ -13,11 +13,13 @@ import {
   AlertCircle,
   Plus,
   CheckCircle2,
-  Clock
+  Clock,
+  Sparkles
 } from "lucide-react";
 import { db, AsBuilt, Project } from "@/lib/db";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { askGeneralAI } from "@/lib/server-fns";
 import { 
   Select, 
   SelectContent, 
@@ -180,11 +182,28 @@ function AsBuiltModule() {
                           </div>
                         ))}
                       </div>
-                      <div className="pt-2 flex items-center justify-between">
-                         <Badge variant="outline" className="text-[9px] border-green-500/20 text-green-500 bg-green-500/5">
+                      <div className="pt-2 flex flex-col gap-2">
+                         <Badge variant="outline" className="text-[9px] border-green-500/20 text-green-500 bg-green-500/5 w-fit">
                            <CheckCircle2 className="h-3 w-3 mr-1" /> Validado localmente
                          </Badge>
-                         <Button variant="link" className="h-7 text-[10px] text-primary">Gerar Relatório Final</Button>
+                         <Button 
+                          variant="link" 
+                          className="h-7 text-[10px] text-primary p-0 justify-start"
+                          onClick={async () => {
+                            toast.info("IA gerando checklist de conformidade...");
+                            const fileNames = record.arquivos.map(f => f.nome).join(", ");
+                            const response = await (askGeneralAI as any)({
+                              data: {
+                                question: `Analise estes arquivos As-Built: ${fileNames}. Gere um checklist de conformidade baseado nas normas DER-SP para aceitação definitiva de obra.`,
+                                context: "Módulo As-Built - Gerador de conformidade."
+                              }
+                            });
+                            toast.success("Relatório gerado!");
+                            console.log("As-Built Compliance:", (response as any).answer);
+                          }}
+                        >
+                          Gerar Relatório de Conformidade via IA
+                        </Button>
                       </div>
                    </div>
                 </CardContent>

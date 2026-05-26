@@ -47,8 +47,11 @@ export const indexDocument = async (docId: number) => {
         indexed: true
       });
       toast.success(`Documento ${doc.nome} indexado.`);
+    } else if (doc.tipo === 'xlsx' || doc.tipo === 'xls' || doc.tipo === 'csv') {
+      // Excel/CSV basic text indexing
+      const text = `Documento Excel: ${doc.nome}. Categoria: ${doc.categoria}. Órgão: ${doc.orgao}.`;
+      await db.documents.update(docId, { textoExtraido: text, indexed: true });
     } else {
-      // For now only PDF indexing is semantic
       await db.documents.update(docId, { indexed: true });
     }
   } catch (error) {
