@@ -84,11 +84,12 @@ function FinancialDashboard() {
       return;
     }
 
-    await db.financial.add({
+    const entryId = await db.financial.add({
       ...newEntry,
       data: Date.now()
     } as Financial);
 
+    // Sync to projects? (future expansion)
     toast.success("Lançamento realizado com sucesso.");
     setIsDialogOpen(false);
     loadData();

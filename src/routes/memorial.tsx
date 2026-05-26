@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
+import { askGeneralAI } from "@/lib/server-fns";
 
 
 export const Route = createFileRoute("/memorial")({

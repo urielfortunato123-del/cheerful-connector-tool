@@ -67,11 +67,23 @@ function Measurements() {
       return;
     }
 
-    await db.measurements.add({
+    const measurementId = await db.measurements.add({
       ...newMeasurement,
       data: Date.now(),
       fotos: []
     } as Measurement);
+
+    // Automate financial output for this measurement
+    if (newMeasurement.valor && newMeasurement.quantidade) {
+      await db.financial.add({
+        projectId: newMeasurement.projectId,
+        tipo: 'Saída',
+        valor: newMeasurement.quantidade * newMeasurement.valor,
+        descricao: `Medição: ${newMeasurement.tipoServico}`,
+        data: Date.now()
+      });
+      toast.info("Gasto financeiro vinculado automaticamente.");
+    }
 
     // Adicionar automaticamente ao financeiro como "Saída" para controle de custos? 
     // Ou talvez deixar como opcional. Por agora apenas na tabela de medição.
