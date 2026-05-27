@@ -154,7 +154,7 @@ export default function GISContainer() {
     // IA Geoespacial: Cálculo automático de métricas se não houver
     const type = pendingFeature.type;
     const coords = pendingFeature.coordinates;
-    const metrics = calculateSpatialMetrics(type, coords);
+    const metrics = type !== 'point' ? calculateSpatialMetrics(type as 'line' | 'area', coords) : {};
 
     // IA Geoespacial: Sugestão de normas e insights baseados no tipo/categoria
     let aiInsight = "";
