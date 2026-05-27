@@ -196,6 +196,7 @@ export class WorkspaceService {
 
   static getCurrentProject() {
     if (!this.currentProject) {
+      if (typeof window === 'undefined') return null;
       const saved = localStorage.getItem('infraflow_active_project');
       if (saved) {
         this.currentProject = JSON.parse(saved);
@@ -203,6 +204,7 @@ export class WorkspaceService {
     }
     return this.currentProject;
   }
+
 
   static closeProject() {
     this.currentProject = null;
