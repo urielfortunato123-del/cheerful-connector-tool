@@ -197,6 +197,17 @@ export default function GISContainer() {
       });
       toast.success("Memorial Técnico gerado!");
     }
+    
+    if (dest === 'log') {
+      await db.dailyLogs.add({
+        projectId,
+        data: Date.now(),
+        clima: "Não informado",
+        equipe: "Equipe GIS",
+        observacoes: `Ocorrência registrada via GIS no trecho ${pendingFeature.name}.`
+      });
+      toast.success("Ocorrência registrada no Diário!");
+    }
 
     setIsModuleModalOpen(false);
     setPendingFeature(null);
