@@ -42,17 +42,14 @@ export function WorkspaceLanding() {
       <div className="max-w-4xl w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="h-24 w-24 rounded-3xl bg-white flex items-center justify-center shadow-2xl shadow-primary/40 group hover:scale-110 transition-transform duration-500 p-2 overflow-hidden">
+            <div className="h-48 w-full max-w-md flex items-center justify-center group hover:scale-105 transition-transform duration-500 overflow-hidden">
               <img 
                 src="https://res.cloudinary.com/dcii6r5op/image/upload/v1779890945/promaxx/hg1u4zvxghgnzleyp5hd.png" 
                 alt="Logo" 
-                className="w-full h-full object-contain group-hover:rotate-6 transition-transform"
+                className="w-full h-full object-contain"
               />
             </div>
           </div>
-          <h1 className="text-5xl font-black tracking-tighter text-foreground sm:text-6xl">
-            Infra<span className="text-primary italic">Flow</span>
-          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
             Sistema Operacional de Engenharia Rodoviária Profissional
           </p>
