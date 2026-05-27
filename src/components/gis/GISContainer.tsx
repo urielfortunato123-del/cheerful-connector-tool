@@ -151,12 +151,26 @@ export default function GISContainer() {
   const handleModuleExecution = async (dest: string, projectId: number, unit?: string) => {
     if (!pendingFeature) return;
 
+    // IA Geoespacial: Detecção automática de categoria baseada na geometria/contexto
+    let finalCategory = pendingFeature.category;
+    if (dest === 'project') finalCategory = 'projeto';
+    if (dest === 'measurement') finalCategory = 'obras';
+    if (dest === 'budget') finalCategory = 'contratos';
+
     if (dest === 'save' || projectId > 0) {
+      const updates = { 
+        category: finalCategory,
+        properties: { ...pendingFeature.properties, projectId } 
+      };
+      
       if (pendingFeature.id) {
-        await handleFeatureUpdate(pendingFeature.id, { 
-          properties: { ...pendingFeature.properties, projectId } 
-        });
+        await handleFeatureUpdate(pendingFeature.id, updates);
+      } else {
+        // Se por algum motivo não tiver ID ainda
+        const id = await db.mapFeatures.add({ ...pendingFeature, ...updates } as MapFeature);
+        setFeatures(prev => [...prev, { ...pendingFeature, ...updates, id } as MapFeature]);
       }
+
       if (dest === 'save') {
         setIsModuleModalOpen(false);
         setPendingFeature(null);
