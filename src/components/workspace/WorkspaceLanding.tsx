@@ -68,7 +68,7 @@ export function WorkspaceLanding() {
           <div className="flex justify-center">
             <div className="h-48 w-full max-w-md flex items-center justify-center group hover:scale-105 transition-transform duration-500 overflow-hidden">
               <img 
-                src="https://res.cloudinary.com/dcii6r5op/image/upload/v1779890945/promaxx/hg1u4zvxghgnzleyp5hd.png" 
+                src="/logo.png?v=2" 
                 alt="Logo" 
                 className="w-full h-full object-contain"
               />

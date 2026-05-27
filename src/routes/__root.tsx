@@ -97,7 +97,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "icon",
         type: "image/png",
-        href: "https://res.cloudinary.com/dcii6r5op/image/upload/v1779890945/promaxx/hg1u4zvxghgnzleyp5hd.png"
+        href: "/logo.png?v=2"
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/logo.png?v=2"
       }
     ],
   }),
