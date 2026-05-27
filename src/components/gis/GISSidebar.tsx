@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapFeature, db } from "@/lib/db";
+import { MapFeature } from "@/lib/db";
 import { 
   Layers, 
   History, 
@@ -18,33 +18,71 @@ import {
   Droplets,
   HardHat,
   BadgeAlert,
-  TrafficCone
+  TrafficCone,
+  Map as MapIcon,
+  Navigation,
+  Activity,
+  Waves,
+  Mountain,
+  FileCode
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BaseLayer, EngineeringLayer } from "./GISContainer";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface GISSidebarProps {
   features: MapFeature[];
   onSelect: (feature: MapFeature) => void;
   onDelete: (id: number) => void;
+  onEdit: (feature: MapFeature) => void;
   onDuplicate: (feature: MapFeature) => void;
   onExport: () => void;
+  onExportKML: () => void;
+  activeBaseLayer: BaseLayer;
+  onBaseLayerChange: (layer: BaseLayer) => void;
+  activeEngineeringLayers: Set<EngineeringLayer>;
+  onEngineeringLayerToggle: (layer: EngineeringLayer) => void;
+  gpsMode: 'standard' | 'high_precision' | 'economy' | 'engineering';
+  onGpsModeChange: (mode: 'standard' | 'high_precision' | 'economy' | 'engineering') => void;
+  isGpsActive: boolean;
+  onGpsToggle: () => void;
 }
 
 export default function GISSidebar({ 
   features, 
   onSelect, 
   onDelete, 
+  onEdit,
   onDuplicate,
-  onExport 
+  onExport,
+  onExportKML,
+  activeBaseLayer,
+  onBaseLayerChange,
+  activeEngineeringLayers,
+  onEngineeringLayerToggle,
+  gpsMode,
+  onGpsModeChange,
+  isGpsActive,
+  onGpsToggle
 }: GISSidebarProps) {
   const [activeTab, setActiveTab] = useState("features");
 
-  const layers = [
+  const engineeringLayers: { id: EngineeringLayer, label: string, icon: any, color: string }[] = [
     { id: 'obras', label: 'Obras em Curso', icon: HardHat, color: 'text-orange-500' },
     { id: 'drenagem', label: 'Drenagem', icon: Droplets, color: 'text-blue-500' },
     { id: 'pavimentacao', label: 'Pavimentação', icon: Box, color: 'text-slate-500' },
+    { id: 'hidrografia', label: 'Hidrografia', icon: Waves, color: 'text-cyan-600' },
+    { id: 'curvas_nivel', label: 'Curvas de Nível', icon: Mountain, color: 'text-emerald-600' },
     { id: 'contratos', label: 'Contratos/Áreas', icon: BadgeAlert, color: 'text-red-500' },
     { id: 'sinalizacao', label: 'Sinalização', icon: TrafficCone, color: 'text-yellow-500' },
+  ];
+
+  const baseLayers: { id: BaseLayer, label: string }[] = [
+    { id: 'dark', label: 'Dark Mode (Engine)' },
+    { id: 'satellite', label: 'Satélite HD (Esri)' },
+    { id: 'topography', label: 'Topografia (Topo)' },
+    { id: 'streets', label: 'Ruas (OSM)' },
   ];
 
   return (
@@ -56,11 +94,11 @@ export default function GISSidebar({
             InfraMap GIS
           </h2>
           <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold animate-pulse">
-            LIVE
+            V5.0
           </span>
         </div>
         <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
-          Central Geoespacial Operacional
+          Central Geoespacial Profissional
         </p>
       </div>
 
@@ -68,8 +106,8 @@ export default function GISSidebar({
         <div className="px-4 pt-2">
           <TabsList className="w-full grid grid-cols-3 bg-white/5 p-1 rounded-xl border border-white/5">
             <TabsTrigger value="features" className="text-[10px] uppercase font-black tracking-tighter rounded-lg">Dados</TabsTrigger>
-            <TabsTrigger value="layers" className="text-[10px] uppercase font-black tracking-tighter rounded-lg">Camadas</TabsTrigger>
-            <TabsTrigger value="history" className="text-[10px] uppercase font-black tracking-tighter rounded-lg">Insights</TabsTrigger>
+            <TabsTrigger value="layers" className="text-[10px] uppercase font-black tracking-tighter rounded-lg">Mapa</TabsTrigger>
+            <TabsTrigger value="gps" className="text-[10px] uppercase font-black tracking-tighter rounded-lg">GPS</TabsTrigger>
           </TabsList>
         </div>
 
@@ -78,9 +116,14 @@ export default function GISSidebar({
             <h3 className="text-[11px] font-black uppercase tracking-tighter flex items-center gap-2">
               <Filter className="h-3 w-3" /> Objetos Espaciais
             </h3>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onExport} title="Exportar GeoJSON">
-              <Download className="h-3 w-3" />
-            </Button>
+            <div className="flex gap-1">
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onExport} title="Exportar GeoJSON">
+                <Download className="h-3 w-3" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onExportKML} title="Exportar KML">
+                <FileCode className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
           
           <ScrollArea className="flex-1">
@@ -94,7 +137,7 @@ export default function GISSidebar({
                 features.map((f) => (
                   <div 
                     key={f.id}
-                    className="group relative overflow-hidden bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl p-4 transition-all cursor-pointer hover:shadow-xl hover:scale-[1.01]"
+                    className="group relative overflow-hidden bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl p-4 transition-all cursor-pointer hover:shadow-xl"
                     onClick={() => onSelect(f)}
                   >
                     <div className="flex justify-between items-start mb-3">
@@ -106,14 +149,14 @@ export default function GISSidebar({
                           {f.type === 'line' ? <Ruler className="h-4 w-4" /> : f.type === 'area' ? <Layers className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
                         </div>
                         <div>
-                          <h4 className="font-black text-xs uppercase tracking-tighter group-hover:text-primary transition-colors">{f.name}</h4>
+                          <h4 className="font-black text-xs uppercase tracking-tighter group-hover:text-primary transition-colors line-clamp-1">{f.name}</h4>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-[9px] font-bold text-muted-foreground uppercase">
                               {f.category}
                             </span>
                             <span className="h-1 w-1 rounded-full bg-white/20" />
                             <span className="text-[9px] font-bold text-primary">
-                              {f.properties.distance ? `${f.properties.distance} km` : `${f.properties.area} km²`}
+                              {f.properties.distance ? `${f.properties.distance} km` : f.properties.area ? `${f.properties.area} km²` : 'Ponto'}
                             </span>
                           </div>
                         </div>
@@ -142,12 +185,12 @@ export default function GISSidebar({
                         variant="default" 
                         size="sm" 
                         className="h-7 text-[9px] font-bold uppercase rounded-lg px-3"
+                        onClick={(e) => { e.stopPropagation(); onEdit(f); }}
                       >
-                        Detalhes <Edit2 className="h-2.5 w-2.5 ml-1.5" />
+                        Editar <Edit2 className="h-2.5 w-2.5 ml-1.5" />
                       </Button>
                     </div>
 
-                    {/* Barra de destaque por categoria */}
                     <div className={cn(
                       "absolute bottom-0 left-0 right-0 h-0.5 transition-all",
                       f.category === 'drenagem' ? "bg-blue-500" : f.category === 'obras' ? "bg-orange-500" : "bg-primary"
@@ -159,52 +202,99 @@ export default function GISSidebar({
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="layers" className="flex-1 p-4 space-y-6">
-          <div className="space-y-3">
-            <h3 className="text-[11px] font-black uppercase tracking-tighter text-muted-foreground">Filtros Temáticos</h3>
-            <div className="grid gap-2">
-              {layers.map((layer) => (
-                <div key={layer.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("p-1.5 rounded-lg bg-background group-hover:scale-110 transition-transform", layer.color)}>
-                      <layer.icon className="h-3.5 w-3.5" />
-                    </div>
-                    <span className="text-[11px] font-black uppercase tracking-tighter">{layer.label}</span>
-                  </div>
-                  <div className="h-5 w-9 bg-primary/20 rounded-full relative border border-primary/20">
-                    <div className="h-3.5 w-3.5 bg-primary rounded-full absolute right-0.5 top-0.5 shadow-sm" />
-                  </div>
+        <TabsContent value="layers" className="flex-1 flex flex-col mt-0 overflow-hidden">
+          <ScrollArea className="flex-1">
+            <div className="p-4 space-y-6">
+              <div className="space-y-3">
+                <h3 className="text-[11px] font-black uppercase tracking-tighter text-muted-foreground flex items-center gap-2">
+                  <MapIcon className="h-3 w-3" /> Mapa Base
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {baseLayers.map((layer) => (
+                    <button
+                      key={layer.id}
+                      onClick={() => onBaseLayerChange(layer.id)}
+                      className={cn(
+                        "p-2 text-[10px] font-bold uppercase rounded-xl border transition-all text-center",
+                        activeBaseLayer === layer.id 
+                          ? "bg-primary text-primary-foreground border-primary" 
+                          : "bg-white/5 border-white/5 hover:bg-white/10"
+                      )}
+                    >
+                      {layer.label}
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          <div className="p-5 rounded-3xl bg-primary/10 border border-primary/10">
-            <h4 className="text-[10px] font-black text-primary uppercase mb-3 flex items-center gap-2">
-              <BadgeAlert className="h-3.5 w-3.5" /> Alertas de Normas
-            </h4>
-            <div className="space-y-2">
-              <div className="p-2 bg-background/50 rounded-xl border border-white/5 text-[9px]">
-                <span className="font-bold text-red-500 uppercase">Gargalo:</span> KM 12 ao 14 necessita recomposição de sinalização vertical.
-              </div>
-              <div className="p-2 bg-background/50 rounded-xl border border-white/5 text-[9px]">
-                <span className="font-bold text-orange-500 uppercase">Aviso:</span> Recomenda-se espessura de 12cm conforme DER ET-P00.
+              <div className="space-y-3">
+                <h3 className="text-[11px] font-black uppercase tracking-tighter text-muted-foreground flex items-center gap-2">
+                  <Layers className="h-3 w-3" /> Camadas Operacionais
+                </h3>
+                <div className="grid gap-2">
+                  {engineeringLayers.map((layer) => (
+                    <div 
+                      key={layer.id} 
+                      className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
+                      onClick={() => onEngineeringLayerToggle(layer.id)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={cn("p-1.5 rounded-lg bg-background group-hover:scale-110 transition-transform", layer.color)}>
+                          <layer.icon className="h-3.5 w-3.5" />
+                        </div>
+                        <span className="text-[11px] font-black uppercase tracking-tighter">{layer.label}</span>
+                      </div>
+                      <Switch 
+                        checked={activeEngineeringLayers.has(layer.id)}
+                        onCheckedChange={() => onEngineeringLayerToggle(layer.id)}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="history" className="flex-1 p-4">
-          <div className="h-full flex flex-col">
-            <div className="flex-1 p-4 rounded-3xl bg-white/5 border border-white/5 flex flex-col items-center justify-center text-center">
-              <Sparkles className="h-10 w-10 text-primary/30 mb-4 animate-pulse" />
-              <h4 className="text-xs font-black uppercase tracking-tighter mb-2">Geo-IA Preditiva</h4>
-              <p className="text-[10px] text-muted-foreground px-4 leading-relaxed">
-                A inteligência artificial está processando os dados espaciais para sugerir otimizações de traçado e orçamento.
-              </p>
-              <Button size="sm" className="mt-6 font-black uppercase text-[10px] h-8 rounded-xl">
-                Ativar Consultoria IA
-              </Button>
+        <TabsContent value="gps" className="flex-1 p-4 space-y-6">
+          <div className="p-6 rounded-3xl bg-primary/10 border border-primary/10 flex flex-col items-center text-center">
+            <div className={cn(
+              "p-4 rounded-full mb-4 shadow-xl transition-all duration-500",
+              isGpsActive ? "bg-primary text-primary-foreground scale-110 animate-pulse" : "bg-white/5 text-muted-foreground"
+            )}>
+              <Navigation className="h-8 w-8" />
+            </div>
+            <h4 className="text-xs font-black uppercase tracking-tighter mb-2">GPS de Alta Precisão</h4>
+            <p className="text-[10px] text-muted-foreground mb-6">
+              Acompanhamento em tempo real para vistorias em campo.
+            </p>
+            <Button 
+              className={cn("w-full font-black uppercase text-[10px] h-10 rounded-xl shadow-lg", isGpsActive && "bg-destructive hover:bg-destructive/90")}
+              onClick={onGpsToggle}
+            >
+              {isGpsActive ? 'Desativar Rastreamento' : 'Ativar GPS Operacional'}
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-[11px] font-black uppercase tracking-tighter text-muted-foreground flex items-center gap-2">
+              <Activity className="h-3 w-3" /> Configurações de Precisão
+            </h3>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase">Modo de Operação</span>
+                <Select value={gpsMode} onValueChange={(val: any) => onGpsModeChange(val)}>
+                  <SelectTrigger className="bg-white/5 border-white/5 text-xs h-9">
+                    <SelectValue placeholder="Selecione o modo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Padrão (Bateria)</SelectItem>
+                    <SelectItem value="high_precision">Alta Precisão (L1/L2)</SelectItem>
+                    <SelectItem value="engineering">Engenharia (RTK/NTRIP)</SelectItem>
+                    <SelectItem value="economy">Econômico (Offline)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </TabsContent>
@@ -212,7 +302,7 @@ export default function GISSidebar({
       
       <div className="p-5 border-t border-white/5 bg-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2 text-[9px] font-black uppercase text-muted-foreground tracking-tighter">
-          <History className="h-3 w-3" /> Sync: Offline-First
+          <History className="h-3 w-3" /> Offline-First: V5.2
         </div>
         <div className="flex gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
