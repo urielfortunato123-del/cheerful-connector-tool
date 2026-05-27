@@ -30,6 +30,8 @@ export class WorkspaceService {
         this.currentProject = metadata;
         localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
         toast.success('Workspace carregado com sucesso');
+        await this.loadProjectData();
+        toast.success('Workspace carregado com sucesso');
         return true;
       } catch (e) {
         // No metadata file, maybe it's a new directory or project selection is needed
