@@ -59,9 +59,9 @@ export interface Measurement {
 export interface MapFeature {
   id?: number;
   type: 'point' | 'line' | 'area';
-  category: 'obras' | 'drenagem' | 'pavimentação' | 'contratos' | 'financeiro' | 'acidentes' | 'sinalização' | 'normas' | 'medições' | 'projetos' | 'geral';
+  category: 'obras' | 'drenagem' | 'pavimentacao' | 'contratos' | 'financeiro' | 'acidentes' | 'sinalizacao' | 'normas' | 'medicoes' | 'projetos' | 'hidrografia' | 'curvas_nivel' | 'geral';
   name: string;
-  coordinates: any; // GeoJSON geometry or coordinates array
+  coordinates: any; 
   properties: {
     distance?: number;
     area?: number;
@@ -77,6 +77,7 @@ export interface MapFeature {
     linkedModuleId?: number;
     linkedModuleType?: string;
     aiInsights?: string;
+    [key: string]: any; // Permite propriedades dinâmicas de engenharia
   };
   createdAt: number;
   updatedAt: number;
