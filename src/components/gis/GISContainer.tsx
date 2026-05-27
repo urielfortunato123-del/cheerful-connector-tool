@@ -265,6 +265,7 @@ export default function GISContainer() {
             projects={projects}
             selectedProjectId={selectedProjectId}
             onSelect={handleProjectSelect}
+            onToggleFavorite={handleToggleFavorite}
             onCreateNew={() => setIsProjectModalOpen(true)}
           />
         </div>
