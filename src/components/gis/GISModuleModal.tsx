@@ -30,6 +30,7 @@ interface GISModuleModalProps {
   onClose: () => void;
   feature: MapFeature | null;
   projects: Project[];
+  selectedProjectId?: number | null;
   isEditMode?: boolean;
   onExecute: (dest: string, projectId: number, unit: string) => void;
   onUpdate?: (id: number, updates: any) => void;
