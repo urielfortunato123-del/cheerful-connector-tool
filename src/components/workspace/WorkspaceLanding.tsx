@@ -30,6 +30,13 @@ export function WorkspaceLanding() {
     }
   };
 
+  const handleRestoreBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await WorkspaceService.restoreBackup(file);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background">
       <div className="max-w-4xl w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
@@ -68,7 +75,7 @@ export function WorkspaceLanding() {
             </CardHeader>
           </Card>
 
-          <Card className="glass-card hover:border-primary/50 transition-all group cursor-pointer">
+          <Card className="glass-card hover:border-primary/50 transition-all group cursor-pointer relative overflow-hidden">
             <CardHeader className="text-center">
               <div className="mx-auto h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
                 <RotateCcw className="h-6 w-6 text-primary" />
@@ -76,6 +83,12 @@ export function WorkspaceLanding() {
               <CardTitle>Restaurar Backup</CardTitle>
               <CardDescription>Importar arquivo .zip de backup</CardDescription>
             </CardHeader>
+            <input 
+              type="file" 
+              className="absolute inset-0 opacity-0 cursor-pointer" 
+              onChange={handleRestoreBackup}
+              accept=".zip"
+            />
           </Card>
         </div>
 
