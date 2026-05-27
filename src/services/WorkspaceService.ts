@@ -294,4 +294,5 @@ export class WorkspaceService {
 // Initialize autosave
 if (typeof window !== 'undefined') {
   WorkspaceService.setupAutoSave();
+  WorkspaceService.restoreHandle();
 }
