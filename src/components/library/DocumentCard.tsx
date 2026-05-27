@@ -31,9 +31,11 @@ interface DocumentCardProps {
   document: Document;
   viewMode: "grid" | "list";
   onRefresh: () => void;
+  onPreview?: (doc: Document) => void;
+  onAsk?: (doc: Document) => void;
 }
 
-export function DocumentCard({ document, viewMode, onRefresh }: DocumentCardProps) {
+export function DocumentCard({ document, viewMode, onRefresh, onPreview, onAsk }: DocumentCardProps) {
   const isPDF = document.tipo === 'pdf';
   const isExcel = ['xlsx', 'xls', 'csv'].includes(document.tipo);
 
@@ -121,10 +123,10 @@ export function DocumentCard({ document, viewMode, onRefresh }: DocumentCardProp
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem className="gap-2">
+                <DropdownMenuItem className="gap-2" onClick={() => onPreview?.(document)}>
                   <Eye className="h-4 w-4" /> Visualizar
                 </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2">
+                <DropdownMenuItem className="gap-2" onClick={() => onAsk?.(document)}>
                   <Bot className="h-4 w-4" /> Analisar com IA
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2 text-destructive" onClick={handleDelete}>
@@ -164,10 +166,10 @@ export function DocumentCard({ document, viewMode, onRefresh }: DocumentCardProp
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem className="gap-2" onClick={handleDownload}>
-                  <Download className="h-4 w-4" /> Download
+                <DropdownMenuItem className="gap-2" onClick={() => onPreview?.(document)}>
+                  <Download className="h-4 w-4" /> Visualizar Interno
                 </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2">
+                <DropdownMenuItem className="gap-2" onClick={() => onAsk?.(document)}>
                   <Sparkles className="h-4 w-4 text-primary" /> Gerar Resumo IA
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2 text-destructive" onClick={handleDelete}>
@@ -205,10 +207,20 @@ export function DocumentCard({ document, viewMode, onRefresh }: DocumentCardProp
         </div>
       </CardContent>
       <CardFooter className="p-2 bg-muted/30 border-t flex gap-1">
-        <Button variant="ghost" size="sm" className="flex-1 h-7 text-[10px] font-bold gap-1 hover:bg-background">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex-1 h-7 text-[10px] font-bold gap-1 hover:bg-background"
+          onClick={() => onPreview?.(document)}
+        >
           <Eye className="h-3 w-3" /> VER
         </Button>
-        <Button variant="ghost" size="sm" className="flex-1 h-7 text-[10px] font-bold gap-1 text-primary hover:bg-primary/5">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex-1 h-7 text-[10px] font-bold gap-1 text-primary hover:bg-primary/5"
+          onClick={() => onAsk?.(document)}
+        >
           <Bot className="h-3 w-3" /> IA
         </Button>
       </CardFooter>
