@@ -164,8 +164,25 @@ export default function GISMap({
     }
   }, [activeBaseLayer]);
 
+  const [mousePos, setMousePos] = useState<[number, number] | null>(null);
+
+  function MouseTracker() {
+    useMapEvents({
+      mousemove(e) {
+        setMousePos([e.latlng.lat, e.latlng.lng]);
+      }
+    });
+    return null;
+  }
+
   return (
-    <div className="w-full h-full relative group/map">
+    <div className="w-full h-full relative group/map overflow-hidden">
+      {/* Compass / Bússola */}
+      <div className="absolute top-4 left-4 z-[1000] w-12 h-12 bg-background/80 backdrop-blur-md rounded-full border border-white/10 flex items-center justify-center shadow-xl">
+        <Navigation className="h-6 w-6 text-primary transition-transform duration-300" style={{ transform: 'rotate(-45deg)' }} />
+        <div className="absolute -top-1 text-[8px] font-black text-primary">N</div>
+      </div>
+
       <MapContainer 
         center={center} 
         zoom={13} 
@@ -174,6 +191,7 @@ export default function GISMap({
         doubleClickZoom={false}
       >
         <TileLayer url={baseLayerUrl} />
+        <MouseTracker />
         
         {/* Engineering Overlays (Functional Toggles) */}
         {activeEngineeringLayers.has('hidrografia') && (
