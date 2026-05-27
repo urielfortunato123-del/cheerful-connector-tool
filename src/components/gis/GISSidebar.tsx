@@ -35,6 +35,7 @@ interface GISSidebarProps {
   features: MapFeature[];
   onSelect: (feature: MapFeature) => void;
   onDelete: (id: number) => void;
+  onEdit: (feature: MapFeature) => void;
   onDuplicate: (feature: MapFeature) => void;
   onExport: () => void;
   onExportKML: () => void;
