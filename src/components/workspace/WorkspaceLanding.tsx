@@ -24,7 +24,7 @@ export function WorkspaceLanding() {
       const project = await WorkspaceService.createProject(projectName);
       if (project) {
         toast.success('Workspace criado com sucesso');
-        // The event listener in __root.tsx will handle the transition
+        navigate({ to: '/' });
       }
     } catch (error) {
       console.error(error);
