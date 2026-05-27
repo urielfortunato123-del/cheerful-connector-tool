@@ -408,10 +408,32 @@ export default function GISMap({
               </Polygon>
             );
           } else {
+            // Renderização de Pontos com Ícones Específicos
+            const getIcon = (cat: string) => {
+              let iconHtml = '';
+              const color = getCategoryColor(cat);
+              
+              if (cat === 'sinalizacao') {
+                iconHtml = `<div class="p-1 bg-yellow-500 rounded-full border-2 border-white shadow-lg text-white"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg></div>`;
+              } else if (cat === 'drenagem') {
+                iconHtml = `<div class="p-1 bg-blue-500 rounded-full border-2 border-white shadow-lg text-white"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg></div>`;
+              } else {
+                iconHtml = `<div class="w-4 h-4 rounded-full border-2 border-white shadow-lg" style="background-color: ${color}"></div>`;
+              }
+
+              return new L.DivIcon({
+                className: 'custom-div-icon',
+                html: iconHtml,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+              });
+            };
+
             return (
               <Marker 
                 key={f.id} 
                 position={f.coordinates}
+                icon={getIcon(f.category)}
                 eventHandlers={{ click: () => onSelectFeature(f.id!) }}
               >
                 <Popup className="rounded-2xl">
