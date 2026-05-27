@@ -42,84 +42,89 @@ function DynamicTileLayer({ activeBaseLayer }: { activeBaseLayer: BaseLayer }) {
   });
 
   const layerConfig = useMemo(() => {
-    // Modo Dinâmico (Auto)
+    if (activeBaseLayer === 'invisible') {
+      return null;
+    }
+
+    // Modo Dinâmico (Auto) / Satélite
     if (activeBaseLayer === 'satellite') {
       if (zoom > 18) {
         return {
           url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
           maxNativeZoom: 22,
-          attribution: "Esri World Imagery HD"
-        };
-      } else if (zoom > 14) {
-        return {
-          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          maxNativeZoom: 19,
-          attribution: "OpenStreetMap"
+          attribution: "Esri World Imagery HD",
+          opacity: 1
         };
       } else {
         return {
           url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
           maxNativeZoom: 19,
-          attribution: "Esri Satellite"
+          attribution: "Esri Satellite",
+          opacity: 1
         };
       }
     }
 
-    // Camadas específicas com seus limites reais
+    // Modo Técnico (Satélite com opacidade reduzida para destacar vetores)
+    if (activeBaseLayer === 'engineering') {
+      return {
+        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        maxNativeZoom: 22,
+        attribution: "Técnico (Esri HD)",
+        opacity: 0.3
+      };
+    }
+
+    // Camadas específicas
     switch(activeBaseLayer) {
       case 'google-satellite':
         return {
           url: "http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}",
           maxNativeZoom: 23,
-          attribution: "Google Satellite"
+          attribution: "Google Satellite",
+          opacity: 1
         };
       case 'mapbox-satellite':
         return {
           url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
           maxNativeZoom: 24,
-          attribution: "Mapbox HD Engineering"
-        };
-      case 'esri-world':
-        return {
-          url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-          maxNativeZoom: 22,
-          attribution: "Esri World Imagery"
+          attribution: "Mapbox HD Engineering",
+          opacity: 1
         };
       case 'topography':
-        // Fallback automático se zoom > 17 (Limite do OpenTopoMap)
         if (zoom > 17) {
           return {
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             maxNativeZoom: 22,
-            attribution: "HD Fallback (Topo > 17)"
+            attribution: "HD Fallback",
+            opacity: 1
           };
         }
         return {
           url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
           maxNativeZoom: 17,
-          attribution: "OpenTopoMap"
-        };
-      case 'streets':
-        return {
-          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          maxNativeZoom: 19,
-          attribution: "OpenStreetMap"
+          attribution: "OpenTopoMap",
+          opacity: 1
         };
       case 'dark':
       default:
         return {
           url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
           maxNativeZoom: 20,
-          attribution: "CartoDB Dark"
+          attribution: "CartoDB Dark",
+          opacity: 1
         };
     }
   }, [activeBaseLayer, zoom]);
+
+  if (!layerConfig) return null;
 
   return (
     <TileLayer 
       url={layerConfig.url} 
       maxNativeZoom={layerConfig.maxNativeZoom} 
       maxZoom={24}
+      opacity={layerConfig.opacity}
       attribution={layerConfig.attribution}
     />
   );
