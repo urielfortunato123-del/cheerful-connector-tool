@@ -153,7 +153,7 @@ export default function GISModuleModal({
 
             <div className="space-y-3 p-5 rounded-[2rem] bg-white/5 border border-white/5">
               <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Projeto Destino</Label>
-              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+              <Select value={selectedId} onValueChange={setSelectedId}>
                 <SelectTrigger className="bg-background/50 border-white/10 h-10 rounded-xl text-xs font-bold">
                   <SelectValue placeholder="Selecione o projeto..." />
                 </SelectTrigger>
