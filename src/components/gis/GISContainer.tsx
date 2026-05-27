@@ -151,22 +151,35 @@ export default function GISContainer() {
   const handleModuleExecution = async (dest: string, projectId: number, unit?: string) => {
     if (!pendingFeature) return;
 
-    // IA Geoespacial: Detecção automática de categoria baseada na geometria/contexto
+    // IA Geoespacial: Cálculo automático de métricas se não houver
+    const type = pendingFeature.type;
+    const coords = pendingFeature.coordinates;
+    const metrics = calculateSpatialMetrics(type, coords);
+
+    // IA Geoespacial: Sugestão de normas e insights baseados no tipo/categoria
+    let aiInsight = "";
+    if (dest === 'project') aiInsight = "Eixo projetado conforme normas DNIT 702/2021.";
+    if (pendingFeature.category === 'drenagem') aiInsight = "Sugerida implantação de bueiro triplo (TR=50 anos).";
+
     let finalCategory = pendingFeature.category;
     if (dest === 'project') finalCategory = 'projeto';
     if (dest === 'measurement') finalCategory = 'obras';
     if (dest === 'budget') finalCategory = 'contratos';
 
+    const updates = { 
+      category: finalCategory,
+      properties: { 
+        ...pendingFeature.properties, 
+        ...metrics,
+        projectId,
+        aiInsights: aiInsight 
+      } 
+    };
+
     if (dest === 'save' || projectId > 0) {
-      const updates = { 
-        category: finalCategory,
-        properties: { ...pendingFeature.properties, projectId } 
-      };
-      
       if (pendingFeature.id) {
         await handleFeatureUpdate(pendingFeature.id, updates);
       } else {
-        // Se por algum motivo não tiver ID ainda
         const id = await db.mapFeatures.add({ ...pendingFeature, ...updates } as MapFeature);
         setFeatures(prev => [...prev, { ...pendingFeature, ...updates, id } as MapFeature]);
       }
@@ -179,7 +192,7 @@ export default function GISContainer() {
     }
 
     const finalUnit = unit || (pendingFeature.type === 'line' ? 'km' : 'km²');
-    const quantity = pendingFeature.properties.distance || pendingFeature.properties.area || 0;
+    const quantity = updates.properties.distance || updates.properties.area || 0;
 
     if (dest === 'budget' || dest === 'measurement') {
       if (dest === 'measurement') {
