@@ -11,7 +11,8 @@ import {
   Maximize2,
   Sparkles,
   Layers,
-  Search
+  Search,
+  ScanSearch
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,8 @@ interface GISToolbarProps {
   onClear: () => void;
   onSave: () => void;
   onAI: () => void;
+  isInspectionMode: boolean;
+  onInspectionModeToggle: () => void;
 }
 
 export default function GISToolbar({ 
@@ -30,7 +33,9 @@ export default function GISToolbar({
   onToolSelect, 
   onClear, 
   onSave,
-  onAI
+  onAI,
+  isInspectionMode,
+  onInspectionModeToggle
 }: GISToolbarProps) {
   const tools = [
     { id: 'select', icon: MousePointer2, label: 'Selecionar' },
@@ -80,6 +85,19 @@ export default function GISToolbar({
           title="Análise IA"
         >
           <Sparkles className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant={isInspectionMode ? "default" : "ghost"}
+          size="icon"
+          className={cn(
+            "h-9 w-9 rounded-xl transition-all duration-300",
+            isInspectionMode ? "bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20 scale-110" : "text-orange-500 hover:bg-orange-500/10"
+          )}
+          onClick={onInspectionModeToggle}
+          title="Modo Inspeção Técnica"
+        >
+          <ScanSearch className={cn("h-4 w-4", isInspectionMode ? "animate-pulse" : "")} />
         </Button>
 
         <Button

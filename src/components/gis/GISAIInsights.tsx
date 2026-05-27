@@ -14,14 +14,14 @@ export default function GISAIInsights({ isOpen, onClose, feature }: GISAIInsight
   const insights = useMemo(() => {
     if (!feature) return null;
 
-    const { type, properties } = feature;
+    const { type, properties, category } = feature;
     const isHighRisk = (properties.distance || 0) > 5 || (properties.area || 0) > 10;
     
     const observations = [
       {
-        id: 'topography',
-        title: 'Análise de Declividade',
-        desc: (properties.distance || 0) > 2 ? 'Trecho com variação altimétrica significativa sugerida.' : 'Topografia aparentemente estável para este segmento.',
+        id: 'erosion',
+        title: 'Análise de Erosão',
+        desc: properties.distance && properties.distance > 0.5 ? 'Alto risco de erosão em taludes. Recomenda-se plantio de gramíneas ou biomanta.' : 'Área com estabilidade superficial satisfatória.',
         icon: TrendingDown,
         color: 'text-orange-500',
         bg: 'bg-orange-500/10',
@@ -29,17 +29,26 @@ export default function GISAIInsights({ isOpen, onClose, feature }: GISAIInsight
       },
       {
         id: 'drainage',
-        title: 'Sugestão de Drenagem',
-        desc: type === 'line' ? 'Recomenda-se valeta de proteção de aterro (VPA) nos primeiros 500m.' : 'Área requer análise de bacia de detenção para controle de cheias.',
+        title: 'Sistema de Drenagem',
+        desc: category === 'drenagem' ? 'Verificar obstrução em bocas de lobo. Possível necessidade de sarjeta de aterro.' : 'Sugerida implantação de dreno sub-superficial se houver umidade constante.',
         icon: Droplets,
         color: 'text-blue-500',
         bg: 'bg-blue-500/10',
         border: 'border-blue-500/20'
       },
       {
+        id: 'wear',
+        title: 'Desgaste e Pavimentação',
+        desc: type === 'line' ? 'Sinais de fadiga estrutural. Recomenda-se ensaio de defletometria (FWD).' : 'Pavimento em estado de conservação aceitável para tráfego leve.',
+        icon: HardHat,
+        color: 'text-slate-500',
+        bg: 'bg-slate-500/10',
+        border: 'border-slate-500/20'
+      },
+      {
         id: 'standard',
-        title: 'Normas Aplicáveis',
-        desc: 'Conformidade com DNIT 013/2004-ES para serviços de terraplenagem.',
+        title: 'Normas DER/DNIT',
+        desc: 'Aplicável Norma DNIT 013/2004-ES. Exigência de controle tecnológico de compactação.',
         icon: Scale,
         color: 'text-purple-500',
         bg: 'bg-purple-500/10',

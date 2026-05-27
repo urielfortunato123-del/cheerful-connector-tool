@@ -80,9 +80,12 @@ export default function GISSidebar({
 
   const baseLayers: { id: BaseLayer, label: string }[] = [
     { id: 'dark', label: 'Dark Mode (Engine)' },
-    { id: 'satellite', label: 'Satélite HD (Esri)' },
-    { id: 'topography', label: 'Topografia (Topo)' },
-    { id: 'streets', label: 'Ruas (OSM)' },
+    { id: 'satellite', label: 'Dinâmico (Auto)' },
+    { id: 'google-satellite', label: 'Google Satellite' },
+    { id: 'mapbox-satellite', label: 'Mapbox HD' },
+    { id: 'esri-world', label: 'Esri World' },
+    { id: 'topography', label: 'Topografia' },
+    { id: 'streets', label: 'Ruas' },
   ];
 
   return (
