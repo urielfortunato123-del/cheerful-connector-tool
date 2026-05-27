@@ -80,7 +80,7 @@ export const indexDocument = async (docId: number) => {
     } else if (['jpg', 'jpeg', 'png'].includes(doc.tipo)) {
       toast.info(`Processando OCR para imagem ${doc.nome}...`);
       const base64 = await blobToBase64(doc.fileBlob);
-      const ocrResult = await performOCR({ data: { base64Image: base64 } });
+      const ocrResult = await (performOCR as any)({ data: { base64Image: base64 } });
       if (ocrResult && 'text' in ocrResult && ocrResult.text) {
         text = ocrResult.text;
         if (!tags.includes('OCR')) tags.push('OCR');
