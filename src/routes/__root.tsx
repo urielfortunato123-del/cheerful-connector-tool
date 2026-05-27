@@ -5,6 +5,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useHydrated,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -117,7 +118,8 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const activeProject = WorkspaceService.getCurrentProject();
+  const hydrated = useHydrated();
+  const activeProject = hydrated ? WorkspaceService.getCurrentProject() : null;
 
   if (!activeProject) {
     return (
