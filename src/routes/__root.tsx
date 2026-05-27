@@ -125,10 +125,23 @@ function RootComponent() {
   const hydrated = useHydrated();
   const activeProject = hydrated ? WorkspaceService.getCurrentProject() : null;
 
-  if (!activeProject) {
+  // Use a state to manage transition smoothness and force re-renders if needed
+  const [workspaceActive, setWorkspaceActive] = React.useState(!!activeProject);
+
+  React.useEffect(() => {
+    if (activeProject) {
+      setWorkspaceActive(true);
+    }
+  }, [activeProject]);
+
+  if (!hydrated) return null;
+
+  if (!workspaceActive) {
     return (
       <QueryClientProvider client={queryClient}>
-        <WorkspaceLanding />
+        <div className="fixed inset-0 z-50 bg-background overflow-auto">
+          <WorkspaceLanding />
+        </div>
         <Toaster position="top-right" theme="dark" />
       </QueryClientProvider>
     );

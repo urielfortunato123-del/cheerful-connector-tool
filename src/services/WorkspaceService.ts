@@ -20,25 +20,33 @@ export class WorkspaceService {
       this.directoryHandle = await window.showDirectoryPicker({
         mode: 'readwrite'
       });
-      toast.success('Workspace conectado com sucesso');
-      return true;
+      
+      // Try to read existing project if metadata exists
+      try {
+        const metaFile = await this.directoryHandle.getFileHandle('metadata.json');
+        const file = await metaFile.getFile();
+        const content = await file.text();
+        const metadata = JSON.parse(content);
+        this.currentProject = metadata;
+        localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
+        toast.success('Workspace carregado com sucesso');
+        return true;
+      } catch (e) {
+        // No metadata file, maybe it's a new directory or project selection is needed
+        toast.success('Pasta selecionada. Prossiga para criar ou abrir projeto.');
+        return true;
+      }
     } catch (error) {
       console.error('Erro ao selecionar workspace:', error);
       return false;
     }
   }
 
-  static async createProject(name: string) {
-    if (!this.directoryHandle) {
-      const selected = await this.selectWorkspace();
-      if (!selected) return null;
-    }
-
     try {
       const projectDir = await this.directoryHandle!.getDirectoryHandle(name, { create: true });
       
       // Create subdirectories
-      const dirs = ['database', 'pdf', 'geojson', 'imagens', 'orcamentos', 'memorial', 'diario', 'backup'];
+      const dirs = ['database', 'pdf', 'geojson', 'imagens', 'orcamentos', 'memorial', 'diario', 'backup', 'cache_ia', 'logs'];
       for (const dir of dirs) {
         await projectDir.getDirectoryHandle(dir, { create: true });
       }
@@ -211,4 +219,18 @@ export class WorkspaceService {
     localStorage.removeItem('infraflow_active_project');
     window.location.reload();
   }
+
+  static async setupAutoSave() {
+    setInterval(async () => {
+      if (this.currentProject) {
+        await this.saveProject();
+        console.log('Autosave executado');
+      }
+    }, 30000); // 30 seconds
+  }
+}
+
+// Initialize autosave
+if (typeof window !== 'undefined') {
+  WorkspaceService.setupAutoSave();
 }

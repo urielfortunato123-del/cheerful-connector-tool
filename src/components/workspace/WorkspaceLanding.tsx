@@ -1,32 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { WorkspaceService } from '@/services/WorkspaceService';
-import { FolderOpen, Plus, RotateCcw, Layout, Briefcase, Database, HardDrive, Cpu } from 'lucide-react';
+import { FolderOpen, Plus, RotateCcw, Layout, Briefcase, Database, HardDrive, Cpu, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function WorkspaceLanding() {
   const [isCreating, setIsCreating] = useState(false);
   const [projectName, setProjectName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCreateProject = async () => {
     if (!projectName.trim()) {
       toast.error('Informe um nome para o projeto');
       return;
     }
-    const project = await WorkspaceService.createProject(projectName);
-    if (project) {
-      window.location.reload();
+    
+    setIsLoading(true);
+    try {
+      const project = await WorkspaceService.createProject(projectName);
+      if (project) {
+        // Force a small delay to ensure everything is saved before reload
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao criar workspace');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleOpenWorkspace = async () => {
-    const selected = await WorkspaceService.selectWorkspace();
-    if (selected) {
-      // In a real app, we'd list projects in that workspace
-      // For now, we'll just show the creation dialog or allow picking one
-      setIsCreating(true);
+    setIsLoading(true);
+    try {
+      const selected = await WorkspaceService.selectWorkspace();
+      if (selected) {
+        // If selectWorkspace found a project, it's already in localStorage
+        const active = WorkspaceService.getCurrentProject();
+        if (active) {
+          window.location.reload();
+        } else {
+          setIsCreating(true);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -102,11 +126,15 @@ export function WorkspaceLanding() {
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder="Ex: Duplicação_BR_153_Lote_04"
                 className="h-12 text-lg bg-black/40 border-primary/20 focus:border-primary"
+                disabled={isLoading}
               />
             </div>
             <div className="flex gap-4">
-              <Button variant="outline" className="flex-1 h-12" onClick={() => setIsCreating(false)}>Cancelar</Button>
-              <Button className="flex-1 h-12 font-bold" onClick={handleCreateProject}>Criar Workspace</Button>
+              <Button variant="outline" className="flex-1 h-12" onClick={() => setIsCreating(false)} disabled={isLoading}>Cancelar</Button>
+              <Button className="flex-1 h-12 font-bold" onClick={handleCreateProject} disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isLoading ? 'Criando...' : 'Criar Workspace'}
+              </Button>
             </div>
           </div>
         )}
