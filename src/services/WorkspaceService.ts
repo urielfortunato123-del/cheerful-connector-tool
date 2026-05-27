@@ -52,7 +52,7 @@ export class WorkspaceService {
       const projectDir = await this.directoryHandle!.getDirectoryHandle(name, { create: true });
       
       // Create subdirectories
-      const dirs = ['database', 'pdf', 'geojson', 'imagens', 'orcamentos', 'memorial', 'diario', 'backup', 'cache_ia', 'logs'];
+      const dirs = ['database', 'pdfs', 'orcamentos', 'mapas', 'medicoes', 'backups', 'logs', 'cache_ia'];
       for (const dir of dirs) {
         await projectDir.getDirectoryHandle(dir, { create: true });
       }
