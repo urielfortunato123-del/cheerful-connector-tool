@@ -3,8 +3,8 @@ import { createServerFn } from "@tanstack/react-start";
 export const performOCR = createServerFn({
   method: "POST",
 })
-  .validator((data: { base64Image: string; language?: string; isPDF?: boolean }) => data)
-  .handler(async ({ data }) => {
+  .handler(async (ctx: any) => {
+    const data = ctx.data as { base64Image: string; language?: string; isPDF?: boolean };
     const base64Image = data?.base64Image || "";
     const language = data?.language || "por"; 
     const isPDF = data?.isPDF || false;
