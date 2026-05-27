@@ -150,7 +150,7 @@ export class InfraFlowDB extends Dexie {
   mapFeatures!: Table<MapFeature>;
 
   constructor() {
-    super('InfraFlowDB_V4');
+    super('InfraFlowDB_V5');
     this.version(1).stores({
       documents: '++id, nome, tipo, categoria, subcategoria, orgao, indexed, favorito, *hierarquia, *tags',
       projects: '++id, nome, rodovia, status',
@@ -162,7 +162,7 @@ export class InfraFlowDB extends Dexie {
       financial: '++id, projectId, tipo',
       chatHistory: '++id, timestamp',
       syncHistory: '++id, timestamp, agency',
-      mapFeatures: '++id, type, name, createdAt'
+      mapFeatures: '++id, type, category, name, createdAt, updatedAt'
     });
   }
 }
