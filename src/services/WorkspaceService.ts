@@ -122,6 +122,48 @@ export class WorkspaceService {
     a.click();
   }
 
+  static async restoreBackup(file: File) {
+    try {
+      const zip = new JSZip();
+      const content = await zip.loadAsync(file);
+      
+      const metaFile = content.file("metadata.json");
+      if (!metaFile) throw new Error("Arquivo de backup inválido (metadata.json ausente)");
+      
+      const metadata: ProjectMetadata = JSON.parse(await metaFile.async("string"));
+      
+      const tables = ['documents', 'projects', 'budgets', 'measurements', 'memorials', 'asbuilt', 'dailyLogs', 'financial', 'mapFeatures'];
+      
+      for (const tableName of tables) {
+        const tableFile = content.file(`database/${tableName}.json`);
+        if (tableFile) {
+          const data = JSON.parse(await tableFile.async("string"));
+          // @ts-ignore
+          await db[tableName].clear();
+          // @ts-ignore
+          await db[tableName].bulkAdd(data);
+        }
+      }
+
+      this.currentProject = metadata;
+      localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
+      
+      toast.success('Backup restaurado com sucesso!');
+      window.location.reload();
+      return true;
+    } catch (error) {
+      console.error('Erro ao restaurar backup:', error);
+      toast.error('Erro ao restaurar backup');
+      return false;
+    }
+  }
+
+  static async updateAIContext(context: string) {
+    if (!this.currentProject) return;
+    this.currentProject.aiContext = context;
+    await this.saveProject();
+  }
+
   static async resetData(options: { 
     measurements?: boolean; 
     contracts?: boolean; 
@@ -129,6 +171,7 @@ export class WorkspaceService {
     geometries?: boolean;
     financial?: boolean;
     dailyLogs?: boolean;
+    ai?: boolean;
   }) {
     try {
       if (options.measurements) await db.measurements.clear();
@@ -136,8 +179,11 @@ export class WorkspaceService {
       if (options.geometries) await db.mapFeatures.clear();
       if (options.financial) await db.financial.clear();
       if (options.dailyLogs) await db.dailyLogs.clear();
-      // Projects is a bit different as it holds the project metadata in DB
-      // We might want to clear it too if specifically asked
+      
+      if (options.ai && this.currentProject) {
+        this.currentProject.aiContext = undefined;
+        await this.saveProject();
+      }
       
       toast.success('Dados zerados com sucesso');
       return true;
