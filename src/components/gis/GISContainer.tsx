@@ -207,6 +207,8 @@ export default function GISContainer() {
         <GISToolbar 
           activeTool={activeTool}
           onToolSelect={setActiveTool}
+          isInspectionMode={isInspectionMode}
+          onInspectionModeToggle={() => setIsInspectionMode(!isInspectionMode)}
           onClear={() => {
             if (selectedFeatureId) handleDelete(selectedFeatureId);
           }}
