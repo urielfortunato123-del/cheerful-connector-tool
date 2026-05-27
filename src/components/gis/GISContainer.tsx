@@ -297,6 +297,12 @@ export default function GISContainer() {
         onExecute={handleModuleExecution}
         onUpdate={handleFeatureUpdate}
       />
+
+      <GISProjectModal 
+        isOpen={isProjectModalOpen}
+        onClose={() => setIsProjectModalOpen(false)}
+        onProjectCreated={handleProjectCreated}
+      />
     </div>
   );
 }
