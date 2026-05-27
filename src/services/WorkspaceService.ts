@@ -97,6 +97,7 @@ export class WorkspaceService {
 
       this.currentProject = metadata;
       localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
+      window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: metadata }));
       
       return metadata;
     } catch (error) {
