@@ -184,8 +184,9 @@ export default function GISSidebar({
                         variant="default" 
                         size="sm" 
                         className="h-7 text-[9px] font-bold uppercase rounded-lg px-3"
+                        onClick={(e) => { e.stopPropagation(); onEdit(f); }}
                       >
-                        Focar <Navigation className="h-2.5 w-2.5 ml-1.5" />
+                        Editar <Edit2 className="h-2.5 w-2.5 ml-1.5" />
                       </Button>
                     </div>
 
