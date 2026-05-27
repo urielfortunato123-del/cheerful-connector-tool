@@ -1,5 +1,18 @@
 import { db } from './db';
 import { toast } from 'sonner';
+import { performOCR } from './server-fns';
+
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      resolve(base64String); // Keep the data URL prefix as OCR.space can handle it or we strip it
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
 
 // Lazy-load pdfjs-dist only in the browser (it references DOMMatrix etc.)
 let pdfjsLibPromise: Promise<typeof import('pdfjs-dist')> | null = null;
