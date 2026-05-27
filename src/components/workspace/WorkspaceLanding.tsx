@@ -40,7 +40,7 @@ export function WorkspaceLanding() {
         // If selectWorkspace found a project, it's already in localStorage
         const active = WorkspaceService.getCurrentProject();
         if (active) {
-          window.location.reload();
+          window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: active }));
         } else {
           setIsCreating(true);
         }
