@@ -15,13 +15,15 @@ import {
   MapPin,
   Ruler,
   FileSpreadsheet,
-  Briefcase
+  Briefcase,
+  Edit2
 } from "lucide-react";
 import { toast } from "sonner";
 
 interface MapSidebarProps {
   features: MapFeature[];
   onSelect: (feature: MapFeature) => void;
+  onEdit: (feature: MapFeature) => void;
   onDelete: (id: number) => void;
   onForward: (feature: MapFeature, destination: 'budget' | 'project') => void;
   onAIRequest: (prompt: string) => void;
@@ -29,7 +31,8 @@ interface MapSidebarProps {
 
 export default function MapSidebar({ 
   features, 
-  onSelect, 
+  onSelect,
+  onEdit, 
   onDelete, 
   onForward,
   onAIRequest
@@ -97,6 +100,14 @@ export default function MapSidebar({
                           </span>
                         </div>
                       </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100"
+                        onClick={(e) => { e.stopPropagation(); onEdit(f); }}
+                      >
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
                       <Button 
                         variant="ghost" 
                         size="icon" 
