@@ -52,7 +52,7 @@ export function LibraryHeader({ stats, onUpload, onSync, isSyncing }: LibraryHea
               multiple 
               className="absolute inset-0 opacity-0 cursor-pointer" 
               onChange={onUpload}
-              accept=".pdf,.xlsx,.xls,.docx,.doc,.txt,.zip"
+              accept=".pdf,.xlsx,.xls,.docx,.doc,.txt,.zip,.jpg,.jpeg,.png"
             />
           </div>
           <Button variant="outline" className="gap-2 h-9 text-xs" onClick={onSync} disabled={isSyncing}>
