@@ -4,8 +4,10 @@ export interface Document {
   id?: number;
   nome: string;
   tipo: string;
-  categoria: string;
-  orgao: string;
+  categoria: string; // e.g., 'Técnicas', 'ET', 'Drenagem'
+  subcategoria?: string;
+  orgao: string; // 'DER-SP', 'DNIT', 'ABNT', 'Manual'
+  hierarquia: string[]; // ['DER-SP', 'Técnicas', 'Drenagem']
   tamanho: string;
   dataUpload: number;
   textoExtraido?: string;
@@ -13,6 +15,13 @@ export interface Document {
   caminhoVirtual: string;
   fileBlob?: Blob;
   indexed: boolean;
+  favorito: boolean;
+  metadados?: {
+    autor?: string;
+    dataDocumento?: string;
+    resumoIA?: string;
+    versao?: string;
+  };
 }
 
 export interface Project {
@@ -113,9 +122,9 @@ export class InfraFlowDB extends Dexie {
   syncHistory!: Table<SyncLog>;
 
   constructor() {
-    super('InfraFlowDB_V3');
+    super('InfraFlowDB_V4');
     this.version(1).stores({
-      documents: '++id, nome, tipo, categoria, orgao, indexed',
+      documents: '++id, nome, tipo, categoria, subcategoria, orgao, indexed, favorito, *hierarquia, *tags',
       projects: '++id, nome, rodovia, status',
       budgets: '++id, projectId',
       measurements: '++id, projectId',

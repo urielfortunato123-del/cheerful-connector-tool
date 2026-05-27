@@ -19,12 +19,14 @@ export const processExcelFile = async (file: File) => {
           tipo: 'xlsx',
           categoria: 'Planilhas',
           orgao: 'Interno',
+          hierarquia: ['Interno', 'Planilhas'],
           tamanho: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
           dataUpload: Date.now(),
           tags: ['Excel', 'Planilha'],
           caminhoVirtual: `/downloads/${file.name}`,
           fileBlob: file,
-          indexed: true
+          indexed: true,
+          favorito: false
         });
 
         resolve({ docId, data: jsonData });
@@ -46,12 +48,14 @@ export const processPDFFile = async (file: File) => {
     tipo: 'pdf',
     categoria: 'Biblioteca Técnica',
     orgao: 'DER-SP', // Default
+    hierarquia: ['DER-SP', 'Biblioteca Técnica'],
     tamanho: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
     dataUpload: Date.now(),
     tags: ['PDF', 'Manual'],
     caminhoVirtual: `/documents/${file.name}`,
     fileBlob: file,
-    indexed: false // Será indexado após extração de texto
+    indexed: false, // Será indexado após extração de texto
+    favorito: false
   });
   
   toast.success(`PDF ${file.name} salvo. Extraindo texto...`);

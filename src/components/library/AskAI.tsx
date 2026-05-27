@@ -8,7 +8,7 @@ import { askLibraryAI } from "@/lib/server-fns";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function AskAI() {
+export function AskAI({ context }: { context?: string }) {
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +24,7 @@ export function AskAI() {
 
     try {
       // Use any to bypass the missing validator issue in this environment's types
-      const response = await (askLibraryAI as any)({ data: { question: userMsg } });
+      const response = await (askLibraryAI as any)({ data: { question: userMsg, context } });
       setMessages(prev => [...prev, { role: "assistant", content: (response as any).answer }]);
     } catch (error: any) {
       console.error("AI Error:", error);

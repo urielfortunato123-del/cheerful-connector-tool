@@ -1,51 +1,57 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { Document } from "@/lib/db";
 import { DocumentCard } from "./DocumentCard";
-import { Skeleton } from "@/components/ui/skeleton";
-import { FileQuestion } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export function DocumentGrid() {
-  const { data: documents, isLoading } = useQuery({
-    queryKey: ["documents"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("documents")
-        .select("*")
-        .order("created_at", { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    }
-  });
+interface DocumentGridProps {
+  documents: Document[];
+  viewMode: "grid" | "list";
+  onRefresh: () => void;
+  onPreview?: (doc: Document) => void;
+  onAsk?: (doc: Document) => void;
+}
 
-  if (isLoading) {
+export function DocumentGrid({ documents, viewMode, onRefresh, onPreview, onAsk }: DocumentGridProps) {
+  if (viewMode === "list") {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <Skeleton key={i} className="h-48 w-full rounded-xl bg-muted/50" />
-        ))}
-      </div>
-    );
-  }
-
-  if (!documents || documents.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-border/50 rounded-xl bg-muted/10">
-        <div className="h-16 w-16 rounded-full bg-muted/20 flex items-center justify-center mb-4">
-          <FileQuestion className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h3 className="text-xl font-semibold">Nenhum documento encontrado</h3>
-        <p className="text-muted-foreground mt-2 max-w-sm">
-          Sua biblioteca está vazia. Comece fazendo o upload de manuais e normas técnicas.
-        </p>
+      <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-muted/50 border-b">
+            <tr>
+              <th className="px-4 py-3 font-semibold text-muted-foreground">Documento</th>
+              <th className="px-4 py-3 font-semibold text-muted-foreground hidden md:table-cell">Categoria</th>
+              <th className="px-4 py-3 font-semibold text-muted-foreground hidden lg:table-cell">Órgão</th>
+              <th className="px-4 py-3 font-semibold text-muted-foreground hidden md:table-cell">Tamanho</th>
+              <th className="px-4 py-3 font-semibold text-muted-foreground">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {documents.map((doc) => (
+              <DocumentCard 
+                key={doc.id} 
+                document={doc} 
+                viewMode="list" 
+                onRefresh={onRefresh} 
+                onPreview={onPreview}
+                onAsk={onAsk}
+              />
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {documents.map((doc) => (
-        <DocumentCard key={doc.id} document={doc} />
+        <DocumentCard 
+          key={doc.id} 
+          document={doc} 
+          viewMode="grid" 
+          onRefresh={onRefresh} 
+          onPreview={onPreview}
+          onAsk={onAsk}
+        />
       ))}
     </div>
   );

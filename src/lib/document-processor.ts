@@ -40,23 +40,38 @@ export const indexDocument = async (docId: number) => {
   if (!doc || !doc.fileBlob) return;
 
   try {
+    let text = '';
+    let tags = [...doc.tags];
+
     if (doc.tipo === 'pdf') {
-      const text = await extractTextFromPDF(doc.fileBlob);
-      await db.documents.update(docId, {
-        textoExtraido: text,
-        indexed: true
+      text = await extractTextFromPDF(doc.fileBlob);
+      // Basic automatic tagging based on keywords in text
+      const keywords = ['drenagem', 'pavimentação', 'terraplenagem', 'estrutura', 'sinalização', 'geotecnia', 'meio ambiente'];
+      keywords.forEach(kw => {
+        if (text.toLowerCase().includes(kw) && !tags.includes(kw.toUpperCase())) {
+          tags.push(kw.toUpperCase());
+        }
       });
-      toast.success(`Documento ${doc.nome} indexado.`);
-    } else if (doc.tipo === 'xlsx' || doc.tipo === 'xls' || doc.tipo === 'csv') {
-      // Excel/CSV basic text indexing
-      const text = `Documento Excel: ${doc.nome}. Categoria: ${doc.categoria}. Órgão: ${doc.orgao}.`;
-      await db.documents.update(docId, { textoExtraido: text, indexed: true });
+    } else if (['xlsx', 'xls', 'csv'].includes(doc.tipo)) {
+      text = `Documento Planilha: ${doc.nome}. Categoria: ${doc.categoria}. Órgão: ${doc.orgao}. Conteúdo técnico para análise estruturada.`;
+      if (!tags.includes('PLANILHA')) tags.push('PLANILHA');
+    } else if (doc.tipo === 'docx' || doc.tipo === 'doc') {
+      text = `Documento Word: ${doc.nome}. Base normativa ou memorial descritivo.`;
+      if (!tags.includes('WORD')) tags.push('WORD');
     } else {
-      await db.documents.update(docId, { indexed: true });
+      text = `Arquivo ${doc.tipo.toUpperCase()}: ${doc.nome}.`;
     }
+
+    await db.documents.update(docId, {
+      textoExtraido: text,
+      tags,
+      indexed: true
+    });
+    
+    toast.success(`Documento ${doc.nome} indexado com sucesso.`);
   } catch (error) {
     console.error('Indexing error:', error);
-    toast.error(`Falha ao indexar ${doc.nome}`);
+    toast.error(`Falha ao indexar ${doc.nome}. O arquivo pode estar corrompido.`);
   }
 };
 
