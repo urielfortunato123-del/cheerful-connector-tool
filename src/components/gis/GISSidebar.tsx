@@ -70,6 +70,7 @@ export default function GISSidebar({
   const [activeTab, setActiveTab] = useState("features");
 
   const engineeringLayers: { id: EngineeringLayer, label: string, icon: any, color: string }[] = [
+    { id: 'projeto', label: 'Eixo Projetado', icon: Ruler, color: 'text-primary' },
     { id: 'obras', label: 'Obras em Curso', icon: HardHat, color: 'text-orange-500' },
     { id: 'drenagem', label: 'Drenagem', icon: Droplets, color: 'text-blue-500' },
     { id: 'pavimentacao', label: 'Pavimentação', icon: Box, color: 'text-slate-500' },
@@ -81,12 +82,12 @@ export default function GISSidebar({
 
   const baseLayers: { id: BaseLayer, label: string }[] = [
     { id: 'dark', label: 'Dark Mode (Engine)' },
-    { id: 'satellite', label: 'Dinâmico (Auto)' },
-    { id: 'google-satellite', label: 'Google Satellite' },
+    { id: 'satellite', label: 'Satélite HD' },
+    { id: 'engineering', label: 'Técnico' },
+    { id: 'topography', label: 'Topográfico' },
+    { id: 'invisible', label: 'Invisível' },
+    { id: 'google-satellite', label: 'Google Sat' },
     { id: 'mapbox-satellite', label: 'Mapbox HD' },
-    { id: 'esri-world', label: 'Esri World' },
-    { id: 'topography', label: 'Topografia' },
-    { id: 'streets', label: 'Ruas' },
   ];
 
   return (
