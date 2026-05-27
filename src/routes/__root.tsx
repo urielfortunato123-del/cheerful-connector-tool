@@ -130,7 +130,6 @@ function RootComponent() {
   const hydrated = useHydrated();
   const activeProject = hydrated ? WorkspaceService.getCurrentProject() : null;
 
-  // Use a state to manage transition smoothness and force re-renders if needed
   const [workspaceActive, setWorkspaceActive] = React.useState(!!activeProject);
 
   React.useEffect(() => {
@@ -148,22 +147,17 @@ function RootComponent() {
 
   if (!hydrated) return null;
 
-  if (!workspaceActive) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <div className="fixed inset-0 z-50 bg-background overflow-auto">
-          <WorkspaceLanding />
-        </div>
-        <Toaster position="top-right" theme="dark" />
-      </QueryClientProvider>
-    );
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
-      <AppLayout>
-        <Outlet />
-      </AppLayout>
+      {!workspaceActive ? (
+        <div className="fixed inset-0 z-[100] bg-background overflow-auto">
+          <WorkspaceLanding />
+        </div>
+      ) : (
+        <AppLayout>
+          <Outlet />
+        </AppLayout>
+      )}
       <Toaster position="top-right" theme="dark" />
     </QueryClientProvider>
   );
