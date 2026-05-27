@@ -6,9 +6,11 @@ interface DocumentGridProps {
   documents: Document[];
   viewMode: "grid" | "list";
   onRefresh: () => void;
+  onPreview?: (doc: Document) => void;
+  onAsk?: (doc: Document) => void;
 }
 
-export function DocumentGrid({ documents, viewMode, onRefresh }: DocumentGridProps) {
+export function DocumentGrid({ documents, viewMode, onRefresh, onPreview, onAsk }: DocumentGridProps) {
   if (viewMode === "list") {
     return (
       <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
@@ -24,7 +26,14 @@ export function DocumentGrid({ documents, viewMode, onRefresh }: DocumentGridPro
           </thead>
           <tbody className="divide-y">
             {documents.map((doc) => (
-              <DocumentCard key={doc.id} document={doc} viewMode="list" onRefresh={onRefresh} />
+              <DocumentCard 
+                key={doc.id} 
+                document={doc} 
+                viewMode="list" 
+                onRefresh={onRefresh} 
+                onPreview={onPreview}
+                onAsk={onAsk}
+              />
             ))}
           </tbody>
         </table>
@@ -35,7 +44,14 @@ export function DocumentGrid({ documents, viewMode, onRefresh }: DocumentGridPro
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {documents.map((doc) => (
-        <DocumentCard key={doc.id} document={doc} viewMode="grid" onRefresh={onRefresh} />
+        <DocumentCard 
+          key={doc.id} 
+          document={doc} 
+          viewMode="grid" 
+          onRefresh={onRefresh} 
+          onPreview={onPreview}
+          onAsk={onAsk}
+        />
       ))}
     </div>
   );
