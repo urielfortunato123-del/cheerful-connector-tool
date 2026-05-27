@@ -103,7 +103,7 @@ export default function MapSidebar({
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100"
+                        className="h-6 w-6 text-muted-foreground hover:text-primary transition-opacity"
                         onClick={(e) => { e.stopPropagation(); onEdit(f); }}
                       >
                         <Edit2 className="h-3 w-3" />
@@ -111,29 +111,42 @@ export default function MapSidebar({
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive transition-opacity"
                         onClick={(e) => { e.stopPropagation(); if(f.id) onDelete(f.id); }}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/50 transition-opacity">
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-7 text-[9px] font-bold uppercase"
+                          onClick={(e) => { e.stopPropagation(); onForward(f, 'budget'); }}
+                        >
+                          <FileSpreadsheet className="h-3 w-3 mr-1 text-green-500" /> +Orçamento
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-7 text-[9px] font-bold uppercase"
+                          onClick={(e) => { e.stopPropagation(); onForward(f, 'project'); }}
+                        >
+                          <Briefcase className="h-3 w-3 mr-1 text-blue-500" /> +Projeto
+                        </Button>
+                      </div>
                       <Button 
                         size="sm" 
-                        variant="outline" 
-                        className="h-7 text-[9px] font-bold uppercase"
-                        onClick={(e) => { e.stopPropagation(); onForward(f, 'budget'); }}
+                        variant="secondary" 
+                        className="h-8 text-[9px] font-bold uppercase w-full bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 transition-all"
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          onAIRequest(`Analise o trecho ${f.name} de ${f.properties.distance}km e sugira obras necessárias baseadas em relevo e drenagem.`); 
+                        }}
                       >
-                        <FileSpreadsheet className="h-3 w-3 mr-1 text-green-500" /> +Orçamento
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="h-7 text-[9px] font-bold uppercase"
-                        onClick={(e) => { e.stopPropagation(); onForward(f, 'project'); }}
-                      >
-                        <Briefcase className="h-3 w-3 mr-1 text-blue-500" /> +Projeto
+                        <Sparkles className="h-3 w-3 mr-1" /> IA Sugerir Obras
                       </Button>
                     </div>
                   </div>

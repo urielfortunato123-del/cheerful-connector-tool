@@ -101,11 +101,18 @@ export default function MapView() {
       createdAt: Date.now()
     };
 
-    await db.mapFeatures.add(newFeature);
+    const id = await db.mapFeatures.add(newFeature);
+    const savedFeature = { ...newFeature, id };
+    
     toast.success("Trecho salvo nos levantamentos!");
     setMarkers([]);
     setIsMeasuring(false);
     loadData();
+    
+    // Pergunta se deseja encaminhar imediatamente
+    setTimeout(() => {
+      handleForward(savedFeature, 'budget');
+    }, 500);
   };
 
   const deleteFeature = async (id: number) => {
@@ -157,14 +164,24 @@ export default function MapView() {
   };
 
   const handleAIRequest = (prompt: string) => {
+    const isObraSuggestion = prompt.includes("sugira obras");
+    
     toast.promise(
-      new Promise(resolve => setTimeout(resolve, 2000)),
+      new Promise(resolve => setTimeout(() => {
+        if (isObraSuggestion) {
+          resolve({
+            message: "Sugestão Técnica: Para este trecho de " + prompt.split("de ")[1]?.split("km")[0] + "km, recomendo:\n1. Revestimento primário com brita graduada.\n2. Instalação de bueiros de transposição a cada 500m.\n3. Proteção de taludes com biomanta nos pontos de maior declividade."
+          });
+        } else {
+          resolve({ message: "Análise concluída: O trecho apresenta boas condições para pavimentação, com baixo índice de saturação de solo." });
+        }
+      }, 2500)),
       {
-        loading: 'Analisando dados geoespaciais...',
-        success: (data) => {
-          return `IA: Com base no relevo e drenagem local, sugiro um bueiro triplo no KM 12.5 para evitar alagamento observado no levantamento.`;
+        loading: 'O motor de IA InfraFlow está analisando os dados geoespaciais...',
+        success: (data: any) => {
+          return data.message;
         },
-        error: 'Erro na análise da IA',
+        error: 'Falha na conexão com o assistente de IA.',
       }
     );
   };
