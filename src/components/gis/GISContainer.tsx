@@ -3,6 +3,8 @@ import GISToolbar, { GISTool } from "./GISToolbar";
 import GISSidebar from "./GISSidebar";
 import GISModuleModal from "./GISModuleModal";
 import GISAIInsights from "./GISAIInsights";
+import GISProjectSelector from "./GISProjectSelector";
+import GISProjectModal from "./GISProjectModal";
 import { MapFeature, db, Project } from "@/lib/db";
 import { toast } from "sonner";
 import { exportToGeoJSON, exportToKML } from "@/lib/gis-utils";
