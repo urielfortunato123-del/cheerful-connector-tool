@@ -35,7 +35,12 @@ export default function GISContainer() {
   const [isGpsActive, setIsGpsActive] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    const init = async () => {
+      setIsClient(true);
+      await LayerService.seedInitialData();
+      await loadData();
+    };
+    init();
   }, []);
 
   const loadData = useCallback(async () => {
@@ -50,10 +55,6 @@ export default function GISContainer() {
       console.error("Erro ao carregar dados do GIS:", error);
     }
   }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   const handleFeatureCreate = async (partialFeature: Partial<MapFeature>) => {
     const fullFeature: MapFeature = {
