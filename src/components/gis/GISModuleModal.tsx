@@ -68,12 +68,12 @@ export default function GISModuleModal({
   }, [feature]);
 
   const modules = [
-    { id: 'budget', label: 'Orçamento', icon: FileSpreadsheet, color: 'text-green-500', bg: 'bg-green-500/10', desc: 'Enviar para planilha' },
-    { id: 'measurement', label: 'Medição', icon: Ruler, color: 'text-orange-500', bg: 'bg-orange-500/10', desc: 'Vincular a trecho medido' },
-    { id: 'project', label: 'Projeto', icon: Briefcase, color: 'text-blue-500', bg: 'bg-blue-500/10', desc: 'Definir eixo projetado' },
-    { id: 'memorial', label: 'Memorial', icon: FileText, color: 'text-purple-500', bg: 'bg-purple-500/10', desc: 'Gerar texto via IA' },
-    { id: 'log', label: 'Diário', icon: Calendar, color: 'text-cyan-500', bg: 'bg-cyan-500/10', desc: 'Registrar ocorrência' },
-    { id: 'save', label: 'Mapa', icon: Save, color: 'text-primary', bg: 'bg-primary/10', desc: 'Apenas salvar geometria' },
+    { id: 'budget', label: 'Orçamento', icon: FileSpreadsheet, color: 'text-green-500', bg: 'bg-green-500/10', desc: 'Enviar geometria p/ orçamento' },
+    { id: 'measurement', label: 'Medição', icon: Ruler, color: 'text-orange-500', bg: 'bg-orange-500/10', desc: 'Salvar trecho medido' },
+    { id: 'project', label: 'Projeto', icon: Briefcase, color: 'text-blue-500', bg: 'bg-blue-500/10', desc: 'Criar eixo projetado' },
+    { id: 'memorial', label: 'Memorial', icon: FileText, color: 'text-purple-500', bg: 'bg-purple-500/10', desc: 'IA gerar memorial automático' },
+    { id: 'log', label: 'Diário', icon: Calendar, color: 'text-cyan-500', bg: 'bg-cyan-500/10', desc: 'Registrar ocorrência georref.' },
+    { id: 'save', label: 'Mapa', icon: Save, color: 'text-primary', bg: 'bg-primary/10', desc: 'Salvar apenas geometria' },
   ];
 
   const handleExecute = (moduleId: string) => {

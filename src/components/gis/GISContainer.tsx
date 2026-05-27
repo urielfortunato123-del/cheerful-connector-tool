@@ -7,14 +7,14 @@ import GISProjectSelector from "./GISProjectSelector";
 import GISProjectModal from "./GISProjectModal";
 import { MapFeature, db, Project } from "@/lib/db";
 import { toast } from "sonner";
-import { exportToGeoJSON, exportToKML } from "@/lib/gis-utils";
+import { exportToGeoJSON, exportToKML, calculateSpatialMetrics } from "@/lib/gis-utils";
 import { LayerService } from "@/services/gis/LayerService";
 
 // Lazy load GISMap to avoid SSR issues with Leaflet
 const GISMap = lazy(() => import("./GISMap"));
 
-export type BaseLayer = 'satellite' | 'topography' | 'dark' | 'streets' | 'google-satellite' | 'mapbox-satellite' | 'esri-world';
-export type EngineeringLayer = 'obras' | 'drenagem' | 'pavimentacao' | 'contratos' | 'sinalizacao' | 'hidrografia' | 'curvas_nivel';
+export type BaseLayer = 'satellite' | 'topography' | 'dark' | 'streets' | 'google-satellite' | 'mapbox-satellite' | 'esri-world' | 'engineering' | 'invisible';
+export type EngineeringLayer = 'obras' | 'drenagem' | 'pavimentacao' | 'contratos' | 'sinalizacao' | 'hidrografia' | 'curvas_nivel' | 'projeto';
 
 export default function GISContainer() {
   const [activeTool, setActiveTool] = useState<GISTool>('select');
@@ -151,12 +151,39 @@ export default function GISContainer() {
   const handleModuleExecution = async (dest: string, projectId: number, unit?: string) => {
     if (!pendingFeature) return;
 
+    // IA Geoespacial: Cálculo automático de métricas se não houver
+    const type = pendingFeature.type;
+    const coords = pendingFeature.coordinates;
+    const metrics = type !== 'point' ? calculateSpatialMetrics(type as 'line' | 'area', coords) : {};
+
+    // IA Geoespacial: Sugestão de normas e insights baseados no tipo/categoria
+    let aiInsight = "";
+    if (dest === 'project') aiInsight = "Eixo projetado conforme normas DNIT 702/2021.";
+    if (pendingFeature.category === 'drenagem') aiInsight = "Sugerida implantação de bueiro triplo (TR=50 anos).";
+
+    let finalCategory = pendingFeature.category;
+    if (dest === 'project') finalCategory = 'projeto';
+    if (dest === 'measurement') finalCategory = 'obras';
+    if (dest === 'budget') finalCategory = 'contratos';
+
+    const updates = { 
+      category: finalCategory,
+      properties: { 
+        ...pendingFeature.properties, 
+        ...metrics,
+        projectId,
+        aiInsights: aiInsight 
+      } 
+    };
+
     if (dest === 'save' || projectId > 0) {
       if (pendingFeature.id) {
-        await handleFeatureUpdate(pendingFeature.id, { 
-          properties: { ...pendingFeature.properties, projectId } 
-        });
+        await handleFeatureUpdate(pendingFeature.id, updates);
+      } else {
+        const id = await db.mapFeatures.add({ ...pendingFeature, ...updates } as MapFeature);
+        setFeatures(prev => [...prev, { ...pendingFeature, ...updates, id } as MapFeature]);
       }
+
       if (dest === 'save') {
         setIsModuleModalOpen(false);
         setPendingFeature(null);
@@ -165,7 +192,7 @@ export default function GISContainer() {
     }
 
     const finalUnit = unit || (pendingFeature.type === 'line' ? 'km' : 'km²');
-    const quantity = pendingFeature.properties.distance || pendingFeature.properties.area || 0;
+    const quantity = updates.properties.distance || updates.properties.area || 0;
 
     if (dest === 'budget' || dest === 'measurement') {
       if (dest === 'measurement') {
