@@ -21,10 +21,11 @@ interface LibraryHeaderProps {
     indexed: number;
   };
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSync: () => void;
   isSyncing?: boolean;
 }
 
-export function LibraryHeader({ stats, onUpload, isSyncing }: LibraryHeaderProps) {
+export function LibraryHeader({ stats, onUpload, onSync, isSyncing }: LibraryHeaderProps) {
   return (
     <div className="bg-card border-b p-4 space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -54,7 +55,7 @@ export function LibraryHeader({ stats, onUpload, isSyncing }: LibraryHeaderProps
               accept=".pdf,.xlsx,.xls,.docx,.doc,.txt,.zip"
             />
           </div>
-          <Button variant="outline" className="gap-2 h-9 text-xs" disabled={isSyncing}>
+          <Button variant="outline" className="gap-2 h-9 text-xs" onClick={onSync} disabled={isSyncing}>
             <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} /> Sincronizar Portais
           </Button>
         </div>
