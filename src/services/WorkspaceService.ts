@@ -1,6 +1,7 @@
 import { db } from '../lib/db';
 import JSZip from 'jszip';
 import { toast } from 'sonner';
+import { get, set } from 'idb-keyval';
 
 export interface ProjectMetadata {
   id: string;
