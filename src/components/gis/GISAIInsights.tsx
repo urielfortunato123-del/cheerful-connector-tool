@@ -126,7 +126,7 @@ export default function GISAIInsights({ isOpen, onClose, feature }: GISAIInsight
               </div>
               <div className="flex gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1 flex-shrink-0" />
-                <p className="text-[9px] font-bold text-muted-foreground leading-tight uppercase">Critério de Rigidez: Recomendado Módulo de Resiliência > 150 MPa.</p>
+                <p className="text-[9px] font-bold text-muted-foreground leading-tight uppercase">Critério de Rigidez: Recomendado Módulo de Resiliência &gt; 150 MPa.</p>
               </div>
             </div>
           </div>
