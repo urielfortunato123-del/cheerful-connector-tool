@@ -235,6 +235,15 @@ export default function GISContainer() {
       />
 
       <div className="flex-1 relative h-full">
+        <div className="absolute top-4 left-4 z-[1000]">
+          <GISProjectSelector 
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onSelect={handleProjectSelect}
+            onCreateNew={() => setIsProjectModalOpen(true)}
+          />
+        </div>
+
         <GISToolbar 
           activeTool={activeTool}
           onToolSelect={setActiveTool}
