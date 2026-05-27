@@ -226,7 +226,18 @@ export default function MapView() {
 
           {/* Medição Ativa */}
           {markers.map((pos, i) => (
-            <Marker key={`marker-${i}`} position={pos}><Popup>Vértice {i + 1}</Popup></Marker>
+            <Marker 
+              key={`marker-${i}`} 
+              position={pos}
+              eventHandlers={{
+                contextmenu: () => {
+                  setMarkers(prev => prev.filter((_, idx) => idx !== i));
+                  toast.info("Vértice removido.");
+                }
+              }}
+            >
+              <Popup>Vértice {i + 1} <br/> <span className="text-[9px] text-muted-foreground">Botão direito para remover</span></Popup>
+            </Marker>
           ))}
           {markers.length > 1 && <Polyline positions={markers} color="#FF6B00" weight={5} dashArray="10, 15" />}
 
