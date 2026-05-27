@@ -103,7 +103,7 @@ export default function MapSidebar({
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100"
+                        className="h-6 w-6 text-muted-foreground hover:text-primary transition-opacity"
                         onClick={(e) => { e.stopPropagation(); onEdit(f); }}
                       >
                         <Edit2 className="h-3 w-3" />
