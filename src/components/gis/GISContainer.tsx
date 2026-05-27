@@ -179,8 +179,17 @@ export default function GISContainer() {
   const toggleEngineeringLayer = (layer: EngineeringLayer) => {
     setActiveEngineeringLayers(prev => {
       const next = new Set(prev);
-      if (next.has(layer)) next.delete(layer);
-      else next.add(layer);
+      const isActivating = !next.has(layer);
+      
+      if (isActivating) {
+        next.add(layer);
+        toast.info(`Camada ${layer.toUpperCase()} ativada. Sincronizando dados...`, {
+          description: "Geo-IA analisando possíveis conflitos e riscos...",
+          duration: 3000
+        });
+      } else {
+        next.delete(layer);
+      }
       return next;
     });
   };
