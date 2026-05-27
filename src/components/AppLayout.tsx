@@ -72,7 +72,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-full items-center justify-center overflow-hidden">
             <img 
-              src="https://res.cloudinary.com/dcii6r5op/image/upload/v1779890945/promaxx/hg1u4zvxghgnzleyp5hd.png" 
+              src="/logo.png?v=2" 
               alt="Logo" 
               className="w-full h-full object-contain"
             />
