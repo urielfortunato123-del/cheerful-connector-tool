@@ -5,13 +5,13 @@ export const calculateSpatialMetrics = (type: 'line' | 'area', coordinates: [num
   if (coordinates.length < 2) return { distance: 0, area: 0 };
   
   if (type === 'line') {
-    const line = turf.lineString(coordinates.map(c => [c[1], c[0]]));
+    const line = turf.lineString(coordinates.map((c: [number, number]) => [c[1], c[0]]));
     const distance = turf.length(line, { units: 'kilometers' });
     return { distance: parseFloat(distance.toFixed(3)), area: 0 };
   } else {
     // Para polígonos, o turf precisa que o primeiro e último ponto sejam iguais
     const polygonCoords = [...coordinates, coordinates[0]];
-    const poly = turf.polygon([polygonCoords.map(c => [c[1], c[0]])]);
+    const poly = turf.polygon([polygonCoords.map((c: [number, number]) => [c[1], c[0]])]);
     const area = turf.area(poly); // em metros quadrados
     const areaKm2 = area / 1_000_000;
     
