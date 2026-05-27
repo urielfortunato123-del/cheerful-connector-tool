@@ -43,6 +43,7 @@ export function WorkspaceLanding() {
         const active = WorkspaceService.getCurrentProject();
         if (active) {
           window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: active }));
+          navigate({ to: '/' });
         } else {
           setIsCreating(true);
         }
