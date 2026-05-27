@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { WorkspaceService } from '@/services/WorkspaceService';
 import { FolderOpen, Plus, RotateCcw, Layout, Briefcase, Database, HardDrive, Cpu, Loader2 } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
 export function WorkspaceLanding() {
