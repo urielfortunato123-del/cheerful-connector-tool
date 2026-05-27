@@ -7,7 +7,7 @@ import GISProjectSelector from "./GISProjectSelector";
 import GISProjectModal from "./GISProjectModal";
 import { MapFeature, db, Project } from "@/lib/db";
 import { toast } from "sonner";
-import { exportToGeoJSON, exportToKML } from "@/lib/gis-utils";
+import { exportToGeoJSON, exportToKML, calculateSpatialMetrics } from "@/lib/gis-utils";
 import { LayerService } from "@/services/gis/LayerService";
 
 // Lazy load GISMap to avoid SSR issues with Leaflet
