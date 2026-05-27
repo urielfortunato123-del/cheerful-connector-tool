@@ -188,6 +188,7 @@ export default function GISContainer() {
         features={features}
         onSelect={(f) => setSelectedFeatureId(f.id!)}
         onDelete={handleDelete}
+        onEdit={handleEditRequest}
         onDuplicate={handleDuplicate}
         onExport={() => handleExport('geojson')}
         onExportKML={() => handleExport('kml')}
