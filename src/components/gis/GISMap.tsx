@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon, useMapEvents, LayersControl, ScaleControl } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon, useMapEvents, LayersControl, ScaleControl, Tooltip } from "react-leaflet";
 import L from "leaflet";
-import { MapFeature, Project, db } from "@/lib/db";
+import { MapFeature, db } from "@/lib/db";
 import { GISTool } from "./GISToolbar";
 import { calculateSpatialMetrics } from "@/lib/gis-utils";
 import { toast } from "sonner";
-import { Tooltip } from "react-leaflet";
+import { Button } from "@/components/ui/button";
 
 // Fix for default marker icons
 // @ts-ignore
@@ -90,8 +90,6 @@ export default function GISMap({
     onFeatureCreate(newFeature);
     setActivePoints([]);
   }, [activePoints, activeTool, onFeatureCreate]);
-
-  // Snap logic simulation or custom handlers could go here
 
   return (
     <div className="w-full h-full relative">
@@ -185,7 +183,7 @@ export default function GISMap({
         {activePoints.length > 0 && (
           <>
             {activePoints.map((p, i) => (
-              <Marker key={`active-${i}`} position={p} icon={new L.DivIcon({
+              <Marker key={`active-${i}`} position={p as [number, number]} icon={new L.DivIcon({
                 className: 'drawing-dot',
                 html: `<div class="w-3 h-3 bg-white border-2 border-primary rounded-full shadow-lg"></div>`,
                 iconSize: [12, 12],
@@ -202,7 +200,7 @@ export default function GISMap({
             )}
             {activeTool.includes('area') && activePoints.length > 2 && (
               <Polygon 
-                positions={[...activePoints, activePoints[0]]} 
+                positions={[...activePoints, activePoints[0]] as [number, number][]} 
                 color="#3b82f6" 
                 fillOpacity={0.1}
                 weight={1}
