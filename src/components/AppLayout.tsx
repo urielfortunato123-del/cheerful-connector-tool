@@ -13,9 +13,23 @@ import {
   Settings,
   User,
   HardHat,
+  Save,
+  Download,
+  XCircle,
+  Briefcase
 } from "lucide-react";
 import * as React from "react";
 import { Link, useLocation } from "@tanstack/react-router";
+import { WorkspaceService } from "@/services/WorkspaceService";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 
 import {
   Sidebar,
@@ -114,10 +128,39 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <header className="sticky top-0 z-10 flex h-16 items-center border-b border-border bg-background/80 px-6 backdrop-blur-md">
             <SidebarTrigger className="mr-4" />
             <div className="flex flex-1 items-center justify-between">
-              <h1 className="text-lg font-semibold tracking-tight">Sistema de Infraestrutura Rodoviária</h1>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span className="hidden sm:inline-block">Status: Operacional</span>
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="flex items-center gap-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2 hover:bg-primary/10 transition-colors">
+                      <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="font-bold tracking-tight text-primary">
+                        {WorkspaceService.getCurrentProject()?.name || "Projeto Ativo"}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56 glass-card">
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => WorkspaceService.saveProject()}>
+                      <Save className="h-4 w-4" />
+                      Salvar Projeto
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => WorkspaceService.exportBackup()}>
+                      <Download className="h-4 w-4" />
+                      Exportar Backup (.zip)
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="gap-2 cursor-pointer text-red-500 hover:text-red-600" onClick={() => WorkspaceService.closeProject()}>
+                      <XCircle className="h-4 w-4" />
+                      Fechar Workspace
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                  <Briefcase className="h-3 w-3 text-primary" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Engenharia Rodoviária</span>
+                </div>
               </div>
             </div>
           </header>
