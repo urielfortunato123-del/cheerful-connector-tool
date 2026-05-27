@@ -19,6 +19,7 @@ export type EngineeringLayer = 'obras' | 'drenagem' | 'pavimentacao' | 'contrato
 export default function GISContainer() {
   const [activeTool, setActiveTool] = useState<GISTool>('select');
   const [features, setFeatures] = useState<MapFeature[]>([]);
+  const [filteredFeatures, setFilteredFeatures] = useState<MapFeature[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [selectedFeatureId, setSelectedFeatureId] = useState<number | null>(null);
