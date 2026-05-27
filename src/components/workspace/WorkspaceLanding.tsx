@@ -42,8 +42,12 @@ export function WorkspaceLanding() {
       <div className="max-w-4xl w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="h-20 w-20 rounded-3xl bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 group hover:scale-110 transition-transform duration-500">
-              <Layout className="h-12 w-12 text-primary-foreground group-hover:rotate-12 transition-transform" />
+            <div className="h-24 w-24 rounded-3xl bg-white flex items-center justify-center shadow-2xl shadow-primary/40 group hover:scale-110 transition-transform duration-500 p-2 overflow-hidden">
+              <img 
+                src="https://res.cloudinary.com/dcii6r5op/image/upload/v1779890945/promaxx/hg1u4zvxghgnzleyp5hd.png" 
+                alt="Logo" 
+                className="w-full h-full object-contain group-hover:rotate-6 transition-transform"
+              />
             </div>
           </div>
           <h1 className="text-5xl font-black tracking-tighter text-foreground sm:text-6xl">

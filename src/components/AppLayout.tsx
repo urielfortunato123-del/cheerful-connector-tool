@@ -70,8 +70,12 @@ export function AppSidebar() {
     <Sidebar className="border-r border-border bg-sidebar" collapsible="icon">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <HardHat className="h-6 w-6 text-primary-foreground" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1 overflow-hidden shadow-sm">
+            <img 
+              src="https://res.cloudinary.com/dcii6r5op/image/upload/v1779890945/promaxx/hg1u4zvxghgnzleyp5hd.png" 
+              alt="Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
           <span className="text-xl font-bold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
             Infra<span className="text-primary">Flow</span>
