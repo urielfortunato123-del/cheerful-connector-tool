@@ -4,12 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { WorkspaceService } from '@/services/WorkspaceService';
 import { FolderOpen, Plus, RotateCcw, Layout, Briefcase, Database, HardDrive, Cpu, Loader2 } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
 export function WorkspaceLanding() {
   const [isCreating, setIsCreating] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleCreateProject = async () => {
     if (!projectName.trim()) {
@@ -22,7 +24,7 @@ export function WorkspaceLanding() {
       const project = await WorkspaceService.createProject(projectName);
       if (project) {
         toast.success('Workspace criado com sucesso');
-        // The event listener in __root.tsx will handle the transition
+        navigate({ to: '/' });
       }
     } catch (error) {
       console.error(error);
@@ -41,6 +43,7 @@ export function WorkspaceLanding() {
         const active = WorkspaceService.getCurrentProject();
         if (active) {
           window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: active }));
+          navigate({ to: '/' });
         } else {
           setIsCreating(true);
         }
