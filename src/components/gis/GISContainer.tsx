@@ -6,6 +6,7 @@ import GISAIInsights from "./GISAIInsights";
 import { MapFeature, db, Project } from "@/lib/db";
 import { toast } from "sonner";
 import { exportToGeoJSON, exportToKML } from "@/lib/gis-utils";
+import { LayerService } from "@/services/gis/LayerService";
 
 // Lazy load GISMap to avoid SSR issues with Leaflet
 const GISMap = lazy(() => import("./GISMap"));
@@ -34,7 +35,12 @@ export default function GISContainer() {
   const [isGpsActive, setIsGpsActive] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    const init = async () => {
+      setIsClient(true);
+      await LayerService.seedInitialData();
+      await loadData();
+    };
+    init();
   }, []);
 
   const loadData = useCallback(async () => {
@@ -49,10 +55,6 @@ export default function GISContainer() {
       console.error("Erro ao carregar dados do GIS:", error);
     }
   }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   const handleFeatureCreate = async (partialFeature: Partial<MapFeature>) => {
     const fullFeature: MapFeature = {
@@ -177,8 +179,17 @@ export default function GISContainer() {
   const toggleEngineeringLayer = (layer: EngineeringLayer) => {
     setActiveEngineeringLayers(prev => {
       const next = new Set(prev);
-      if (next.has(layer)) next.delete(layer);
-      else next.add(layer);
+      const isActivating = !next.has(layer);
+      
+      if (isActivating) {
+        next.add(layer);
+        toast.info(`Camada ${layer.toUpperCase()} ativada. Sincronizando dados...`, {
+          description: "Geo-IA analisando possíveis conflitos e riscos...",
+          duration: 3000
+        });
+      } else {
+        next.delete(layer);
+      }
       return next;
     });
   };

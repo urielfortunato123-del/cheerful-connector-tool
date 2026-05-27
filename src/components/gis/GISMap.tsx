@@ -326,10 +326,26 @@ export default function GISMap({
 
         {/* Render Saved Features */}
         {features.map((f) => {
+          // Filtragem real por camadas ativas
           if (!activeEngineeringLayers.has(f.category as any) && f.category !== 'geral') return null;
 
           const isSelected = selectedFeatureId === f.id;
-          const color = isSelected ? "#3b82f6" : (f.properties.color || (f.category === 'drenagem' ? "#3b82f6" : f.category === 'obras' ? "#f97316" : "#FF6B00"));
+          
+          // Lógica de cores profissional por categoria
+          const getCategoryColor = (cat: string) => {
+            switch(cat) {
+              case 'obras': return "#f97316"; // Laranja
+              case 'drenagem': return "#3b82f6"; // Azul
+              case 'pavimentacao': return "#64748b"; // Cinza/Slate
+              case 'hidrografia': return "#0ea5e9"; // Cyan
+              case 'curvas_nivel': return "#10b981"; // Emerald
+              case 'sinalizacao': return "#eab308"; // Yellow
+              case 'contratos': return "#ef4444"; // Vermelho
+              default: return "#FF6B00";
+            }
+          };
+
+          const color = isSelected ? "#ffffff" : (f.properties.color || getCategoryColor(f.category));
           
           if (f.type === 'line') {
             return (
@@ -341,20 +357,37 @@ export default function GISMap({
                 eventHandlers={{ click: () => onSelectFeature(f.id!) }}
               >
                 <Tooltip sticky>
-                  <div className="p-3 font-sans bg-background/90 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl min-w-[160px]">
+                  <div className="p-3 font-sans bg-background/90 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl min-w-[200px]">
                     <div className="text-[10px] font-black uppercase text-primary mb-2 flex items-center justify-between">
                       {f.name}
                       <Info className="h-3 w-3" />
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="p-2 bg-white/5 rounded-xl">
-                        <div className="text-[8px] uppercase text-muted-foreground font-bold">Extensão</div>
-                        <div className="text-xs font-black">{f.properties.distance} km</div>
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="p-2 bg-white/5 rounded-xl">
+                          <div className="text-[8px] uppercase text-muted-foreground font-bold">Métrica</div>
+                          <div className="text-xs font-black">
+                            {f.properties.distance ? `${f.properties.distance} km` : f.properties.area ? `${f.properties.area} km²` : 'N/A'}
+                          </div>
+                        </div>
+                        <div className="p-2 bg-white/5 rounded-xl">
+                          <div className="text-[8px] uppercase text-muted-foreground font-bold">Categoria</div>
+                          <div className="text-xs font-black capitalize">{f.category}</div>
+                        </div>
                       </div>
-                      <div className="p-2 bg-white/5 rounded-xl">
-                        <div className="text-[8px] uppercase text-muted-foreground font-bold">Categoria</div>
-                        <div className="text-xs font-black capitalize">{f.category}</div>
-                      </div>
+                      
+                      {f.properties.status && (
+                        <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
+                          <div className="text-[8px] uppercase text-primary font-bold">Status Operacional</div>
+                          <div className="text-[10px] font-black">{f.properties.status}</div>
+                        </div>
+                      )}
+                      
+                      {f.properties.description && (
+                        <div className="text-[9px] text-muted-foreground leading-tight italic border-t border-white/5 pt-2">
+                          {f.properties.description}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Tooltip>
@@ -392,10 +425,32 @@ export default function GISMap({
               </Polygon>
             );
           } else {
+            // Renderização de Pontos com Ícones Específicos
+            const getIcon = (cat: string) => {
+              let iconHtml = '';
+              const color = getCategoryColor(cat);
+              
+              if (cat === 'sinalizacao') {
+                iconHtml = `<div class="p-1 bg-yellow-500 rounded-full border-2 border-white shadow-lg text-white"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg></div>`;
+              } else if (cat === 'drenagem') {
+                iconHtml = `<div class="p-1 bg-blue-500 rounded-full border-2 border-white shadow-lg text-white"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg></div>`;
+              } else {
+                iconHtml = `<div class="w-4 h-4 rounded-full border-2 border-white shadow-lg" style="background-color: ${color}"></div>`;
+              }
+
+              return new L.DivIcon({
+                className: 'custom-div-icon',
+                html: iconHtml,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+              });
+            };
+
             return (
               <Marker 
                 key={f.id} 
                 position={f.coordinates}
+                icon={getIcon(f.category)}
                 eventHandlers={{ click: () => onSelectFeature(f.id!) }}
               >
                 <Popup className="rounded-2xl">

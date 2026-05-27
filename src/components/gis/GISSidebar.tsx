@@ -24,7 +24,8 @@ import {
   Activity,
   Waves,
   Mountain,
-  FileCode
+  FileCode,
+  RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BaseLayer, EngineeringLayer } from "./GISContainer";
@@ -120,6 +121,9 @@ export default function GISSidebar({
               <Filter className="h-3 w-3" /> Objetos Espaciais
             </h3>
             <div className="flex gap-1">
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => window.location.reload()} title="Recarregar GIS">
+                <RefreshCw className="h-3 w-3" />
+              </Button>
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onExport} title="Exportar GeoJSON">
                 <Download className="h-3 w-3" />
               </Button>
@@ -238,19 +242,35 @@ export default function GISSidebar({
                   {engineeringLayers.map((layer) => (
                     <div 
                       key={layer.id} 
-                      className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
-                      onClick={() => onEngineeringLayerToggle(layer.id)}
+                      className="flex flex-col p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors group"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={cn("p-1.5 rounded-lg bg-background group-hover:scale-110 transition-transform", layer.color)}>
-                          <layer.icon className="h-3.5 w-3.5" />
+                      <div 
+                        className="flex items-center justify-between cursor-pointer"
+                        onClick={() => onEngineeringLayerToggle(layer.id)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={cn("p-1.5 rounded-lg bg-background group-hover:scale-110 transition-transform", layer.color)}>
+                            <layer.icon className="h-3.5 w-3.5" />
+                          </div>
+                          <span className="text-[11px] font-black uppercase tracking-tighter">{layer.label}</span>
                         </div>
-                        <span className="text-[11px] font-black uppercase tracking-tighter">{layer.label}</span>
+                        <Switch 
+                          checked={activeEngineeringLayers.has(layer.id)}
+                          onCheckedChange={() => onEngineeringLayerToggle(layer.id)}
+                        />
                       </div>
-                      <Switch 
-                        checked={activeEngineeringLayers.has(layer.id)}
-                        onCheckedChange={() => onEngineeringLayerToggle(layer.id)}
-                      />
+                      
+                      {activeEngineeringLayers.has(layer.id) && (
+                        <div className="mt-3 px-1 space-y-2 animate-in fade-in zoom-in-95 duration-200">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Opacidade</span>
+                            <span className="text-[8px] font-mono text-primary">100%</span>
+                          </div>
+                          <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-primary w-[100%]" />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
