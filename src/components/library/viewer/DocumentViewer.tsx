@@ -6,8 +6,9 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Download, Maximize2, X } from "lucide-react";
+import { ExternalLink, Download, Maximize2, X, FileIcon, FileText } from "lucide-react";
 import { Document } from "@/lib/db";
+import { cn } from "@/lib/utils";
 
 interface DocumentViewerProps {
   document: Document | null;
@@ -96,6 +97,3 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
     </Dialog>
   );
 }
-
-import { cn } from "@/lib/utils";
-import { FileIcon, FileText } from "lucide-react";

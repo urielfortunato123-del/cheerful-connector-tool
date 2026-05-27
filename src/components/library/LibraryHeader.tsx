@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 interface LibraryHeaderProps {
   stats: {
@@ -108,5 +108,3 @@ function StatCard({ icon, label, value, highlight }: { icon: React.ReactNode, la
     </Card>
   );
 }
-
-import { cn } from "@/lib/utils";
