@@ -10,6 +10,8 @@ import {
 } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
 import { Toaster } from "@/components/ui/sonner";
+import { WorkspaceService } from "@/services/WorkspaceService";
+import { WorkspaceLanding } from "@/components/workspace/WorkspaceLanding";
 
 import appCss from "../styles.css?url";
 
@@ -115,6 +117,16 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const activeProject = WorkspaceService.getCurrentProject();
+
+  if (!activeProject) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <WorkspaceLanding />
+        <Toaster position="top-right" theme="dark" />
+      </QueryClientProvider>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

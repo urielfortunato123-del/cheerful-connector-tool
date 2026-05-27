@@ -14,6 +14,18 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { toast } from "sonner";
+import { WorkspaceService } from "@/services/WorkspaceService";
+import { 
+  RotateCcw,
+  Ruler,
+  FileText,
+  Calculator,
+  Bot,
+  Map as MapIcon,
+  HardHat,
+  History,
+  BarChart3
+} from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   component: Settings,
@@ -79,33 +91,144 @@ function Settings() {
     }
   };
 
+  const handleSelectiveReset = async (options: any) => {
+    if (confirm("Deseja realmente zerar os módulos selecionados? Esta ação não pode ser desfeita.")) {
+      await WorkspaceService.resetData(options);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
           <SettingsIcon className="h-8 w-8 text-primary" />
-          Configurações
+          Configurações Operacionais
         </h1>
-        <p className="text-muted-foreground mt-1">Gerencie a persistência e segurança dos seus dados locais</p>
+        <p className="text-muted-foreground mt-1">Gerencie a arquitetura de workspace e persistência de engenharia</p>
       </div>
 
       <div className="grid gap-6">
+        <Card className="glass-card border-primary/20 bg-primary/5">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <HardHat className="h-5 w-5 text-primary" />
+              <CardTitle>Gestão de Workspace (Projeto Ativo)</CardTitle>
+            </div>
+            <CardDescription>O InfraFlow opera com sistema de diretório local para máxima segurança.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+             <div className="p-4 rounded-xl bg-black/40 border border-primary/20 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary">Workspace Atual</p>
+                  <p className="text-lg font-bold">{WorkspaceService.getCurrentProject()?.name || "Nenhum"}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => WorkspaceService.saveProject()}>
+                    <Download className="h-4 w-4 mr-2" /> Salvar Agora
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => WorkspaceService.exportBackup()}>
+                    <History className="h-4 w-4 mr-2" /> Backup ZIP
+                  </Button>
+                </div>
+             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <RotateCcw className="h-5 w-5 text-primary" />
+              <CardTitle>Reset Seletivo de Módulos</CardTitle>
+            </div>
+            <CardDescription>Zere dados operacionais sem remover documentos da biblioteca técnica.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <Button 
+                variant="outline" 
+                className="justify-start gap-2 h-auto py-3 px-4 border-destructive/20 hover:bg-destructive/10"
+                onClick={() => handleSelectiveReset({ measurements: true })}
+              >
+                <Ruler className="h-4 w-4 text-destructive" />
+                <div className="text-left">
+                  <p className="text-xs font-bold">Medições</p>
+                  <p className="text-[10px] text-muted-foreground">Zerar histórico</p>
+                </div>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="justify-start gap-2 h-auto py-3 px-4 border-destructive/20 hover:bg-destructive/10"
+                onClick={() => handleSelectiveReset({ budgets: true })}
+              >
+                <Calculator className="h-4 w-4 text-destructive" />
+                <div className="text-left">
+                  <p className="text-xs font-bold">Orçamentos</p>
+                  <p className="text-[10px] text-muted-foreground">Zerar itens</p>
+                </div>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="justify-start gap-2 h-auto py-3 px-4 border-destructive/20 hover:bg-destructive/10"
+                onClick={() => handleSelectiveReset({ geometries: true })}
+              >
+                <MapIcon className="h-4 w-4 text-destructive" />
+                <div className="text-left">
+                  <p className="text-xs font-bold">Geometrias</p>
+                  <p className="text-[10px] text-muted-foreground">Limpar mapa</p>
+                </div>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="justify-start gap-2 h-auto py-3 px-4 border-destructive/20 hover:bg-destructive/10"
+                onClick={() => handleSelectiveReset({ dailyLogs: true })}
+              >
+                <FileText className="h-4 w-4 text-destructive" />
+                <div className="text-left">
+                  <p className="text-xs font-bold">Diário de Obra</p>
+                  <p className="text-[10px] text-muted-foreground">Zerar registros</p>
+                </div>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="justify-start gap-2 h-auto py-3 px-4 border-destructive/20 hover:bg-destructive/10"
+                onClick={() => handleSelectiveReset({ financial: true })}
+              >
+                <BarChart3 className="h-4 w-4 text-destructive" />
+                <div className="text-left">
+                  <p className="text-xs font-bold">Financeiro</p>
+                  <p className="text-[10px] text-muted-foreground">Limpar fluxo</p>
+                </div>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="justify-start gap-2 h-auto py-3 px-4 border-destructive/20 hover:bg-destructive/10"
+                onClick={() => handleSelectiveReset({ ai: true })}
+              >
+                <Bot className="h-4 w-4 text-destructive" />
+                <div className="text-left">
+                  <p className="text-xs font-bold">IA Contextual</p>
+                  <p className="text-[10px] text-muted-foreground">Zerar aprendizado</p>
+                </div>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="glass-card">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Database className="h-5 w-5 text-primary" />
-              <CardTitle>Banco de Dados Local (IndexedDB)</CardTitle>
+              <CardTitle>Manutenção de Banco de Dados</CardTitle>
             </div>
-            <CardDescription>O InfraFlow opera 100% offline. Seus dados são armazenados de forma privada no seu navegador.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col md:flex-row gap-3">
               <Button className="flex-1 gap-2" variant="outline" onClick={exportDatabase}>
-                <Download className="h-4 w-4" /> Exportar Backup (.json)
+                <Download className="h-4 w-4" /> Exportar JSON Manual
               </Button>
               <div className="flex-1 relative">
                 <Button className="w-full gap-2" variant="outline">
-                  <Upload className="h-4 w-4" /> Importar Backup
+                  <Upload className="h-4 w-4" /> Importar JSON Manual
                 </Button>
                 <input 
                   type="file" 
@@ -116,7 +239,7 @@ function Settings() {
               </div>
             </div>
             <Button className="w-full gap-2 text-destructive border-destructive/20 hover:bg-destructive/10" variant="outline" onClick={clearCache}>
-              <Trash2 className="h-4 w-4" /> Limpar Tudo e Resetar Sistema
+              <Trash2 className="h-4 w-4" /> Deletar Banco Local e Cache (Hard Reset)
             </Button>
           </CardContent>
         </Card>
