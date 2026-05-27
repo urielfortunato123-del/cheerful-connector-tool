@@ -58,16 +58,28 @@ export interface Measurement {
 
 export interface MapFeature {
   id?: number;
-  type: 'line' | 'area' | 'point';
+  type: 'point' | 'line' | 'area';
+  category: 'obras' | 'drenagem' | 'pavimentação' | 'contratos' | 'financeiro' | 'acidentes' | 'sinalização' | 'normas' | 'medições' | 'projetos' | 'geral';
   name: string;
-  coordinates: [number, number][];
+  coordinates: any; // GeoJSON geometry or coordinates array
   properties: {
     distance?: number;
     area?: number;
-    color?: string;
+    volume?: number;
+    width?: number;
     description?: string;
+    color?: string;
+    thickness?: number;
+    standard?: string; 
+    riskLevel?: 'Low' | 'Medium' | 'High';
+    budgetEstimate?: number;
+    projectId?: number;
+    linkedModuleId?: number;
+    linkedModuleType?: string;
+    aiInsights?: string;
   };
   createdAt: number;
+  updatedAt: number;
 }
 
 export interface Memorial {
@@ -138,7 +150,7 @@ export class InfraFlowDB extends Dexie {
   mapFeatures!: Table<MapFeature>;
 
   constructor() {
-    super('InfraFlowDB_V4');
+    super('InfraFlowDB_V5');
     this.version(1).stores({
       documents: '++id, nome, tipo, categoria, subcategoria, orgao, indexed, favorito, *hierarquia, *tags',
       projects: '++id, nome, rodovia, status',
@@ -150,7 +162,7 @@ export class InfraFlowDB extends Dexie {
       financial: '++id, projectId, tipo',
       chatHistory: '++id, timestamp',
       syncHistory: '++id, timestamp, agency',
-      mapFeatures: '++id, type, name, createdAt'
+      mapFeatures: '++id, type, category, name, createdAt, updatedAt'
     });
   }
 }
