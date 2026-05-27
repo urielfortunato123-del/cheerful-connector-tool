@@ -38,10 +38,20 @@ export default function GISModuleModal({
   onClose, 
   feature, 
   projects, 
-  onExecute 
+  isEditMode = false,
+  onExecute,
+  onUpdate
 }: GISModuleModalProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [editName, setEditName] = useState("");
+
+  // Initialize edit name when modal opens
+  useMemo(() => {
+    if (feature && isEditMode) {
+      setEditName(feature.name);
+    }
+  }, [feature, isEditMode]);
 
   const units = useMemo(() => {
     if (feature?.type === 'line') return ['mm', 'cm', 'm', 'km'];
