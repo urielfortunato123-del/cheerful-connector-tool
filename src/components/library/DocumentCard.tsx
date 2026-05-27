@@ -56,6 +56,19 @@ export function DocumentCard({ document, viewMode, onRefresh, onPreview, onAsk }
     }
   };
 
+  const handleRename = async () => {
+    const newName = prompt("Novo nome para o documento:", document.nome);
+    if (newName && newName !== document.nome) {
+      try {
+        await db.documents.update(document.id!, { nome: newName });
+        toast.success("Documento renomeado.");
+        onRefresh();
+      } catch (error) {
+        toast.error("Erro ao renomear.");
+      }
+    }
+  };
+
   const toggleFavorite = async () => {
     try {
       await db.documents.update(document.id!, { favorito: !document.favorito });
@@ -129,6 +142,9 @@ export function DocumentCard({ document, viewMode, onRefresh, onPreview, onAsk }
                 <DropdownMenuItem className="gap-2" onClick={() => onAsk?.(document)}>
                   <Bot className="h-4 w-4" /> Analisar com IA
                 </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2" onClick={handleRename}>
+                  <Sparkles className="h-4 w-4" /> Renomear
+                </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2 text-destructive" onClick={handleDelete}>
                   <Trash2 className="h-4 w-4" /> Excluir
                 </DropdownMenuItem>
@@ -171,6 +187,9 @@ export function DocumentCard({ document, viewMode, onRefresh, onPreview, onAsk }
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2" onClick={() => onAsk?.(document)}>
                   <Sparkles className="h-4 w-4 text-primary" /> Gerar Resumo IA
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2" onClick={handleRename}>
+                  <Sparkles className="h-4 w-4" /> Renomear
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2 text-destructive" onClick={handleDelete}>
                   <Trash2 className="h-4 w-4" /> Excluir
