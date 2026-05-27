@@ -61,6 +61,14 @@ export default function GISContainer() {
     }
   }, []);
 
+  useEffect(() => {
+    if (selectedProjectId) {
+      setFilteredFeatures(features.filter(f => f.properties.projectId === selectedProjectId || !f.properties.projectId));
+    } else {
+      setFilteredFeatures(features);
+    }
+  }, [features, selectedProjectId]);
+
   const handleFeatureCreate = async (partialFeature: Partial<MapFeature>) => {
     const fullFeature: MapFeature = {
       ...partialFeature,
