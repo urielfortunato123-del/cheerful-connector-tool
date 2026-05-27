@@ -15,13 +15,15 @@ import {
   Save,
   ArrowUpRight,
   ChevronRight,
-  Settings2
+  Settings2,
+  Edit3
 } from "lucide-react";
 import { MapFeature, Project } from "@/lib/db";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
 
 interface GISModuleModalProps {
   isOpen: boolean;
@@ -46,25 +48,18 @@ export default function GISModuleModal({
   const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [editName, setEditName] = useState("");
 
-  // Initialize edit name when modal opens
-  useMemo(() => {
-    if (feature && isEditMode) {
+  useEffect(() => {
+    if (feature) {
       setEditName(feature.name);
+      setSelectedUnit(feature.type === 'line' ? 'km' : 'km²');
     }
-  }, [feature, isEditMode]);
+  }, [feature, isOpen]);
 
   const units = useMemo(() => {
     if (feature?.type === 'line') return ['mm', 'cm', 'm', 'km'];
     if (feature?.type === 'area') return ['m²', 'hectares', 'km²'];
     return [];
   }, [feature]);
-
-  // Set default unit
-  useMemo(() => {
-    if (units.length > 0 && !selectedUnit) {
-      setSelectedUnit(feature?.type === 'line' ? 'km' : 'km²');
-    }
-  }, [units, feature, selectedUnit]);
 
   const modules = [
     { id: 'budget', label: 'Orçamento', icon: FileSpreadsheet, color: 'text-green-500', bg: 'bg-green-500/10', desc: 'Enviar para planilha' },
@@ -79,11 +74,16 @@ export default function GISModuleModal({
     onExecute(moduleId, parseInt(selectedProjectId) || 0, selectedUnit);
   };
 
+  const handleSaveName = () => {
+    if (feature?.id && onUpdate) {
+      onUpdate(feature.id, { name: editName });
+    }
+  };
+
   const displayQuantity = useMemo(() => {
     if (!feature) return '0';
     let val = feature.properties.distance || feature.properties.area || 0;
     
-    // Conversion logic (simplified for UI)
     if (selectedUnit === 'm') return (val * 1000).toFixed(2);
     if (selectedUnit === 'hectares') return (val * 100).toFixed(2);
     if (selectedUnit === 'm²') return (val * 1000000).toFixed(2);
@@ -97,11 +97,11 @@ export default function GISModuleModal({
         <DialogHeader className="mb-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 bg-primary/20 rounded-2xl">
-              <ArrowUpRight className="h-6 w-6 text-primary" />
+              {isEditMode ? <Edit3 className="h-6 w-6 text-primary" /> : <ArrowUpRight className="h-6 w-6 text-primary" />}
             </div>
             <div>
               <DialogTitle className="text-2xl font-black uppercase tracking-tighter leading-none">
-                Processar Geo-Dados
+                {isEditMode ? 'Editar Geometria' : 'Processar Geo-Dados'}
               </DialogTitle>
               <DialogDescription className="text-xs font-medium text-muted-foreground uppercase tracking-widest mt-1">
                 Central de Integração Operacional
@@ -110,11 +110,30 @@ export default function GISModuleModal({
           </div>
         </DialogHeader>
 
-        <div className="grid gap-6">
+        <div className="grid gap-6 py-2">
+          {isEditMode && (
+            <div className="space-y-3 p-5 rounded-[2rem] bg-primary/5 border border-primary/10">
+              <Label className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2">
+                <Edit3 className="h-3 w-3" /> Renomear Levantamento
+              </Label>
+              <div className="flex gap-2">
+                <Input 
+                  value={editName} 
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="bg-background/50 border-white/10 h-10 font-bold"
+                  placeholder="Nome do objeto..."
+                />
+                <Button onClick={handleSaveName} className="font-black uppercase text-[10px] h-10 px-6 rounded-xl">
+                  Atualizar
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-3 p-4 rounded-3xl bg-white/5 border border-white/5">
+            <div className="space-y-3 p-5 rounded-[2rem] bg-white/5 border border-white/5">
               <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2">
-                <Settings2 className="h-3 w-3" /> Configuração de Unidade
+                <Settings2 className="h-3 w-3" /> Unidade de Medida
               </Label>
               <RadioGroup value={selectedUnit} onValueChange={setSelectedUnit} className="grid grid-cols-2 gap-2">
                 {units.map((u) => (
@@ -126,7 +145,7 @@ export default function GISModuleModal({
               </RadioGroup>
             </div>
 
-            <div className="space-y-3 p-4 rounded-3xl bg-white/5 border border-white/5">
+            <div className="space-y-3 p-5 rounded-[2rem] bg-white/5 border border-white/5">
               <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Projeto Destino</Label>
               <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
                 <SelectTrigger className="bg-background/50 border-white/10 h-10 rounded-xl text-xs font-bold">
@@ -147,7 +166,7 @@ export default function GISModuleModal({
                 key={m.id}
                 onClick={() => handleExecute(m.id)}
                 disabled={!selectedProjectId && m.id !== 'save'}
-                className="group flex flex-col gap-2 p-4 rounded-3xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all hover:scale-[1.05] disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed text-left relative overflow-hidden shadow-lg"
+                className="group flex flex-col gap-2 p-4 rounded-[2rem] border border-white/10 bg-white/5 hover:bg-white/10 transition-all hover:scale-[1.05] disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed text-left relative overflow-hidden shadow-lg"
               >
                 <div className={`${m.bg} w-10 h-10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
                   <m.icon className={`h-5 w-5 ${m.color}`} />
@@ -162,11 +181,11 @@ export default function GISModuleModal({
           </div>
         </div>
 
-        <div className="mt-4 p-5 rounded-[2rem] bg-primary/10 border border-primary/20 relative overflow-hidden">
+        <div className="mt-2 p-6 rounded-[2.5rem] bg-primary/10 border border-primary/20 relative overflow-hidden">
           <div className="relative z-10 flex justify-between items-center">
             <div>
               <div className="text-[9px] font-black text-primary uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                <Ruler className="h-3 w-3" /> Valor Calculado
+                <Ruler className="h-3 w-3" /> Valor Resultante
               </div>
               <div className="text-3xl font-black tracking-tighter flex items-baseline gap-2">
                 {displayQuantity}
@@ -180,7 +199,6 @@ export default function GISModuleModal({
               </div>
             </div>
           </div>
-          {/* Decorative background circle */}
           <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
         </div>
       </DialogContent>
