@@ -28,6 +28,46 @@ interface GISMapProps {
   activeEngineeringLayers: Set<EngineeringLayer>;
   isGpsActive: boolean;
   gpsMode: string;
+  isInspectionMode: boolean;
+}
+
+function DynamicTileLayer({ activeBaseLayer }: { activeBaseLayer: BaseLayer }) {
+  const map = useMap();
+  const [zoom, setZoom] = useState(map.getZoom());
+
+  useMapEvents({
+    zoomend() {
+      setZoom(map.getZoom());
+    },
+  });
+
+  const url = useMemo(() => {
+    // Implement Dynamic Provider Switching Logic
+    if (activeBaseLayer === 'satellite') {
+      if (zoom > 18) {
+        // High Zoom: HD Engineering Satellite (Using Esri as HD placeholder or Google if key existed)
+        return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+      } else if (zoom > 12) {
+        // Medium Zoom: Streets and Context
+        return "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+      } else {
+        // Low Zoom: Regional Satellite
+        return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+      }
+    }
+
+    switch(activeBaseLayer) {
+      case 'google-satellite': return "http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}";
+      case 'mapbox-satellite': return "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token={accessToken}"; // Needs token
+      case 'esri-world': return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+      case 'topography': return "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
+      case 'streets': return "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+      case 'dark': 
+      default: return "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+    }
+  }, [activeBaseLayer, zoom]);
+
+  return <TileLayer url={url} maxNativeZoom={19} maxZoom={24} />;
 }
 
 function MapEvents({ activeTool, onPointAdd, onComplete }: { 
