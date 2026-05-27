@@ -22,6 +22,9 @@ export class WorkspaceService {
         mode: 'readwrite'
       });
       
+      // Persist the directory handle for later retrieval (e.g. after reload)
+      await set('infraflow_directory_handle', this.directoryHandle);
+      
       // Try to read existing project if metadata exists
       try {
         const metaFile = await this.directoryHandle.getFileHandle('metadata.json');
@@ -30,8 +33,10 @@ export class WorkspaceService {
         const metadata = JSON.parse(content);
         this.currentProject = metadata;
         localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
-        toast.success('Workspace carregado com sucesso');
+        
+        // Load existing database data into IndexedDB
         await this.loadProjectData();
+        
         toast.success('Workspace carregado com sucesso');
         return true;
       } catch (e) {
@@ -43,6 +48,23 @@ export class WorkspaceService {
       console.error('Erro ao selecionar workspace:', error);
       return false;
     }
+  }
+
+  static async restoreHandle() {
+    try {
+      const handle = await get('infraflow_directory_handle');
+      if (handle) {
+        // @ts-ignore - check if we still have permission
+        const permission = await handle.queryPermission({ mode: 'readwrite' });
+        if (permission === 'granted') {
+          this.directoryHandle = handle as FileSystemDirectoryHandle;
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao restaurar handle do diretório:', error);
+    }
+    return false;
   }
 
   static async createProject(name: string) {
