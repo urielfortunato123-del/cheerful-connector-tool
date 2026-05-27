@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { db, ChatMessage } from "@/lib/db";
 import { searchDocuments, indexDocument } from "@/lib/document-processor";
+import { WorkspaceService } from "@/services/WorkspaceService";
 
 export const Route = createFileRoute("/ai-assistant")({
   component: AIAssistant,
