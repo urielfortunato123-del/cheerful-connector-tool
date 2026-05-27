@@ -23,7 +23,8 @@ import {
   Bot,
   Map as MapIcon,
   HardHat,
-  History
+  History,
+  BarChart3
 } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
