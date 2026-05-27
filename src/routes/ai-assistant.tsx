@@ -148,10 +148,13 @@ function AIAssistant() {
       setIsSearching(false);
 
       // 2. Call AI with context
+      const activeProject = WorkspaceService.getCurrentProject();
+      const projectContext = activeProject ? `\nContexto do Projeto Atual (${activeProject.name}):\n${activeProject.aiContext || "Sem contexto adicional."}\n` : "";
+
       const aiResponse = await (askGeneralAI as any)({ 
         data: { 
           question: finalQuestion,
-          context: useRAG && contextText ? `Baseie sua resposta nos seguintes documentos locais:\n${contextText}` : "Responda como um engenheiro especialista em infraestrutura rodoviária."
+          context: (useRAG && contextText ? `Baseie sua resposta nos seguintes documentos locais:\n${contextText}` : "Responda como um engenheiro especialista em infraestrutura rodoviária.") + projectContext
         } 
       });
 
