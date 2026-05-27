@@ -2,27 +2,36 @@ import * as turf from '@turf/turf';
 import { MapFeature } from './db';
 
 export const calculateSpatialMetrics = (type: 'line' | 'area', coordinates: [number, number][]) => {
-  if (coordinates.length < 2) return { distance: 0, area: 0 };
+  if (coordinates.length < 2) return { distance: 0, area: 0, distanceM: 0, distanceCm: 0, distanceMm: 0 };
   
   if (type === 'line') {
     const line = turf.lineString(coordinates.map((c: [number, number]) => [c[1], c[0]]));
-    const distance = turf.length(line, { units: 'kilometers' });
-    return { distance: parseFloat(distance.toFixed(3)), area: 0 };
-  } else {
-    // Para polígonos, o turf precisa que o primeiro e último ponto sejam iguais
-    const polygonCoords = [...coordinates, coordinates[0]];
-    const poly = turf.polygon([polygonCoords.map((c: [number, number]) => [c[1], c[0]])]);
-    const area = turf.area(poly); // em metros quadrados
-    const areaKm2 = area / 1_000_000;
-    
-    // Distância (perímetro)
-    const line = turf.lineString(polygonCoords.map((c: [number, number]) => [c[1], c[0]]));
-    const perimeter = turf.length(line, { units: 'kilometers' });
+    const distanceKm = turf.length(line, { units: 'kilometers' });
+    const distanceM = distanceKm * 1000;
+    const distanceCm = distanceM * 100;
+    const distanceMm = distanceCm * 10;
     
     return { 
-      distance: parseFloat(perimeter.toFixed(3)), 
-      area: parseFloat(areaKm2.toFixed(4)),
-      areaM2: parseFloat(area.toFixed(2))
+      distance: parseFloat(distanceKm.toFixed(4)), 
+      distanceM: parseFloat(distanceM.toFixed(2)),
+      distanceCm: parseFloat(distanceCm.toFixed(1)),
+      distanceMm: Math.round(distanceMm),
+      area: 0 
+    };
+  } else {
+    const polygonCoords = [...coordinates, coordinates[0]];
+    const poly = turf.polygon([polygonCoords.map((c: [number, number]) => [c[1], c[0]])]);
+    const areaM2 = turf.area(poly);
+    const areaKm2 = areaM2 / 1_000_000;
+    
+    const line = turf.lineString(polygonCoords.map((c: [number, number]) => [c[1], c[0]]));
+    const perimeterKm = turf.length(line, { units: 'kilometers' });
+    
+    return { 
+      distance: parseFloat(perimeterKm.toFixed(4)), 
+      area: parseFloat(areaKm2.toFixed(5)),
+      areaM2: parseFloat(areaM2.toFixed(2)),
+      distanceM: parseFloat((perimeterKm * 1000).toFixed(2))
     };
   }
 };
