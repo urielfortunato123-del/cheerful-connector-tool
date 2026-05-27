@@ -16,7 +16,7 @@ export const calculateSpatialMetrics = (type: 'line' | 'area', coordinates: [num
     const areaKm2 = area / 1_000_000;
     
     // Distância (perímetro)
-    const line = turf.lineString(polygonCoords.map(c => [c[1], c[0]]));
+    const line = turf.lineString(polygonCoords.map((c: [number, number]) => [c[1], c[0]]));
     const perimeter = turf.length(line, { units: 'kilometers' });
     
     return { 
@@ -59,8 +59,8 @@ export const exportToGeoJSON = (features: MapFeature[]) => {
       geometry: {
         type: f.type === 'point' ? 'Point' : f.type === 'line' ? 'LineString' : 'Polygon',
         coordinates: f.type === 'area' 
-          ? [[...f.coordinates, f.coordinates[0]].map(c => [c[1], c[0]])]
-          : f.coordinates.map(c => [c[1], c[0]])
+          ? [[...f.coordinates, f.coordinates[0]].map((c: [number, number]) => [c[1], c[0]])]
+          : f.coordinates.map((c: [number, number]) => [c[1], c[0]])
       },
       properties: {
         ...f.properties,
