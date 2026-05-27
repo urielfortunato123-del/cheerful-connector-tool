@@ -88,6 +88,19 @@ export default function GISToolbar({
         </Button>
 
         <Button
+          variant={isInspectionMode ? "default" : "ghost"}
+          size="icon"
+          className={cn(
+            "h-9 w-9 rounded-xl transition-all duration-300",
+            isInspectionMode ? "bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20 scale-110" : "text-orange-500 hover:bg-orange-500/10"
+          )}
+          onClick={onInspectionModeToggle}
+          title="Modo Inspeção Técnica"
+        >
+          <ScanSearch className={cn("h-4 w-4", isInspectionMode ? "animate-pulse" : "")} />
+        </Button>
+
+        <Button
           variant="default"
           size="sm"
           className="h-9 px-4 rounded-xl font-bold text-[11px] uppercase tracking-wider ml-1 shadow-lg shadow-primary/20"
