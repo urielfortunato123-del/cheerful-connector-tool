@@ -159,7 +159,7 @@ export class InfraFlowDB extends Dexie {
     super('InfraFlowDB_V5');
     this.version(1).stores({
       documents: '++id, nome, tipo, categoria, subcategoria, orgao, indexed, favorito, *hierarquia, *tags',
-      projects: '++id, nome, rodovia, status',
+      projects: '++id, nome, rodovia, contrato, cliente, status, favorito',
       budgets: '++id, projectId',
       measurements: '++id, projectId',
       memorials: '++id, projectId',
