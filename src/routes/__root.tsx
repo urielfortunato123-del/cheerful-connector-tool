@@ -137,6 +137,13 @@ function RootComponent() {
     if (activeProject) {
       setWorkspaceActive(true);
     }
+
+    const handleProjectChange = () => {
+      setWorkspaceActive(true);
+    };
+
+    window.addEventListener('infraflow_project_changed', handleProjectChange);
+    return () => window.removeEventListener('infraflow_project_changed', handleProjectChange);
   }, [activeProject]);
 
   if (!hydrated) return null;

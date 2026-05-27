@@ -21,10 +21,8 @@ export function WorkspaceLanding() {
     try {
       const project = await WorkspaceService.createProject(projectName);
       if (project) {
-        // Force a small delay to ensure everything is saved before reload
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        toast.success('Workspace criado com sucesso');
+        // The event listener in __root.tsx will handle the transition
       }
     } catch (error) {
       console.error(error);
@@ -42,7 +40,7 @@ export function WorkspaceLanding() {
         // If selectWorkspace found a project, it's already in localStorage
         const active = WorkspaceService.getCurrentProject();
         if (active) {
-          window.location.reload();
+          window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: active }));
         } else {
           setIsCreating(true);
         }

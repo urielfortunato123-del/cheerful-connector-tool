@@ -1,6 +1,7 @@
 import { db } from '../lib/db';
 import JSZip from 'jszip';
 import { toast } from 'sonner';
+import { get, set } from 'idb-keyval';
 
 export interface ProjectMetadata {
   id: string;
@@ -21,6 +22,9 @@ export class WorkspaceService {
         mode: 'readwrite'
       });
       
+      // Persist the directory handle for later retrieval (e.g. after reload)
+      await set('infraflow_directory_handle', this.directoryHandle);
+      
       // Try to read existing project if metadata exists
       try {
         const metaFile = await this.directoryHandle.getFileHandle('metadata.json');
@@ -29,6 +33,11 @@ export class WorkspaceService {
         const metadata = JSON.parse(content);
         this.currentProject = metadata;
         localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
+        
+        // Load existing database data into IndexedDB
+        await this.loadProjectData();
+        window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: metadata }));
+        
         toast.success('Workspace carregado com sucesso');
         return true;
       } catch (e) {
@@ -42,6 +51,23 @@ export class WorkspaceService {
     }
   }
 
+  static async restoreHandle() {
+    try {
+      const handle = await get('infraflow_directory_handle');
+      if (handle) {
+        // @ts-ignore - check if we still have permission
+        const permission = await handle.queryPermission({ mode: 'readwrite' });
+        if (permission === 'granted') {
+          this.directoryHandle = handle as FileSystemDirectoryHandle;
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao restaurar handle do diretório:', error);
+    }
+    return false;
+  }
+
   static async createProject(name: string) {
     if (!this.directoryHandle) {
       const selected = await this.selectWorkspace();
@@ -52,7 +78,7 @@ export class WorkspaceService {
       const projectDir = await this.directoryHandle!.getDirectoryHandle(name, { create: true });
       
       // Create subdirectories
-      const dirs = ['database', 'pdf', 'geojson', 'imagens', 'orcamentos', 'memorial', 'diario', 'backup', 'cache_ia', 'logs'];
+      const dirs = ['database', 'pdfs', 'orcamentos', 'mapas', 'medicoes', 'backups', 'logs', 'cache_ia'];
       for (const dir of dirs) {
         await projectDir.getDirectoryHandle(dir, { create: true });
       }
@@ -72,12 +98,43 @@ export class WorkspaceService {
 
       this.currentProject = metadata;
       localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
+      window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: metadata }));
       
       return metadata;
     } catch (error) {
       console.error('Erro ao criar projeto:', error);
       toast.error('Erro ao criar estrutura do projeto');
       return null;
+    }
+  }
+
+  static async loadProjectData(customDir?: FileSystemDirectoryHandle) {
+    const projectDir = customDir || this.directoryHandle;
+    if (!projectDir || !this.currentProject) return;
+
+    try {
+      const dbDir = await projectDir.getDirectoryHandle('database');
+      const tables = ['documents', 'projects', 'budgets', 'measurements', 'memorials', 'asbuilt', 'dailyLogs', 'financial', 'mapFeatures'];
+      
+      for (const tableName of tables) {
+        try {
+          const fileHandle = await dbDir.getFileHandle(`${tableName}.json`);
+          const file = await fileHandle.getFile();
+          const content = await file.text();
+          const data = JSON.parse(content);
+          
+          // @ts-ignore
+          await db[tableName].clear();
+          if (data && data.length > 0) {
+            // @ts-ignore
+            await db[tableName].bulkAdd(data);
+          }
+        } catch (e) {
+          // Table file might not exist yet for new projects
+        }
+      }
+    } catch (error) {
+      console.warn('Estrutura de banco de dados não encontrada ou erro ao carregar:', error);
     }
   }
 
@@ -239,4 +296,5 @@ export class WorkspaceService {
 // Initialize autosave
 if (typeof window !== 'undefined') {
   WorkspaceService.setupAutoSave();
+  WorkspaceService.restoreHandle();
 }
