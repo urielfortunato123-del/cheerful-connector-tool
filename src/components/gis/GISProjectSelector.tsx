@@ -162,31 +162,44 @@ export default function GISProjectSelector({
               <CommandSeparator className="bg-white/5" />
               
               <CommandGroup heading={<span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-2">Todos os Projetos</span>}>
-                {projects.map((p) => (
-                  <CommandItem
-                    key={p.id}
-                    onSelect={() => {
-                      onSelect(p.id!);
-                      setOpen(false);
-                    }}
-                    className="flex items-center justify-between py-3 cursor-pointer group"
-                  >
-                    <div className="flex flex-col gap-0.5 overflow-hidden">
-                      <span className="text-[11px] font-black uppercase tracking-tighter truncate group-hover:text-primary transition-colors">
-                        {p.nome}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[7px] h-3.5 px-1.5 font-bold uppercase border-white/10">
-                          {p.rodovia}
-                        </Badge>
-                        <span className="text-[8px] text-muted-foreground font-medium truncate">
-                          KM {p.kmInicial} - {p.kmFinal}
+                    <CommandItem
+                      key={p.id}
+                      onSelect={() => {
+                        onSelect(p.id!);
+                        setOpen(false);
+                      }}
+                      className="flex items-center justify-between py-3 cursor-pointer group"
+                    >
+                      <div className="flex flex-col gap-0.5 overflow-hidden">
+                        <span className="text-[11px] font-black uppercase tracking-tighter truncate group-hover:text-primary transition-colors">
+                          {p.nome}
                         </span>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[7px] h-3.5 px-1.5 font-bold uppercase border-white/10">
+                            {p.rodovia}
+                          </Badge>
+                          <span className="text-[8px] text-muted-foreground font-medium truncate">
+                            KM {p.kmInicial} - {p.kmFinal}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    {selectedProjectId === p.id && <Check className="h-4 w-4 text-primary shrink-0" />}
-                  </CommandItem>
-                ))}
+                      <div className="flex items-center gap-2">
+                        {onToggleFavorite && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 hover:bg-yellow-500/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onToggleFavorite(p.id!);
+                            }}
+                          >
+                            <Star className={cn("h-3 w-3", p.favorito ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground")} />
+                          </Button>
+                        )}
+                        {selectedProjectId === p.id && <Check className="h-4 w-4 text-primary shrink-0" />}
+                      </div>
+                    </CommandItem>
               </CommandGroup>
             </CommandList>
           </Command>
