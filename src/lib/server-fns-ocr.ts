@@ -3,10 +3,10 @@ import { createServerFn } from "@tanstack/react-start";
 export const performOCR = createServerFn({
   method: "POST",
 })
-  .handler(async (ctx: any) => {
-    const data = ctx.data as { base64Image: string; language?: string; isPDF?: boolean };
+  .validator((data: { base64Image: string; language?: string; isPDF?: boolean }) => data)
+  .handler(async ({ data }) => {
     const base64Image = data?.base64Image || "";
-    const language = data?.language || "por"; // Default to Portuguese
+    const language = data?.language || "por"; 
     const isPDF = data?.isPDF || false;
 
     const OCR_SPACE_API_KEY = process.env.OCR_SPACE_API_KEY;
@@ -17,15 +17,13 @@ export const performOCR = createServerFn({
     }
 
     try {
-      // OCR.space API expects a form-data or a structured POST
-      // We'll use a URLSearchParams or a simple object if we send it as base64
       const formData = new URLSearchParams();
       formData.append("apikey", OCR_SPACE_API_KEY);
       formData.append("language", language);
       formData.append("isOverlayRequired", "false");
       formData.append("base64Image", base64Image);
       if (isPDF) {
-        formData.append("isTable", "true"); // Helpful for engineering docs
+        formData.append("isTable", "true"); 
       }
 
       const response = await fetch("https://api.ocr.space/parse/image", {
