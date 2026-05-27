@@ -89,7 +89,6 @@ export default function GISContainer() {
       return;
     }
 
-    // Logic to bridge to other modules
     if (dest === 'budget') {
       await db.measurements.add({
         projectId,
@@ -120,10 +119,7 @@ export default function GISContainer() {
     <div className="flex h-full w-full overflow-hidden rounded-3xl border border-white/10 bg-background shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
       <GISSidebar 
         features={features}
-        onSelect={(f) => {
-          setSelectedFeatureId(f.id!);
-          // Logic to pan map to feature
-        }}
+        onSelect={(f) => setSelectedFeatureId(f.id!)}
         onDelete={handleDelete}
         onDuplicate={handleDuplicate}
         onExport={handleExport}
@@ -137,23 +133,23 @@ export default function GISContainer() {
             if (selectedFeatureId) handleDelete(selectedFeatureId);
           }}
           onSave={() => toast.success("Base de dados GIS sincronizada localmente.")}
-        onAI={() => {
-          if (!selectedFeatureId) {
-            toast.error("Selecione um objeto no mapa para análise IA.");
-            return;
-          }
-          setIsAIInsightsOpen(true);
-        }}
-      />
+          onAI={() => {
+            if (!selectedFeatureId) {
+              toast.error("Selecione um objeto no mapa para análise IA.");
+              return;
+            }
+            setIsAIInsightsOpen(true);
+          }}
+        />
 
-      <GISAIInsights 
-        isOpen={isAIInsightsOpen}
-        onClose={() => setIsAIInsightsOpen(false)}
-        feature={features.find(f => f.id === selectedFeatureId) || null}
-      />
+        <GISAIInsights 
+          isOpen={isAIInsightsOpen}
+          onClose={() => setIsAIInsightsOpen(false)}
+          feature={features.find(f => f.id === selectedFeatureId) || null}
+        />
 
-      <GISMap 
-        activeTool={activeTool}
+        <GISMap 
+          activeTool={activeTool}
           features={features}
           onFeatureCreate={handleFeatureCreate}
           selectedFeatureId={selectedFeatureId}
