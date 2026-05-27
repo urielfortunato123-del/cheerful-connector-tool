@@ -95,7 +95,7 @@ export function WorkspaceLanding() {
               <Button className="flex-1 h-12 font-bold" onClick={handleCreateProject}>Criar Workspace</Button>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="pt-12 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div className="space-y-1">
