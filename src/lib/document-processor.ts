@@ -58,6 +58,18 @@ export const indexDocument = async (docId: number) => {
 
     if (doc.tipo === 'pdf') {
       text = await extractTextFromPDF(doc.fileBlob);
+      
+      // If extracted text is too short, it might be a scanned PDF. Use OCR.space as fallback.
+      if (text.trim().length < 100) {
+        console.log("PDF text too short, attempting OCR.space...");
+        const base64 = await blobToBase64(doc.fileBlob);
+        const ocrResult = await performOCR({ data: { base64Image: base64, isPDF: true } });
+        if (ocrResult && 'text' in ocrResult && ocrResult.text) {
+          text = ocrResult.text;
+          if (!tags.includes('OCR')) tags.push('OCR');
+        }
+      }
+
       // Basic automatic tagging based on keywords in text
       const keywords = ['drenagem', 'pavimentação', 'terraplenagem', 'estrutura', 'sinalização', 'geotecnia', 'meio ambiente'];
       keywords.forEach(kw => {
@@ -65,6 +77,17 @@ export const indexDocument = async (docId: number) => {
           tags.push(kw.toUpperCase());
         }
       });
+    } else if (['jpg', 'jpeg', 'png'].includes(doc.tipo)) {
+      toast.info(`Processando OCR para imagem ${doc.nome}...`);
+      const base64 = await blobToBase64(doc.fileBlob);
+      const ocrResult = await performOCR({ data: { base64Image: base64 } });
+      if (ocrResult && 'text' in ocrResult && ocrResult.text) {
+        text = ocrResult.text;
+        if (!tags.includes('OCR')) tags.push('OCR');
+      } else {
+        text = `Conteúdo visual de imagem: ${doc.nome}. OCR não retornou texto.`;
+      }
+      if (!tags.includes('IMAGEM')) tags.push('IMAGEM');
     } else if (['xlsx', 'xls', 'csv'].includes(doc.tipo)) {
       text = `Documento Planilha: ${doc.nome}. Categoria: ${doc.categoria}. Órgão: ${doc.orgao}. Conteúdo técnico para análise estruturada.`;
       if (!tags.includes('PLANILHA')) tags.push('PLANILHA');
