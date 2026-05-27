@@ -36,6 +36,7 @@ export class WorkspaceService {
         
         // Load existing database data into IndexedDB
         await this.loadProjectData();
+        window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: metadata }));
         
         toast.success('Workspace carregado com sucesso');
         return true;
