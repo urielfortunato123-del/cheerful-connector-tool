@@ -64,7 +64,7 @@ export interface Measurement {
 export interface MapFeature {
   id?: number;
   type: 'point' | 'line' | 'area';
-  category: 'obras' | 'drenagem' | 'pavimentacao' | 'contratos' | 'financeiro' | 'acidentes' | 'sinalizacao' | 'normas' | 'medicoes' | 'projetos' | 'hidrografia' | 'curvas_nivel' | 'geral';
+  category: 'obras' | 'drenagem' | 'pavimentacao' | 'contratos' | 'financeiro' | 'acidentes' | 'sinalizacao' | 'normas' | 'medicoes' | 'projetos' | 'hidrografia' | 'curvas_nivel' | 'geral' | 'projeto';
   name: string;
   coordinates: any; 
   properties: {
