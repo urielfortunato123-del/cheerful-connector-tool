@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon, useMapEvents, LayersControl, ScaleControl, Tooltip } from "react-leaflet";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon, useMapEvents, ScaleControl, Tooltip } from "react-leaflet";
 import L from "leaflet";
-import { MapFeature, db } from "@/lib/db";
+import { MapFeature } from "@/lib/db";
 import { GISTool } from "./GISToolbar";
 import { calculateSpatialMetrics } from "@/lib/gis-utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { BaseLayer, EngineeringLayer } from "./GISContainer";
+import { Navigation, Info, Mountain, Waves } from "lucide-react";
 
 // Fix for default marker icons
 // @ts-ignore
@@ -22,6 +24,10 @@ interface GISMapProps {
   onFeatureCreate: (feature: Partial<MapFeature>) => void;
   selectedFeatureId: number | null;
   onSelectFeature: (id: number | null) => void;
+  activeBaseLayer: BaseLayer;
+  activeEngineeringLayers: Set<EngineeringLayer>;
+  isGpsActive: boolean;
+  gpsMode: string;
 }
 
 function MapEvents({ activeTool, onPointAdd, onComplete }: { 
@@ -44,12 +50,69 @@ function MapEvents({ activeTool, onPointAdd, onComplete }: {
   return null;
 }
 
+function GpsTracker({ active, mode }: { active: boolean, mode: string }) {
+  const [position, setPosition] = useState<[number, number] | null>(null);
+  const map = useMapEvents({
+    locationfound(e) {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+      if (active) {
+        map.flyTo(e.latlng, map.getZoom());
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (active) {
+      map.locate({ 
+        watch: true, 
+        enableHighAccuracy: mode === 'high_precision' || mode === 'engineering' 
+      });
+    } else {
+      map.stopLocate();
+      setPosition(null);
+    }
+  }, [active, mode, map]);
+
+  if (!position) return null;
+
+  return (
+    <Marker position={position} icon={new L.DivIcon({
+      className: 'gps-pulse',
+      html: `
+        <div class="relative flex items-center justify-center">
+          <div class="absolute w-12 h-12 bg-primary/20 rounded-full animate-ping"></div>
+          <div class="absolute w-8 h-8 bg-primary/40 rounded-full animate-pulse"></div>
+          <div class="w-4 h-4 bg-primary rounded-full border-2 border-white shadow-lg"></div>
+        </div>
+      `,
+      iconSize: [48, 48],
+      iconAnchor: [24, 24]
+    })}>
+      <Popup className="rounded-2xl">
+        <div className="p-2 font-sans">
+          <div className="text-[10px] font-black uppercase text-primary mb-1 flex items-center gap-1">
+            <Navigation className="h-3 w-3" /> GPS ATIVO
+          </div>
+          <div className="text-[11px] font-bold">Modo: {mode}</div>
+          <div className="text-[9px] text-muted-foreground mt-1">
+            {position[0].toFixed(6)}, {position[1].toFixed(6)}
+          </div>
+        </div>
+      </Popup>
+    </Marker>
+  );
+}
+
 export default function GISMap({ 
   activeTool, 
   features, 
   onFeatureCreate,
   selectedFeatureId,
-  onSelectFeature
+  onSelectFeature,
+  activeBaseLayer,
+  activeEngineeringLayers,
+  isGpsActive,
+  gpsMode
 }: GISMapProps) {
   const [activePoints, setActivePoints] = useState<[number, number][]>([]);
   const center: [number, number] = [-23.5505, -46.6333];
@@ -91,8 +154,18 @@ export default function GISMap({
     setActivePoints([]);
   }, [activePoints, activeTool, onFeatureCreate]);
 
+  const baseLayerUrl = useMemo(() => {
+    switch(activeBaseLayer) {
+      case 'satellite': return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+      case 'topography': return "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
+      case 'streets': return "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+      case 'dark': 
+      default: return "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+    }
+  }, [activeBaseLayer]);
+
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative group/map">
       <MapContainer 
         center={center} 
         zoom={13} 
@@ -100,17 +173,24 @@ export default function GISMap({
         className="z-0"
         doubleClickZoom={false}
       >
-        <LayersControl position="topright">
-          <LayersControl.BaseLayer checked name="Modo Noturno (GIS)">
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-          </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Satélite HD">
-            <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-          </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Topografia (OpenTopo)">
-            <TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" />
-          </LayersControl.BaseLayer>
-        </LayersControl>
+        <TileLayer url={baseLayerUrl} />
+        
+        {/* Engineering Overlays (Functional Toggles) */}
+        {activeEngineeringLayers.has('hidrografia') && (
+          <TileLayer 
+            url="https://tile.waymarkedtrails.org/waterway/{z}/{x}/{y}.png"
+            opacity={0.6}
+            zIndex={10}
+          />
+        )}
+
+        {activeEngineeringLayers.has('curvas_nivel') && (
+          <TileLayer 
+            url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+            opacity={0.4}
+            zIndex={5}
+          />
+        )}
 
         <MapEvents 
           activeTool={activeTool} 
@@ -118,12 +198,17 @@ export default function GISMap({
           onComplete={handleComplete}
         />
 
+        <GpsTracker active={isGpsActive} mode={gpsMode} />
+
         <ScaleControl position="bottomright" />
 
         {/* Render Saved Features */}
         {features.map((f) => {
+          // Filter by active categories if applicable
+          if (!activeEngineeringLayers.has(f.category as any) && f.category !== 'geral') return null;
+
           const isSelected = selectedFeatureId === f.id;
-          const color = isSelected ? "#3b82f6" : (f.properties.color || "#FF6B00");
+          const color = isSelected ? "#3b82f6" : (f.properties.color || (f.category === 'drenagem' ? "#3b82f6" : f.category === 'obras' ? "#f97316" : "#FF6B00"));
           
           if (f.type === 'line') {
             return (
@@ -135,9 +220,21 @@ export default function GISMap({
                 eventHandlers={{ click: () => onSelectFeature(f.id!) }}
               >
                 <Tooltip sticky>
-                  <div className="p-2 font-sans">
-                    <div className="text-[10px] font-black uppercase text-primary mb-1">{f.name}</div>
-                    <div className="text-[11px] font-bold">Extensão: {f.properties.distance} km</div>
+                  <div className="p-3 font-sans bg-background/90 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl min-w-[160px]">
+                    <div className="text-[10px] font-black uppercase text-primary mb-2 flex items-center justify-between">
+                      {f.name}
+                      <Info className="h-3 w-3" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="p-2 bg-white/5 rounded-xl">
+                        <div className="text-[8px] uppercase text-muted-foreground font-bold">Extensão</div>
+                        <div className="text-xs font-black">{f.properties.distance} km</div>
+                      </div>
+                      <div className="p-2 bg-white/5 rounded-xl">
+                        <div className="text-[8px] uppercase text-muted-foreground font-bold">Categoria</div>
+                        <div className="text-xs font-black capitalize">{f.category}</div>
+                      </div>
+                    </div>
                   </div>
                 </Tooltip>
               </Polyline>
@@ -154,9 +251,21 @@ export default function GISMap({
                 eventHandlers={{ click: () => onSelectFeature(f.id!) }}
               >
                 <Tooltip sticky>
-                  <div className="p-2 font-sans">
-                    <div className="text-[10px] font-black uppercase text-primary mb-1">{f.name}</div>
-                    <div className="text-[11px] font-bold">Área: {f.properties.area} km²</div>
+                  <div className="p-3 font-sans bg-background/90 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl min-w-[160px]">
+                    <div className="text-[10px] font-black uppercase text-primary mb-2 flex items-center justify-between">
+                      {f.name}
+                      <Info className="h-3 w-3" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="p-2 bg-white/5 rounded-xl">
+                        <div className="text-[8px] uppercase text-muted-foreground font-bold">Área</div>
+                        <div className="text-xs font-black">{f.properties.area} km²</div>
+                      </div>
+                      <div className="p-2 bg-white/5 rounded-xl">
+                        <div className="text-[8px] uppercase text-muted-foreground font-bold">Perímetro</div>
+                        <div className="text-xs font-black">{f.properties.distance} km</div>
+                      </div>
+                    </div>
                   </div>
                 </Tooltip>
               </Polygon>
@@ -168,10 +277,13 @@ export default function GISMap({
                 position={f.coordinates}
                 eventHandlers={{ click: () => onSelectFeature(f.id!) }}
               >
-                <Popup>
-                  <div className="font-sans">
-                    <h4 className="font-bold text-xs uppercase">{f.name}</h4>
-                    <p className="text-[10px] text-muted-foreground">{f.properties.description}</p>
+                <Popup className="rounded-2xl">
+                  <div className="font-sans p-2">
+                    <h4 className="font-black text-xs uppercase tracking-tighter mb-1">{f.name}</h4>
+                    <p className="text-[10px] text-muted-foreground leading-tight">{f.properties.description}</p>
+                    <div className="mt-3 pt-3 border-t border-white/5 flex gap-2">
+                       <Button size="sm" className="h-6 text-[9px] font-bold uppercase rounded-lg">Ver Detalhes</Button>
+                    </div>
                   </div>
                 </Popup>
               </Marker>
@@ -210,15 +322,29 @@ export default function GISMap({
         )}
       </MapContainer>
 
+      {/* Floating Indicators */}
+      <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+        {activeEngineeringLayers.has('hidrografia') && (
+          <div className="bg-background/80 backdrop-blur-md p-2 rounded-xl border border-white/10 flex items-center gap-2 text-[9px] font-bold uppercase animate-in slide-in-from-right-5">
+            <Waves className="h-3 w-3 text-cyan-500" /> Hidrografia Ativa
+          </div>
+        )}
+        {activeEngineeringLayers.has('curvas_nivel') && (
+          <div className="bg-background/80 backdrop-blur-md p-2 rounded-xl border border-white/10 flex items-center gap-2 text-[9px] font-bold uppercase animate-in slide-in-from-right-5">
+            <Mountain className="h-3 w-3 text-emerald-500" /> Topografia Ativa
+          </div>
+        )}
+      </div>
+
       {/* Floating Metrics Card during drawing */}
       {activePoints.length > 1 && (
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] bg-background/80 backdrop-blur-xl border border-white/10 p-4 rounded-3xl shadow-2xl flex items-center gap-8 animate-in slide-in-from-bottom-5">
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] bg-background/80 backdrop-blur-2xl border border-white/10 p-4 rounded-3xl shadow-2xl flex items-center gap-8 animate-in slide-in-from-bottom-10">
            <div className="flex flex-col">
-              <span className="text-[9px] font-black uppercase text-muted-foreground">Pontos</span>
+              <span className="text-[9px] font-black uppercase text-muted-foreground">Pontos Capturados</span>
               <span className="text-lg font-black">{activePoints.length}</span>
            </div>
            <div className="flex flex-col border-l border-white/5 pl-8">
-              <span className="text-[9px] font-black uppercase text-primary">Análise Parcial</span>
+              <span className="text-[9px] font-black uppercase text-primary">Medição Estimada</span>
               <span className="text-lg font-black text-primary">
                 {activeTool.includes('area') 
                   ? `${calculateSpatialMetrics('area', activePoints).area} km²`
@@ -228,13 +354,18 @@ export default function GISMap({
            </div>
            <Button 
             size="sm" 
-            className="rounded-xl font-black uppercase text-[10px] ml-4 h-10 px-6 shadow-xl shadow-primary/20"
+            className="rounded-2xl font-black uppercase text-[10px] ml-4 h-12 px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
             onClick={handleComplete}
            >
-            Finalizar (Enter)
+            Finalizar Geometria (Enter)
            </Button>
         </div>
       )}
+
+      {/* Real-time coordinates display */}
+      <div className="absolute bottom-4 left-4 z-[1000] bg-background/60 backdrop-blur-md p-2 rounded-xl border border-white/5 text-[9px] font-mono text-muted-foreground uppercase tracking-widest pointer-events-none">
+        InfraFlow GIS Engine v5.2 | PRO-MODE
+      </div>
     </div>
   );
 }
