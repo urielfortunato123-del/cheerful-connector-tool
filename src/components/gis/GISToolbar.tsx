@@ -11,7 +11,8 @@ import {
   Maximize2,
   Sparkles,
   Layers,
-  Search
+  Search,
+  ScanSearch
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,8 @@ interface GISToolbarProps {
   onClear: () => void;
   onSave: () => void;
   onAI: () => void;
+  isInspectionMode: boolean;
+  onInspectionModeToggle: () => void;
 }
 
 export default function GISToolbar({ 
@@ -30,7 +33,9 @@ export default function GISToolbar({
   onToolSelect, 
   onClear, 
   onSave,
-  onAI
+  onAI,
+  isInspectionMode,
+  onInspectionModeToggle
 }: GISToolbarProps) {
   const tools = [
     { id: 'select', icon: MousePointer2, label: 'Selecionar' },
