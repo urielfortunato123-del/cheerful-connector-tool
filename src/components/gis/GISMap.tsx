@@ -381,8 +381,17 @@ export default function GISMap({
       )}
 
       {/* Real-time coordinates display */}
-      <div className="absolute bottom-4 left-4 z-[1000] bg-background/60 backdrop-blur-md p-2 rounded-xl border border-white/5 text-[9px] font-mono text-muted-foreground uppercase tracking-widest pointer-events-none">
-        InfraFlow GIS Engine v5.2 | PRO-MODE
+      <div className="absolute bottom-4 left-4 z-[1000] flex flex-col gap-1">
+        {mousePos && (
+          <div className="bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-[10px] font-mono text-primary flex gap-3 shadow-2xl animate-in fade-in slide-in-from-left-2">
+            <span>LAT: {mousePos[0].toFixed(6)}</span>
+            <span className="text-white/20">|</span>
+            <span>LNG: {mousePos[1].toFixed(6)}</span>
+          </div>
+        )}
+        <div className="bg-background/60 backdrop-blur-md px-3 py-1 rounded-xl border border-white/5 text-[9px] font-mono text-muted-foreground uppercase tracking-widest pointer-events-none w-fit">
+          InfraFlow GIS Engine v5.2 | PRO-MODE
+        </div>
       </div>
     </div>
   );
