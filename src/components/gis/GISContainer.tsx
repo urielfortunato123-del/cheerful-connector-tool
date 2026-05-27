@@ -72,35 +72,6 @@ export default function GISContainer() {
 
   const handleExport = () => {
     const data = exportToGeoJSON(features);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `InfraFlow_GIS_${new Date().toISOString()}.geojson`;
-    a.click();
-    toast.success("Exportação GeoJSON concluída.");
-  };
-
-  const handleAIAnalysis = () => {
-    const feature = features.find(f => f.id === selectedFeatureId);
-    if (!feature) {
-      toast.error("Selecione um objeto no mapa para análise IA.");
-      return;
-    }
-
-    const prompt = generateAIPrompt(feature);
-    
-    toast.promise(
-      new Promise(resolve => setTimeout(resolve, 3000)),
-      {
-        loading: 'O motor de Geo-IA está analisando normas DER/DNIT...',
-        success: () => {
-          return `Análise IA: Trecho ${feature.name} possui alto risco de erosão lateral. Recomenda-se norma DER ET-P00 com espessura mínima de 12cm.`;
-        },
-        error: 'Erro na análise IA.',
-      }
-    );
-  };
 
   const handleModuleExecution = async (dest: string, projectId: number) => {
     if (!pendingFeature) return;
