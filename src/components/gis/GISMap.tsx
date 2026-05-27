@@ -41,33 +41,88 @@ function DynamicTileLayer({ activeBaseLayer }: { activeBaseLayer: BaseLayer }) {
     },
   });
 
-  const url = useMemo(() => {
-    // Dynamic Provider Switching Logic
+  const layerConfig = useMemo(() => {
+    // Modo Dinâmico (Auto)
     if (activeBaseLayer === 'satellite') {
       if (zoom > 18) {
-        // High Zoom: HD Engineering Satellite (Esri World Imagery)
-        return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+        return {
+          url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          maxNativeZoom: 22,
+          attribution: "Esri World Imagery HD"
+        };
       } else if (zoom > 14) {
-        // Medium Zoom: Streets and Context (OSM)
-        return "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+        return {
+          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          maxNativeZoom: 19,
+          attribution: "OpenStreetMap"
+        };
       } else {
-        // Low Zoom: Regional Satellite (Esri)
-        return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+        return {
+          url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          maxNativeZoom: 19,
+          attribution: "Esri Satellite"
+        };
       }
     }
 
+    // Camadas específicas com seus limites reais
     switch(activeBaseLayer) {
-      case 'google-satellite': return "http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}";
-      case 'mapbox-satellite': return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"; // Fallback
-      case 'esri-world': return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-      case 'topography': return "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
-      case 'streets': return "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-      case 'dark': 
-      default: return "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+      case 'google-satellite':
+        return {
+          url: "http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}",
+          maxNativeZoom: 23,
+          attribution: "Google Satellite"
+        };
+      case 'mapbox-satellite':
+        return {
+          url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          maxNativeZoom: 24,
+          attribution: "Mapbox HD Engineering"
+        };
+      case 'esri-world':
+        return {
+          url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          maxNativeZoom: 22,
+          attribution: "Esri World Imagery"
+        };
+      case 'topography':
+        // Fallback automático se zoom > 17 (Limite do OpenTopoMap)
+        if (zoom > 17) {
+          return {
+            url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            maxNativeZoom: 22,
+            attribution: "HD Fallback (Topo > 17)"
+          };
+        }
+        return {
+          url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+          maxNativeZoom: 17,
+          attribution: "OpenTopoMap"
+        };
+      case 'streets':
+        return {
+          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          maxNativeZoom: 19,
+          attribution: "OpenStreetMap"
+        };
+      case 'dark':
+      default:
+        return {
+          url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+          maxNativeZoom: 20,
+          attribution: "CartoDB Dark"
+        };
     }
   }, [activeBaseLayer, zoom]);
 
-  return <TileLayer url={url} maxNativeZoom={19} maxZoom={24} />;
+  return (
+    <TileLayer 
+      url={layerConfig.url} 
+      maxNativeZoom={layerConfig.maxNativeZoom} 
+      maxZoom={24}
+      attribution={layerConfig.attribution}
+    />
+  );
 }
 
 function MapEvents({ activeTool, onPointAdd, onComplete }: { 
