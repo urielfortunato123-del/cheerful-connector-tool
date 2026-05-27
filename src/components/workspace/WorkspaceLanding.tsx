@@ -21,10 +21,8 @@ export function WorkspaceLanding() {
     try {
       const project = await WorkspaceService.createProject(projectName);
       if (project) {
-        // Force a small delay to ensure everything is saved before reload
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        toast.success('Workspace criado com sucesso');
+        // The event listener in __root.tsx will handle the transition
       }
     } catch (error) {
       console.error(error);
