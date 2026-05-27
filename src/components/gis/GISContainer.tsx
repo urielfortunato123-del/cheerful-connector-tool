@@ -13,8 +13,8 @@ import { LayerService } from "@/services/gis/LayerService";
 // Lazy load GISMap to avoid SSR issues with Leaflet
 const GISMap = lazy(() => import("./GISMap"));
 
-export type BaseLayer = 'satellite' | 'topography' | 'dark' | 'streets' | 'google-satellite' | 'mapbox-satellite' | 'esri-world';
-export type EngineeringLayer = 'obras' | 'drenagem' | 'pavimentacao' | 'contratos' | 'sinalizacao' | 'hidrografia' | 'curvas_nivel';
+export type BaseLayer = 'satellite' | 'topography' | 'dark' | 'streets' | 'google-satellite' | 'mapbox-satellite' | 'esri-world' | 'engineering' | 'invisible';
+export type EngineeringLayer = 'obras' | 'drenagem' | 'pavimentacao' | 'contratos' | 'sinalizacao' | 'hidrografia' | 'curvas_nivel' | 'projeto';
 
 export default function GISContainer() {
   const [activeTool, setActiveTool] = useState<GISTool>('select');
