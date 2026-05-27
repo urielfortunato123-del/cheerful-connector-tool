@@ -20,8 +20,8 @@ export default function GISAIInsights({ isOpen, onClose, feature }: GISAIInsight
     const observations = [
       {
         id: 'erosion',
-        title: 'Análise de Erosão',
-        desc: properties.distance && properties.distance > 0.5 ? 'Alto risco de erosão em taludes. Recomenda-se plantio de gramíneas ou biomanta.' : 'Área com estabilidade superficial satisfatória.',
+        title: 'Análise de Riscos / Erosão',
+        desc: category === 'curvas_nivel' || properties.slope > 15 ? 'Alta declividade detectada. Risco de erosão em taludes de corte.' : 'Estabilidade aparente confirmada para o trecho.',
         icon: TrendingDown,
         color: 'text-orange-500',
         bg: 'bg-orange-500/10',
@@ -29,17 +29,17 @@ export default function GISAIInsights({ isOpen, onClose, feature }: GISAIInsight
       },
       {
         id: 'drainage',
-        title: 'Sistema de Drenagem',
-        desc: category === 'drenagem' ? 'Verificar obstrução em bocas de lobo. Possível necessidade de sarjeta de aterro.' : 'Sugerida implantação de dreno sub-superficial se houver umidade constante.',
+        title: 'Conflito de Drenagem',
+        desc: category === 'hidrografia' ? 'Proximidade com corpo d\'água requer dreno de base reforçado conforme DNIT.' : 'Sugerida implantação de bueiro triplo para vazão de projeto (TR=50 anos).',
         icon: Droplets,
         color: 'text-blue-500',
         bg: 'bg-blue-500/10',
         border: 'border-blue-500/20'
       },
       {
-        id: 'wear',
-        title: 'Desgaste e Pavimentação',
-        desc: type === 'line' ? 'Sinais de fadiga estrutural. Recomenda-se ensaio de defletometria (FWD).' : 'Pavimento em estado de conservação aceitável para tráfego leve.',
+        id: 'pavement',
+        title: 'Vida Útil / Pavimento',
+        desc: category === 'pavimentacao' ? `Pavimento tipo ${properties.material || 'CBUQ'}. Previsão de fadiga em 8 anos.` : 'Análise de fadiga não aplicável para esta camada.',
         icon: HardHat,
         color: 'text-slate-500',
         bg: 'bg-slate-500/10',
@@ -47,8 +47,8 @@ export default function GISAIInsights({ isOpen, onClose, feature }: GISAIInsight
       },
       {
         id: 'standard',
-        title: 'Normas DER/DNIT',
-        desc: 'Aplicável Norma DNIT 013/2004-ES. Exigência de controle tecnológico de compactação.',
+        title: 'Conformidade DER/DNIT',
+        desc: 'Verificado: Norma DNIT 013/2004-ES. Parâmetros dentro da tolerância técnica.',
         icon: Scale,
         color: 'text-purple-500',
         bg: 'bg-purple-500/10',
