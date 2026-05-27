@@ -6,6 +6,7 @@ import GISAIInsights from "./GISAIInsights";
 import { MapFeature, db, Project } from "@/lib/db";
 import { toast } from "sonner";
 import { exportToGeoJSON, exportToKML } from "@/lib/gis-utils";
+import { LayerService } from "@/services/gis/LayerService";
 
 // Lazy load GISMap to avoid SSR issues with Leaflet
 const GISMap = lazy(() => import("./GISMap"));
