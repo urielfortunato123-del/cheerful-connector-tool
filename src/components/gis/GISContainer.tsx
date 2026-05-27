@@ -210,6 +210,17 @@ export default function GISContainer() {
     setSelectedProjectId(project.id!);
   };
 
+  const handleToggleFavorite = async (projectId: number) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    const newStatus = !project.favorito;
+    await db.projects.update(projectId, { favorito: newStatus });
+    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, favorito: newStatus } : p));
+    
+    toast.success(newStatus ? "Adicionado aos favoritos" : "Removido dos favoritos");
+  };
+
   const toggleEngineeringLayer = (layer: EngineeringLayer) => {
     setActiveEngineeringLayers(prev => {
       const next = new Set(prev);
