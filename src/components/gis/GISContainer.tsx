@@ -1,12 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
-import GISMap from "./GISMap";
+import { useState, useEffect, useCallback, Suspense, lazy } from "react";
 import GISToolbar, { GISTool } from "./GISToolbar";
 import GISSidebar from "./GISSidebar";
 import GISModuleModal from "./GISModuleModal";
 import GISAIInsights from "./GISAIInsights";
 import { MapFeature, db, Project } from "@/lib/db";
 import { toast } from "sonner";
-import { exportToGeoJSON, generateAIPrompt } from "@/lib/gis-utils";
+import { exportToGeoJSON, generateAIPrompt, exportToKML } from "@/lib/gis-utils";
+
+// Lazy load GISMap to avoid SSR issues with Leaflet
+const GISMap = lazy(() => import("./GISMap"));
+
+export type BaseLayer = 'satellite' | 'topography' | 'dark' | 'streets';
+export type EngineeringLayer = 'obras' | 'drenagem' | 'pavimentacao' | 'contratos' | 'sinalizacao' | 'hidrografia' | 'curvas_nivel';
 
 export default function GISContainer() {
   const [activeTool, setActiveTool] = useState<GISTool>('select');
@@ -16,6 +21,19 @@ export default function GISContainer() {
   const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
   const [isAIInsightsOpen, setIsAIInsightsOpen] = useState(false);
   const [pendingFeature, setPendingFeature] = useState<MapFeature | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  
+  // Layer Management State
+  const [activeBaseLayer, setActiveBaseLayer] = useState<BaseLayer>('dark');
+  const [activeEngineeringLayers, setActiveEngineeringLayers] = useState<Set<EngineeringLayer>>(new Set(['obras', 'drenagem']));
+  
+  // GPS State
+  const [gpsMode, setGpsMode] = useState<'standard' | 'high_precision' | 'economy' | 'engineering'>('standard');
+  const [isGpsActive, setIsGpsActive] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const loadData = useCallback(async () => {
     const [fData, pData] = await Promise.all([
@@ -70,18 +88,28 @@ export default function GISContainer() {
     toast.success("Trecho duplicado com sucesso.");
   };
 
-  const handleExport = () => {
-    const data = exportToGeoJSON(features);
-    const blob = new Blob([data], { type: 'application/json' });
+  const handleExport = (format: 'geojson' | 'kml' = 'geojson') => {
+    let data = '';
+    let filename = '';
+    
+    if (format === 'geojson') {
+      data = exportToGeoJSON(features);
+      filename = `InfraFlow_GIS_${new Date().toISOString()}.geojson`;
+    } else {
+      data = exportToKML(features);
+      filename = `InfraFlow_GIS_${new Date().toISOString()}.kml`;
+    }
+
+    const blob = new Blob([data], { type: format === 'geojson' ? 'application/json' : 'application/vnd.google-earth.kml+xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `InfraFlow_GIS_${new Date().toISOString()}.geojson`;
+    a.download = filename;
     a.click();
-    toast.success("Exportação GeoJSON concluída.");
+    toast.success(`Exportação ${format.toUpperCase()} concluída.`);
   };
 
-  const handleModuleExecution = async (dest: string, projectId: number) => {
+  const handleModuleExecution = async (dest: string, projectId: number, unit?: string) => {
     if (!pendingFeature) return;
 
     if (dest === 'save') {
@@ -89,23 +117,38 @@ export default function GISContainer() {
       return;
     }
 
-    if (dest === 'budget') {
-      await db.measurements.add({
-        projectId,
-        tipoServico: `Levantamento GIS: ${pendingFeature.name}`,
-        quantidade: pendingFeature.properties.distance || pendingFeature.properties.area || 0,
-        unidade: pendingFeature.type === 'line' ? 'km' : 'km²',
-        valor: 0,
-        data: Date.now(),
-        coordinates: pendingFeature.coordinates
-      });
-      toast.success("Enviado para o Orçamento!");
+    const finalUnit = unit || (pendingFeature.type === 'line' ? 'km' : 'km²');
+    const quantity = pendingFeature.properties.distance || pendingFeature.properties.area || 0;
+
+    if (dest === 'budget' || dest === 'measurement') {
+      const table = dest === 'budget' ? db.budgets : db.measurements;
+      
+      if (dest === 'measurement') {
+        await db.measurements.add({
+          projectId,
+          tipoServico: `Levantamento GIS: ${pendingFeature.name}`,
+          quantidade: quantity,
+          unidade: finalUnit,
+          valor: 0,
+          data: Date.now(),
+          coordinates: pendingFeature.coordinates
+        });
+      } else {
+        // Simple integration for budget
+        await db.budgets.add({
+          projectId,
+          itens: [{ descricao: pendingFeature.name, quantidade: quantity, unidade: finalUnit, valorUnitario: 0 }],
+          valorTotal: 0,
+          dataBase: new Date().toLocaleDateString(),
+        });
+      }
+      toast.success(`Enviado para ${dest === 'budget' ? 'Orçamento' : 'Medição'}!`);
     }
 
     if (dest === 'memorial') {
       await db.memorials.add({
         projectId,
-        conteudo: `Memorial Descritivo Técnico gerado via IA para o trecho ${pendingFeature.name}. Extensão: ${pendingFeature.properties.distance}km. Baseado em Normas DER/DNIT.`,
+        conteudo: `Memorial Descritivo Técnico gerado via IA para o trecho ${pendingFeature.name}. Extensão: ${pendingFeature.properties.distance}${finalUnit}. Baseado em Normas DER/DNIT.`,
         dataCriacao: Date.now()
       });
       toast.success("Memorial Técnico gerado!");
@@ -115,27 +158,45 @@ export default function GISContainer() {
     setPendingFeature(null);
   };
 
+  const toggleEngineeringLayer = (layer: EngineeringLayer) => {
+    setActiveEngineeringLayers(prev => {
+      const next = new Set(prev);
+      if (next.has(layer)) next.delete(layer);
+      else next.add(layer);
+      return next;
+    });
+  };
+
   return (
-    <div className="flex h-full w-full overflow-hidden rounded-3xl border border-white/10 bg-background shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
+    <div className=\"flex h-full w-full overflow-hidden rounded-3xl border border-white/10 bg-background shadow-[0_0_50px_rgba(0,0,0,0.5)] relative\">
       <GISSidebar 
         features={features}
         onSelect={(f) => setSelectedFeatureId(f.id!)}
         onDelete={handleDelete}
         onDuplicate={handleDuplicate}
-        onExport={handleExport}
+        onExport={() => handleExport('geojson')}
+        onExportKML={() => handleExport('kml')}
+        activeBaseLayer={activeBaseLayer}
+        onBaseLayerChange={setActiveBaseLayer}
+        activeEngineeringLayers={activeEngineeringLayers}
+        onEngineeringLayerToggle={toggleEngineeringLayer}
+        gpsMode={gpsMode}
+        onGpsModeChange={setGpsMode}
+        isGpsActive={isGpsActive}
+        onGpsToggle={() => setIsGpsActive(!isGpsActive)}
       />
 
-      <div className="flex-1 relative h-full">
+      <div className=\"flex-1 relative h-full\">
         <GISToolbar 
           activeTool={activeTool}
           onToolSelect={setActiveTool}
           onClear={() => {
             if (selectedFeatureId) handleDelete(selectedFeatureId);
           }}
-          onSave={() => toast.success("Base de dados GIS sincronizada localmente.")}
+          onSave={() => toast.success(\"Base de dados GIS sincronizada localmente.\")}
           onAI={() => {
             if (!selectedFeatureId) {
-              toast.error("Selecione um objeto no mapa para análise IA.");
+              toast.error(\"Selecione um objeto no mapa para análise IA.\");
               return;
             }
             setIsAIInsightsOpen(true);
@@ -148,13 +209,23 @@ export default function GISContainer() {
           feature={features.find(f => f.id === selectedFeatureId) || null}
         />
 
-        <GISMap 
-          activeTool={activeTool}
-          features={features}
-          onFeatureCreate={handleFeatureCreate}
-          selectedFeatureId={selectedFeatureId}
-          onSelectFeature={setSelectedFeatureId}
-        />
+        {isClient ? (
+          <Suspense fallback={<div className=\"w-full h-full bg-muted animate-pulse flex items-center justify-center\"><span className=\"text-xs font-bold\">INICIANDO MOTOR GRÁFICO...</span></div>}>
+            <GISMap 
+              activeTool={activeTool}
+              features={features}
+              onFeatureCreate={handleFeatureCreate}
+              selectedFeatureId={selectedFeatureId}
+              onSelectFeature={setSelectedFeatureId}
+              activeBaseLayer={activeBaseLayer}
+              activeEngineeringLayers={activeEngineeringLayers}
+              isGpsActive={isGpsActive}
+              gpsMode={gpsMode}
+            />
+          </Suspense>
+        ) : (
+          <div className=\"w-full h-full bg-muted animate-pulse flex items-center justify-center\"><span className=\"text-xs font-bold font-mono\">CARREGANDO GIS...</span></div>
+        )}
       </div>
 
       <GISModuleModal 
