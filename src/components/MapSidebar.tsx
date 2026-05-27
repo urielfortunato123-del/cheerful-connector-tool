@@ -188,7 +188,7 @@ export default function MapSidebar({
               <span className="text-xs font-black uppercase tracking-tighter">Assistente Geo-IA</span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
-              Dê comandos como: \\"Sugira áreas de bota-fora próximas ao KM 12\\" ou \\"Calcule volume aproximado de aterro para este trecho\\".
+              Dê comandos como: "Sugira áreas de bota-fora próximas ao KM 12" ou "Calcule volume aproximado de aterro para este trecho".
             </p>
             <div className="mt-auto space-y-2">
               <Input 
