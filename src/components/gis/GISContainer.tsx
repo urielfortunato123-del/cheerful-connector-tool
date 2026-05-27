@@ -67,10 +67,23 @@ export default function GISContainer() {
     
     setFeatures(prev => [...prev, savedFeature]);
     setPendingFeature(savedFeature);
+    setIsEditMode(false);
     setIsModuleModalOpen(true);
     setActiveTool('select');
     
     toast.success("Geometria capturada com sucesso!");
+  };
+
+  const handleFeatureUpdate = async (id: number, updates: Partial<MapFeature>) => {
+    await db.mapFeatures.update(id, { ...updates, updatedAt: Date.now() });
+    setFeatures(prev => prev.map(f => f.id === id ? { ...f, ...updates, updatedAt: Date.now() } : f));
+    toast.success("Dados geoespaciais atualizados.");
+  };
+
+  const handleEditRequest = (feature: MapFeature) => {
+    setPendingFeature(feature);
+    setIsEditMode(true);
+    setIsModuleModalOpen(true);
   };
 
   const handleDelete = async (id: number) => {
