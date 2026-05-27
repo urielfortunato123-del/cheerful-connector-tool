@@ -28,11 +28,15 @@ import {
   Trash2,
   CheckCircle2,
   Calendar,
-  MoreHorizontal
+  MoreHorizontal,
+  FileDown
 } from "lucide-react";
 import { db, Measurement, Project } from "@/lib/db";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { generateProfessionalPDF } from "@/lib/pdf-generator";
+import { VoiceAssistant } from "@/components/VoiceAssistant";
+
 
 export const Route = createFileRoute("/measurements")({
   component: Measurements,
@@ -94,12 +98,18 @@ function Measurements() {
     setNewMeasurement({ projectId: undefined, tipoServico: "", quantidade: 0, unidade: "m2", valor: 0 });
   };
 
+  const handleExportPDF = async (m: Measurement) => {
+    const project = projects.find(p => p.id === m.projectId);
+    await generateProfessionalPDF('Measurement', m, project?.nome || "Projeto");
+  };
+
   const handleDelete = async (id: number) => {
     if (confirm("Excluir esta medição?")) {
       await db.measurements.delete(id);
       loadData();
     }
   };
+
 
   return (
     <div className="space-y-6">
@@ -133,7 +143,16 @@ function Measurements() {
                   </SelectContent>
                 </Select>
               </div>
+              <VoiceAssistant 
+                onTranscript={(data) => {
+                  setNewMeasurement(prev => ({
+                    ...prev,
+                    tipoServico: data.servico || prev.tipoServico
+                  }));
+                }} 
+              />
               <div className="grid gap-2">
+
                 <Label>Serviço / Item TPU</Label>
                 <Input 
                   placeholder="Ex: CBUQ Camada de Rolamento" 
@@ -235,8 +254,14 @@ function Measurements() {
                      <span className="text-[10px] text-muted-foreground flex items-center gap-1 italic">
                        <Calendar className="h-3 w-3" /> {format(m.data, 'dd/MM/yyyy HH:mm')}
                      </span>
-                     <Button variant="ghost" size="sm" className="h-7 text-[10px] gap-1"><Camera className="h-3 w-3" /> Ver Fotos</Button>
+                     <div className="flex gap-1">
+                       <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 border-primary/20 text-primary" onClick={() => handleExportPDF(m)}>
+                         <FileDown className="h-3 w-3" /> PDF
+                       </Button>
+                       <Button variant="ghost" size="sm" className="h-7 text-[10px] gap-1"><Camera className="h-3 w-3" /> Fotos</Button>
+                     </div>
                   </div>
+
                 </CardContent>
               </Card>
             ))}
