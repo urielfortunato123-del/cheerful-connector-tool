@@ -41,11 +41,12 @@ export default function GISModuleModal({
   onClose, 
   feature, 
   projects, 
+  selectedProjectId,
   isEditMode = false,
   onExecute,
   onUpdate
 }: GISModuleModalProps) {
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [selectedId, setSelectedId] = useState<string>("");
   const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [editName, setEditName] = useState("");
 
@@ -54,7 +55,11 @@ export default function GISModuleModal({
       setEditName(feature.name);
       setSelectedUnit(feature.type === 'line' ? 'km' : 'km²');
     }
-  }, [feature, isOpen]);
+    
+    if (selectedProjectId) {
+      setSelectedId(selectedProjectId.toString());
+    }
+  }, [feature, isOpen, selectedProjectId]);
 
   const units = useMemo(() => {
     if (feature?.type === 'line') return ['mm', 'cm', 'm', 'km'];
