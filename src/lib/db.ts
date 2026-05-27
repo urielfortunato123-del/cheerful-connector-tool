@@ -52,7 +52,22 @@ export interface Measurement {
   unidade: string;
   valor: number;
   data: number;
+  coordinates?: [number, number][]; // Coordenadas para o mapa
   fotos?: string[]; // base64 strings
+}
+
+export interface MapFeature {
+  id?: number;
+  type: 'line' | 'area' | 'point';
+  name: string;
+  coordinates: [number, number][];
+  properties: {
+    distance?: number;
+    area?: number;
+    color?: string;
+    description?: string;
+  };
+  createdAt: number;
 }
 
 export interface Memorial {
@@ -120,6 +135,7 @@ export class InfraFlowDB extends Dexie {
   financial!: Table<Financial>;
   chatHistory!: Table<ChatMessage>;
   syncHistory!: Table<SyncLog>;
+  mapFeatures!: Table<MapFeature>;
 
   constructor() {
     super('InfraFlowDB_V4');
@@ -133,7 +149,8 @@ export class InfraFlowDB extends Dexie {
       dailyLogs: '++id, projectId, data',
       financial: '++id, projectId, tipo',
       chatHistory: '++id, timestamp',
-      syncHistory: '++id, timestamp, agency'
+      syncHistory: '++id, timestamp, agency',
+      mapFeatures: '++id, type, name, createdAt'
     });
   }
 }
