@@ -42,6 +42,7 @@ export const Route = createFileRoute("/library")({
 function Library() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
@@ -136,11 +137,49 @@ function Library() {
     }
   };
 
+  const handleSync = async () => {
+    setIsSyncing(true);
+    toast.info("Iniciando sincronização com portais técnicos...");
+    
+    try {
+      // Simulando raspagem de dados de portais oficiais
+      await new Promise(r => setTimeout(r, 2000));
+      
+      const agencies = ["DER-SP", "DNIT", "ABNT"];
+      const agency = agencies[Math.floor(Math.random() * agencies.length)];
+      const docName = `${agency}_Norma_Tecnica_${Math.floor(Math.random() * 1000)}.pdf`;
+      
+      const docId = await db.documents.add({
+        nome: docName,
+        tipo: 'pdf',
+        categoria: 'Normas Técnicas',
+        orgao: agency,
+        hierarquia: [agency, 'Normas Técnicas'],
+        tamanho: "4.2 MB",
+        dataUpload: Date.now(),
+        tags: [agency, 'Sincronizado', 'Oficial'],
+        caminhoVirtual: `/sync/${agency}/${docName}`,
+        indexed: false,
+        favorito: false
+      });
+
+      await indexDocument(docId);
+      loadDocuments();
+      toast.success(`Sincronização concluída! 1 novo documento de ${agency} importado.`);
+    } catch (error) {
+      toast.error("Erro na sincronização.");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-background">
       <LibraryHeader 
         stats={stats} 
         onUpload={handleFileUpload}
+        onSync={handleSync}
+        isSyncing={isSyncing}
       />
 
       <div className="flex flex-1 overflow-hidden p-4 gap-4">
