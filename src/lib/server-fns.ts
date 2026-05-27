@@ -99,3 +99,4 @@ ${extraContext ? `CONTEXTO ATUAL DA PÁGINA: ${extraContext}` : ""}`;
   });
 
 export { askLibraryAI } from "./server-fns-library";
+export { performOCR } from "./server-fns-ocr";
