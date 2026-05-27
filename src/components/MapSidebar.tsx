@@ -118,7 +118,7 @@ export default function MapSidebar({
                       </Button>
                     </div>
 
-                    <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/50 transition-opacity">
                       <div className="grid grid-cols-2 gap-2">
                         <Button 
                           size="sm" 
