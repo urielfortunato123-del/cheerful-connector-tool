@@ -10,7 +10,7 @@ import { exportToGeoJSON, exportToKML } from "@/lib/gis-utils";
 // Lazy load GISMap to avoid SSR issues with Leaflet
 const GISMap = lazy(() => import("./GISMap"));
 
-export type BaseLayer = 'satellite' | 'topography' | 'dark' | 'streets';
+export type BaseLayer = 'satellite' | 'topography' | 'dark' | 'streets' | 'google-satellite' | 'mapbox-satellite' | 'esri-world';
 export type EngineeringLayer = 'obras' | 'drenagem' | 'pavimentacao' | 'contratos' | 'sinalizacao' | 'hidrografia' | 'curvas_nivel';
 
 export default function GISContainer() {
@@ -23,6 +23,7 @@ export default function GISContainer() {
   const [isAIInsightsOpen, setIsAIInsightsOpen] = useState(false);
   const [pendingFeature, setPendingFeature] = useState<MapFeature | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [isInspectionMode, setIsInspectionMode] = useState(false);
   
   // Layer Management State
   const [activeBaseLayer, setActiveBaseLayer] = useState<BaseLayer>('dark');
