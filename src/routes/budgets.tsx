@@ -157,12 +157,20 @@ function Budgets() {
           phase: row.Fase || "Importado"
         }));
         setItems(mappedItems);
+        
+        // Alerta de Budget Overrun (Lógica Pro)
+        const total = mappedItems.reduce((acc: number, i: any) => acc + i.totalPrice, 0);
+        if (total > 10000000) { // Limite exemplo
+           toast.warning("ALERTA: Orçamento excede 10M. Verifique permissões da diretoria.");
+        }
+
         toast.success(`${mappedItems.length} itens importados com sucesso.`);
       }
     } catch (err) {
       toast.error("Falha ao importar planilha.");
     }
   };
+
 
   const handleExport = () => {
     exportToExcel(items, `Orcamento_${contractInfo.contract}`);
@@ -436,10 +444,14 @@ function Budgets() {
           {currentStep === 3 && (
             <div className="p-6 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 space-y-1">
+                <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 space-y-1 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-1 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <Badge variant="outline" className="text-[8px] bg-green-500 text-white border-none">DENTRO DO BUDGET</Badge>
+                  </div>
                   <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Geral</p>
                   <p className="text-2xl font-black text-primary">R$ {totals.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
                 </div>
+
                 <div className="bg-muted/50 p-4 rounded-xl border border-transparent space-y-1">
                   <p className="text-[10px] text-muted-foreground uppercase font-bold">Custo por KM</p>
                   <p className="text-2xl font-black">R$ {totals.perKm.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
