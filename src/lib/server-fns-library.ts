@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const askLibraryAI = createServerFn({
   method: "POST",
@@ -10,92 +9,55 @@ export const askLibraryAI = createServerFn({
     const contextText = data?.context || "";
 
     const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-    console.log("Verificando OPENROUTER_API_KEY (Library):", OPENROUTER_API_KEY ? "Presente (protegido)" : "AUSENTE");
-
+    
     if (!OPENROUTER_API_KEY) {
-      return { answer: "⚠️ Erro de Configuração: A chave OPENROUTER_API_KEY não foi encontrada nas variáveis de ambiente do projeto." };
+      return { answer: "⚠️ Erro de Configuração: A chave OPENROUTER_API_KEY não foi encontrada." };
     }
 
-    const systemPrompt = `Você é o assistente técnico especializado da InfraFlow, expert em infraestrutura brasileira (DER, DNIT, etc).
+    const systemPrompt = `Você é o assistente técnico especializado da InfraFlow, expert em infraestrutura brasileira (DER-SP, DNIT, ABNT).
 Use o contexto técnico abaixo para responder à pergunta do usuário de forma extremamente precisa e profissional.
 
 DIRETRIZES:
 1. Use termos técnicos adequados (normas, especificações, etc).
-2. Se a resposta estiver nos documentos, cite qual documento ou órgão (se disponível no contexto).
-3. Se a informação não estiver no contexto, seja honesto e diga que não encontrou nos manuais carregados, mas pode oferecer conhecimento geral de engenharia se solicitado.
+2. Se a resposta estiver nos documentos, cite qual documento ou órgão.
+3. Se a informação não estiver no contexto, use seu conhecimento geral mas avise.
 4. Responda em Português do Brasil.
+5. Sugira vínculos com outros módulos do InfraFlow quando relevante:
+    - Para Orçamentos: sugira composições técnicas ou ETs relacionadas.
+    - Para Memorial: sugira textos normativos para fundamentação.
+    - Para Medições: sugira critérios de aceitação e medição técnica.
+    - Para Mapa GIS: sugira vinculação da norma ao trecho da rodovia.
 
 Contexto dos Documentos Técnicos:
 ${contextText}`;
 
-    const maxRetries = 3;
-    let retryCount = 0;
-    let lastError = "";
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "HTTP-Referer": "https://lovable.dev",
+          "X-Title": "InfraFlow",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.0-flash-001",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: question },
+          ],
+        }),
+      });
 
-    while (retryCount <= maxRetries) {
-      const requestId = Math.random().toString(36).substring(7);
-      const startTime = Date.now();
-
-      try {
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-            "HTTP-Referer": "https://lovable.dev",
-            "X-Title": "InfraFlow",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.0-flash-001",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: question },
-            ],
-          }),
-        });
-
-        const duration = Date.now() - startTime;
-        console.log(`[OpenRouter-Lib][${requestId}] Status: ${response.status} | Tempo: ${duration}ms | Tentativa: ${retryCount + 1}`);
-
-        if (response.ok) {
-          const result = await response.json();
-          const answer = result?.choices?.[0]?.message?.content ?? "Sem resposta.";
-          return { answer };
-        }
-
-        if (response.status === 429 && retryCount < maxRetries) {
-          retryCount++;
-          const delay = Math.pow(2, retryCount) * 1000;
-          console.log(`[OpenRouter-Lib][${requestId}] Rate Limit (429). Retry em ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
-        }
-
-        const text = await response.text().catch(() => "");
-        if (response.status === 429) {
-          return { answer: "⚠️ Limite de requisições atingido na OpenRouter." };
-        }
-        if (response.status === 402) {
-          return { answer: "⚠️ Créditos de IA esgotados na OpenRouter." };
-        }
-        
-        console.error(`[OpenRouter-Lib][${requestId}] Erro detalhado:`, response.status, text);
-        return { answer: "⚠️ Serviço de IA temporariamente indisponível." };
-      } catch (err) {
-        const duration = Date.now() - startTime;
-        lastError = String(err);
-        console.error(`[OpenRouter-Lib][${requestId}] Exceção:`, lastError, `| Tempo: ${duration}ms`);
-
-        if (retryCount < maxRetries) {
-          retryCount++;
-          const delay = Math.pow(2, retryCount) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
-        }
-        break;
+      if (response.ok) {
+        const result = await response.json();
+        const answer = result?.choices?.[0]?.message?.content ?? "Sem resposta.";
+        return { answer };
       }
+      
+      return { answer: "⚠️ Serviço de IA temporariamente indisponível." };
+    } catch (err) {
+      console.error(err);
+      return { answer: "⚠️ Erro ao consultar a biblioteca via IA." };
     }
-
-    console.error("askLibraryAI max retries reached:", lastError);
-    return { answer: "⚠️ Erro ao consultar a biblioteca via IA após várias tentativas." };
   });
