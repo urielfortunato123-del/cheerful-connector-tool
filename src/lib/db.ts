@@ -28,11 +28,16 @@ export interface Project {
   id?: number;
   nome: string;
   rodovia: string;
+  contrato?: string;
+  cliente?: string;
+  tipoObra?: string;
   kmInicial: number;
   kmFinal: number;
   lado: 'N' | 'S' | 'L' | 'O' | 'Crescente' | 'Decrescente';
   status: 'Em Planejamento' | 'Em Execução' | 'Concluído' | 'Paralisado';
   dataCriacao: number;
+  geometriaVinculada?: any; // Armazena GeoJSON ou ID de feição
+  favorito?: boolean;
 }
 
 export interface Budget {
