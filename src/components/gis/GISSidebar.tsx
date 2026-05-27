@@ -121,6 +121,9 @@ export default function GISSidebar({
               <Filter className="h-3 w-3" /> Objetos Espaciais
             </h3>
             <div className="flex gap-1">
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => window.location.reload()} title="Recarregar GIS">
+                <RefreshCw className="h-3 w-3" />
+              </Button>
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onExport} title="Exportar GeoJSON">
                 <Download className="h-3 w-3" />
               </Button>
