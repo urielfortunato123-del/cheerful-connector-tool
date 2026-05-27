@@ -11,6 +11,7 @@ export function WorkspaceLanding() {
   const [isCreating, setIsCreating] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleCreateProject = async () => {
     if (!projectName.trim()) {
