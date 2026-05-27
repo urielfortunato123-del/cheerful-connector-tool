@@ -6,7 +6,7 @@ import { GISTool } from "./GISToolbar";
 import { calculateSpatialMetrics } from "@/lib/gis-utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { BaseLayer, EngineeringLayer } from "./GISContainer";
+import type { BaseLayer, EngineeringLayer } from "./GISContainer";
 import { Navigation, Info, Mountain, Waves } from "lucide-react";
 
 // Fix for default marker icons
