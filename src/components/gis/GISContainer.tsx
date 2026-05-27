@@ -158,11 +158,23 @@ export default function GISContainer() {
             if (selectedFeatureId) handleDelete(selectedFeatureId);
           }}
           onSave={() => toast.success("Base de dados GIS sincronizada localmente.")}
-          onAI={handleAIAnalysis}
-        />
+        onAI={() => {
+          if (!selectedFeatureId) {
+            toast.error("Selecione um objeto no mapa para análise IA.");
+            return;
+          }
+          setIsAIInsightsOpen(true);
+        }}
+      />
 
-        <GISMap 
-          activeTool={activeTool}
+      <GISAIInsights 
+        isOpen={isAIInsightsOpen}
+        onClose={() => setIsAIInsightsOpen(false)}
+        feature={features.find(f => f.id === selectedFeatureId) || null}
+      />
+
+      <GISMap 
+        activeTool={activeTool}
           features={features}
           onFeatureCreate={handleFeatureCreate}
           selectedFeatureId={selectedFeatureId}
