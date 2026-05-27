@@ -180,6 +180,22 @@ export default function GISContainer() {
     setPendingFeature(null);
   };
 
+  const handleProjectSelect = (projectId: number) => {
+    setSelectedProjectId(projectId);
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      toast.success(`Projeto "${project.nome}" selecionado`, {
+        description: "Vínculos de engenharia atualizados."
+      });
+      // Aqui poderíamos filtrar as feições do mapa baseadas no projeto
+    }
+  };
+
+  const handleProjectCreated = (project: Project) => {
+    setProjects(prev => [...prev, project]);
+    setSelectedProjectId(project.id!);
+  };
+
   const toggleEngineeringLayer = (layer: EngineeringLayer) => {
     setActiveEngineeringLayers(prev => {
       const next = new Set(prev);
