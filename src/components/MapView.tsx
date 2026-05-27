@@ -101,11 +101,18 @@ export default function MapView() {
       createdAt: Date.now()
     };
 
-    await db.mapFeatures.add(newFeature);
+    const id = await db.mapFeatures.add(newFeature);
+    const savedFeature = { ...newFeature, id };
+    
     toast.success("Trecho salvo nos levantamentos!");
     setMarkers([]);
     setIsMeasuring(false);
     loadData();
+    
+    // Pergunta se deseja encaminhar imediatamente
+    setTimeout(() => {
+      handleForward(savedFeature, 'budget');
+    }, 500);
   };
 
   const deleteFeature = async (id: number) => {
