@@ -20,9 +20,11 @@ export default function GISContainer() {
   const [activeTool, setActiveTool] = useState<GISTool>('select');
   const [features, setFeatures] = useState<MapFeature[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [selectedFeatureId, setSelectedFeatureId] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isAIInsightsOpen, setIsAIInsightsOpen] = useState(false);
   const [pendingFeature, setPendingFeature] = useState<MapFeature | null>(null);
   const [isClient, setIsClient] = useState(false);
