@@ -14,6 +14,7 @@ export default function GISContainer() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedFeatureId, setSelectedFeatureId] = useState<number | null>(null);
   const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
+  const [isAIInsightsOpen, setIsAIInsightsOpen] = useState(false);
   const [pendingFeature, setPendingFeature] = useState<MapFeature | null>(null);
 
   const loadData = useCallback(async () => {
