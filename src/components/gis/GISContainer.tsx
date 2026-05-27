@@ -240,6 +240,7 @@ export default function GISContainer() {
               activeEngineeringLayers={activeEngineeringLayers}
               isGpsActive={isGpsActive}
               gpsMode={gpsMode}
+              isInspectionMode={isInspectionMode}
             />
           </Suspense>
         ) : (
