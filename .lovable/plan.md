@@ -1,24 +1,31 @@
-# Plano de Implementação: Ativação dos Módulos do InfraFlow
+# Plano de Implementação: Upgrades Profissionais InfraFlow
 
-Para transformar os módulos em desenvolvimento em ferramentas funcionais, seguirei um processo de implementação modular para cada seção requisitada.
+Vou implementar as 4 melhorias sugeridas para elevar o InfraFlow ao nível de software corporativo de infraestrutura pesada.
 
-## Etapas de Desenvolvimento
+## 1. Relatórios Técnicos Automatizados (PDF)
+*   Implementar motor de geração de PDF usando `jspdf` e `jspdf-autotable`.
+*   Criar templates profissionais para "Diário de Obra" e "Boletim de Medição".
+*   Adicionar botões de "Exportar Relatório" nas telas correspondentes.
 
-1.  **Padronização da Interface**: Criar um componente de "DataView" premium (tabela/grid) que servirá como base para todos os módulos (Projetos, Medições, Diário, etc.).
-2.  **Infraestrutura de Dados**:
-    - Criar tabelas Supabase necessárias para cada módulo (ex: `projects`, `measurements`, `daily_logs`, `financial_records`, `standards`).
-    - Configurar RLS (Row Level Security) para cada nova tabela.
-3.  **Implementação Modular**:
-    - **Projetos**: CRUD completo, status da obra, geolocalização básica.
-    - **Medições**: Tabela interativa com cálculos automáticos de avanço físico/financeiro.
-    - **Diário de Obra**: Registro de atividades diárias, clima, ocorrências com suporte a imagens.
-    - **Financeiro**: Dashboard de custos, comparativo orçado vs. realizado.
-    - **Normas Técnicas**: Central de busca e repositório organizado de normas (além da Biblioteca Inteligente).
-4.  **Integração**: Conectar as tabelas aos componentes de interface.
+## 2. Dashboard Georreferenciado Ativo
+*   Integrar os dados de `measurements` e `dailyLogs` ao componente `MapView`.
+*   Implementar marcadores no mapa que mostram detalhes ao clicar (fotos, serviços, datas).
+*   Permitir filtragem por estaca (km) ou projeto no mapa.
+
+## 3. Assistente de Campo por Voz com IA
+*   Implementar interface de gravação de áudio nas telas de entrada de dados.
+*   Criar `server-fn` para transcrição e processamento via IA (LLM) para extrair entidades técnicas (clima, equipe, serviços).
+*   Preenchimento automático dos formulários a partir do áudio.
+
+## 4. Inteligência de Custos (Importador SICRO/DER)
+*   Criar funcionalidade para importar tabelas de preços via Excel/PDF (usando OCR se necessário).
+*   Implementar alertas visuais de "Budget Overrun" nas medições.
+*   Dashboard de evolução financeira Real vs Orçado.
 
 ## Detalhes Técnicos
-- **Banco de Dados**: Migrations SQL para criação das tabelas.
-- **Frontend**: Componentes Shadcn UI (Table, DataTable, Form, etc.) para garantir o visual premium.
-- **State Management**: TanStack Query para sincronização de dados.
+*   **Storage:** Utilização do Dexie (IndexedDB) para persistência total offline de relatórios e mapas.
+*   **PDF:** Geração client-side para garantir funcionamento sem internet.
+*   **IA:** Integração com modelos capazes de entender terminologia de engenharia rodoviária brasileira (CBUQ, BGTC, Estacas, etc).
 
-O objetivo é entregar cada módulo com funcionalidade de leitura e escrita, prontos para uso profissional. Qual desses módulos devemos priorizar para a primeira implementação funcional?
+---
+*Vou iniciar a implementação destas funcionalidades agora.*

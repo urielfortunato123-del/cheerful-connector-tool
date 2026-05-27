@@ -24,7 +24,8 @@ import {
   Plus,
   History,
   Calendar as CalendarIcon,
-  Trash2
+  Trash2,
+  FileDown
 } from "lucide-react";
 import { db, DailyLog, Project } from "@/lib/db";
 import { toast } from "sonner";
@@ -32,6 +33,9 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { generateProfessionalPDF } from "@/lib/pdf-generator";
+import { VoiceAssistant } from "@/components/VoiceAssistant";
+
 
 
 export const Route = createFileRoute("/daily-log")({
@@ -122,12 +126,22 @@ function DailyLogs() {
     loadLogs();
   };
 
+  const handleExportPDF = async () => {
+    if (!currentLog.id) {
+      toast.error("Salve o diário antes de exportar.");
+      return;
+    }
+    const project = projects.find(p => p.id === parseInt(selectedProjectId));
+    await generateProfessionalPDF('DailyLog', currentLog, project?.nome || "Projeto");
+  };
+
   const deleteLog = async (id: number) => {
     if (confirm("Excluir este registro?")) {
       await db.dailyLogs.delete(id);
       loadLogs();
     }
   };
+
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20">
@@ -139,8 +153,13 @@ function DailyLogs() {
           </h1>
           <p className="text-muted-foreground mt-1">Registro diário de clima, equipe e ocorrências técnicas</p>
         </div>
-        <div className="flex gap-2 w-full md:w-auto">
+        <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+          <Button variant="outline" className="gap-2 glass-card h-10 border-primary/20 text-primary" onClick={handleExportPDF}>
+            <FileDown className="h-4 w-4" />
+            PDF Profissional
+          </Button>
           <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+
             <SelectTrigger className="w-full md:w-[200px] glass-card">
               <SelectValue placeholder="Projeto" />
             </SelectTrigger>
@@ -172,7 +191,19 @@ function DailyLogs() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
+              <VoiceAssistant 
+                onTranscript={(data) => {
+                  setCurrentLog(prev => ({
+                    ...prev,
+                    clima: data.clima || prev.clima,
+                    equipe: data.equipe || prev.equipe,
+                    observacoes: (prev.observacoes ? prev.observacoes + "\n" : "") + (data.observacoes || "")
+                  }));
+                }} 
+              />
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
                 <div className="space-y-2">
                   <Label>Condição Climática</Label>
                   <div className="flex gap-2">
