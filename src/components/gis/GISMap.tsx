@@ -326,10 +326,26 @@ export default function GISMap({
 
         {/* Render Saved Features */}
         {features.map((f) => {
+          // Filtragem real por camadas ativas
           if (!activeEngineeringLayers.has(f.category as any) && f.category !== 'geral') return null;
 
           const isSelected = selectedFeatureId === f.id;
-          const color = isSelected ? "#3b82f6" : (f.properties.color || (f.category === 'drenagem' ? "#3b82f6" : f.category === 'obras' ? "#f97316" : "#FF6B00"));
+          
+          // Lógica de cores profissional por categoria
+          const getCategoryColor = (cat: string) => {
+            switch(cat) {
+              case 'obras': return "#f97316"; // Laranja
+              case 'drenagem': return "#3b82f6"; // Azul
+              case 'pavimentacao': return "#64748b"; // Cinza/Slate
+              case 'hidrografia': return "#0ea5e9"; // Cyan
+              case 'curvas_nivel': return "#10b981"; // Emerald
+              case 'sinalizacao': return "#eab308"; // Yellow
+              case 'contratos': return "#ef4444"; // Vermelho
+              default: return "#FF6B00";
+            }
+          };
+
+          const color = isSelected ? "#ffffff" : (f.properties.color || getCategoryColor(f.category));
           
           if (f.type === 'line') {
             return (
