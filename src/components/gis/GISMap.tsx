@@ -339,6 +339,7 @@ export default function GISMap({
           // Lógica de cores profissional por categoria
           const getCategoryColor = (cat: string) => {
             switch(cat) {
+              case 'projeto': return "#22c55e"; // Verde Vivo
               case 'obras': return "#f97316"; // Laranja
               case 'drenagem': return "#3b82f6"; // Azul
               case 'pavimentacao': return "#64748b"; // Cinza/Slate
