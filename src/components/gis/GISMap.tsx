@@ -420,8 +420,13 @@ export default function GISMap({
               </span>
               <span className="text-lg font-black text-primary">
                 {activeTool.includes('area') 
-                  ? `${calculateSpatialMetrics('area', activePoints).area} km²`
-                  : `${calculateSpatialMetrics('line', activePoints).distance} km`
+                  ? `${calculateSpatialMetrics('area', activePoints).area} km² (${calculateSpatialMetrics('area', activePoints).areaM2} m²)`
+                  : (() => {
+                      const m = calculateSpatialMetrics('line', activePoints);
+                      if (m.distance < 0.1) return `${m.distanceM} m`;
+                      if (m.distance < 0.001) return `${m.distanceCm} cm`;
+                      return `${m.distance} km`;
+                    })()
                 }
               </span>
             </div>
