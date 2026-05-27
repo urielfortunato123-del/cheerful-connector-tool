@@ -72,6 +72,14 @@ export default function GISContainer() {
 
   const handleExport = () => {
     const data = exportToGeoJSON(features);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `InfraFlow_GIS_${new Date().toISOString()}.geojson`;
+    a.click();
+    toast.success("Exportação GeoJSON concluída.");
+  };
 
   const handleModuleExecution = async (dest: string, projectId: number) => {
     if (!pendingFeature) return;
