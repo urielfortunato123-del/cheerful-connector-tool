@@ -32,6 +32,7 @@ interface GISProjectSelectorProps {
   projects: Project[];
   selectedProjectId: number | null;
   onSelect: (projectId: number) => void;
+  onToggleFavorite?: (projectId: number) => void;
   onCreateNew: () => void;
 }
 
@@ -39,6 +40,7 @@ export default function GISProjectSelector({
   projects, 
   selectedProjectId, 
   onSelect, 
+  onToggleFavorite,
   onCreateNew 
 }: GISProjectSelectorProps) {
   const [open, setOpen] = useState(false);
