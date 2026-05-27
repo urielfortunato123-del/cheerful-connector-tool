@@ -226,7 +226,7 @@ export default function GISContainer() {
   return (
     <div className="flex h-full w-full overflow-hidden rounded-3xl border border-white/10 bg-background shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
       <GISSidebar 
-        features={features}
+        features={filteredFeatures}
         onSelect={(f) => setSelectedFeatureId(f.id!)}
         onDelete={handleDelete}
         onEdit={handleEditRequest}
