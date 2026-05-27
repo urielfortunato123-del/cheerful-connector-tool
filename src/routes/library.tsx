@@ -306,7 +306,7 @@ function Library() {
               </h2>
             </div>
             <div className="flex-1 overflow-hidden">
-               <AskAI />
+               <AskAI context={selectedDocForAI?.textoExtraido} />
             </div>
           </div>
         </DialogContent>
