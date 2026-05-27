@@ -151,9 +151,17 @@ export default function GISContainer() {
   const handleModuleExecution = async (dest: string, projectId: number, unit?: string) => {
     if (!pendingFeature) return;
 
-    if (dest === 'save') {
-      setIsModuleModalOpen(false);
-      return;
+    if (dest === 'save' || projectId > 0) {
+      if (pendingFeature.id) {
+        await handleFeatureUpdate(pendingFeature.id, { 
+          properties: { ...pendingFeature.properties, projectId } 
+        });
+      }
+      if (dest === 'save') {
+        setIsModuleModalOpen(false);
+        setPendingFeature(null);
+        return;
+      }
     }
 
     const finalUnit = unit || (pendingFeature.type === 'line' ? 'km' : 'km²');
