@@ -7,7 +7,7 @@ import { calculateSpatialMetrics } from "@/lib/gis-utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { BaseLayer, EngineeringLayer } from "./GISContainer";
-import { Navigation, Info, Mountain, Waves, Crosshair, Target, ShieldCheck, Ruler } from "lucide-react";
+import { Navigation, Info, Mountain, Waves, Crosshair, Target, ShieldCheck, Ruler, ScanSearch } from "lucide-react";
 
 // Fix for default marker icons
 // @ts-ignore
@@ -42,23 +42,23 @@ function DynamicTileLayer({ activeBaseLayer }: { activeBaseLayer: BaseLayer }) {
   });
 
   const url = useMemo(() => {
-    // Implement Dynamic Provider Switching Logic
+    // Dynamic Provider Switching Logic
     if (activeBaseLayer === 'satellite') {
       if (zoom > 18) {
-        // High Zoom: HD Engineering Satellite (Using Esri as HD placeholder or Google if key existed)
+        // High Zoom: HD Engineering Satellite (Esri World Imagery)
         return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-      } else if (zoom > 12) {
-        // Medium Zoom: Streets and Context
+      } else if (zoom > 14) {
+        // Medium Zoom: Streets and Context (OSM)
         return "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
       } else {
-        // Low Zoom: Regional Satellite
+        // Low Zoom: Regional Satellite (Esri)
         return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
       }
     }
 
     switch(activeBaseLayer) {
       case 'google-satellite': return "http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}";
-      case 'mapbox-satellite': return "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.webp?access_token={accessToken}"; // Needs token
+      case 'mapbox-satellite': return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"; // Fallback
       case 'esri-world': return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
       case 'topography': return "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
       case 'streets': return "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -143,6 +143,20 @@ function GpsTracker({ active, mode }: { active: boolean, mode: string }) {
   );
 }
 
+function InspectionCrosshair({ active }: { active: boolean }) {
+  if (!active) return null;
+  return (
+    <div className="absolute inset-0 pointer-events-none z-[2000] flex items-center justify-center">
+      <div className="relative">
+        <div className="absolute h-px w-20 bg-orange-500/50 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" />
+        <div className="absolute w-px h-20 bg-orange-500/50 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" />
+        <div className="absolute h-6 w-6 border border-orange-500/50 rounded-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" />
+        <div className="absolute h-1 w-1 bg-orange-500 rounded-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 export default function GISMap({ 
   activeTool, 
   features, 
@@ -152,7 +166,8 @@ export default function GISMap({
   activeBaseLayer,
   activeEngineeringLayers,
   isGpsActive,
-  gpsMode
+  gpsMode,
+  isInspectionMode
 }: GISMapProps) {
   const [activePoints, setActivePoints] = useState<[number, number][]>([]);
   const center: [number, number] = [-23.5505, -46.6333];
@@ -194,16 +209,6 @@ export default function GISMap({
     setActivePoints([]);
   }, [activePoints, activeTool, onFeatureCreate]);
 
-  const baseLayerUrl = useMemo(() => {
-    switch(activeBaseLayer) {
-      case 'satellite': return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-      case 'topography': return "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
-      case 'streets': return "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-      case 'dark': 
-      default: return "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-    }
-  }, [activeBaseLayer]);
-
   const [mousePos, setMousePos] = useState<[number, number] | null>(null);
 
   function MouseTracker() {
@@ -217,6 +222,8 @@ export default function GISMap({
 
   return (
     <div className="w-full h-full relative group/map overflow-hidden">
+      <InspectionCrosshair active={isInspectionMode} />
+      
       {/* Compass / Bússola */}
       <div className="absolute top-4 left-4 z-[1000] w-12 h-12 bg-background/80 backdrop-blur-md rounded-full border border-white/10 flex items-center justify-center shadow-xl">
         <Navigation className="h-6 w-6 text-primary transition-transform duration-300" style={{ transform: 'rotate(-45deg)' }} />
@@ -225,12 +232,14 @@ export default function GISMap({
 
       <MapContainer 
         center={center} 
-        zoom={13} 
+        zoom={isInspectionMode ? 19 : 13} 
+        minZoom={3}
+        maxZoom={24}
         style={{ height: '100%', width: '100%' }}
         className="z-0"
         doubleClickZoom={false}
       >
-        <TileLayer url={baseLayerUrl} />
+        <DynamicTileLayer activeBaseLayer={activeBaseLayer} />
         <MouseTracker />
         
         {/* Engineering Overlays (Functional Toggles) */}
@@ -262,7 +271,6 @@ export default function GISMap({
 
         {/* Render Saved Features */}
         {features.map((f) => {
-          // Filter by active categories if applicable
           if (!activeEngineeringLayers.has(f.category as any) && f.category !== 'geral') return null;
 
           const isSelected = selectedFeatureId === f.id;
@@ -382,13 +390,18 @@ export default function GISMap({
 
       {/* Floating Indicators */}
       <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+        {isInspectionMode && (
+          <div className="bg-orange-500 text-white p-2 rounded-xl flex items-center gap-2 text-[9px] font-black uppercase shadow-lg shadow-orange-500/20 animate-pulse">
+            <ScanSearch className="h-3.5 w-3.5" /> Modo Inspeção Ultra-HD
+          </div>
+        )}
         {activeEngineeringLayers.has('hidrografia') && (
-          <div className="bg-background/80 backdrop-blur-md p-2 rounded-xl border border-white/10 flex items-center gap-2 text-[9px] font-bold uppercase animate-in slide-in-from-right-5">
+          <div className="bg-background/80 backdrop-blur-md p-2 rounded-xl border border-white/10 flex items-center gap-2 text-[9px] font-bold uppercase">
             <Waves className="h-3 w-3 text-cyan-500" /> Hidrografia Ativa
           </div>
         )}
         {activeEngineeringLayers.has('curvas_nivel') && (
-          <div className="bg-background/80 backdrop-blur-md p-2 rounded-xl border border-white/10 flex items-center gap-2 text-[9px] font-bold uppercase animate-in slide-in-from-right-5">
+          <div className="bg-background/80 backdrop-blur-md p-2 rounded-xl border border-white/10 flex items-center gap-2 text-[9px] font-bold uppercase">
             <Mountain className="h-3 w-3 text-emerald-500" /> Topografia Ativa
           </div>
         )}
@@ -398,18 +411,29 @@ export default function GISMap({
       {activePoints.length > 1 && (
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] bg-background/80 backdrop-blur-2xl border border-white/10 p-4 rounded-3xl shadow-2xl flex items-center gap-8 animate-in slide-in-from-bottom-10">
            <div className="flex flex-col">
-              <span className="text-[9px] font-black uppercase text-muted-foreground">Pontos Capturados</span>
+              <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Pontos</span>
               <span className="text-lg font-black">{activePoints.length}</span>
            </div>
            <div className="flex flex-col border-l border-white/5 pl-8">
-              <span className="text-[9px] font-black uppercase text-primary">Medição Estimada</span>
+              <span className="text-[9px] font-black uppercase text-primary tracking-widest flex items-center gap-1">
+                <Ruler className="h-3 w-3" /> Medição
+              </span>
               <span className="text-lg font-black text-primary">
                 {activeTool.includes('area') 
                   ? `${calculateSpatialMetrics('area', activePoints).area} km²`
                   : `${calculateSpatialMetrics('line', activePoints).distance} km`
                 }
               </span>
-      </div>
+            </div>
+            <Button 
+            size="sm" 
+            className="rounded-2xl font-black uppercase text-[10px] ml-4 h-12 px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
+            onClick={handleComplete}
+           >
+            Finalizar (Enter)
+           </Button>
+        </div>
+      )}
 
       {/* Mini Map Placeholder */}
       <div className="absolute bottom-4 right-16 z-[1000] w-32 h-32 rounded-3xl border-4 border-background/80 shadow-2xl overflow-hidden bg-muted group/mini hover:scale-110 transition-transform">
@@ -419,27 +443,25 @@ export default function GISMap({
         </div>
         <div className="absolute bottom-1 left-0 right-0 text-center text-[7px] font-black uppercase text-white/50 tracking-tighter">Mini-Map V1</div>
       </div>
-           <Button 
-            size="sm" 
-            className="rounded-2xl font-black uppercase text-[10px] ml-4 h-12 px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
-            onClick={handleComplete}
-           >
-            Finalizar Geometria (Enter)
-           </Button>
-        </div>
-      )}
 
       {/* Real-time coordinates display */}
       <div className="absolute bottom-4 left-4 z-[1000] flex flex-col gap-1">
         {mousePos && (
-          <div className="bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-[10px] font-mono text-primary flex gap-3 shadow-2xl animate-in fade-in slide-in-from-left-2">
-            <span>LAT: {mousePos[0].toFixed(6)}</span>
+          <div className="bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-[10px] font-mono text-primary flex gap-3 shadow-2xl">
+            <span>LAT: {mousePos[0].toFixed(8)}</span>
             <span className="text-white/20">|</span>
-            <span>LNG: {mousePos[1].toFixed(6)}</span>
+            <span>LNG: {mousePos[1].toFixed(8)}</span>
+            {isInspectionMode && (
+              <>
+                <span className="text-white/20">|</span>
+                <span className="text-orange-500 font-black animate-pulse">PRECISÃO: MILIMÉTRICA</span>
+              </>
+            )}
           </div>
         )}
-        <div className="bg-background/60 backdrop-blur-md px-3 py-1 rounded-xl border border-white/5 text-[9px] font-mono text-muted-foreground uppercase tracking-widest pointer-events-none w-fit">
-          InfraFlow GIS Engine v5.2 | PRO-MODE
+        <div className="bg-background/60 backdrop-blur-md px-3 py-1 rounded-xl border border-white/5 text-[9px] font-mono text-muted-foreground uppercase tracking-widest pointer-events-none w-fit flex items-center gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          InfraFlow GIS Engine v6.0 | HD-ENGINEERING
         </div>
       </div>
     </div>
