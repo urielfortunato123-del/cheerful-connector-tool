@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon, useMapEvents, ScaleControl, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Polygon, useMapEvents, ScaleControl, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import { MapFeature } from "@/lib/db";
 import { GISTool } from "./GISToolbar";
@@ -7,7 +7,7 @@ import { calculateSpatialMetrics } from "@/lib/gis-utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { BaseLayer, EngineeringLayer } from "./GISContainer";
-import { Navigation, Info, Mountain, Waves } from "lucide-react";
+import { Navigation, Info, Mountain, Waves, Crosshair, Target, ShieldCheck, Ruler } from "lucide-react";
 
 // Fix for default marker icons
 // @ts-ignore
