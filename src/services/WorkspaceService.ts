@@ -16,6 +16,7 @@ export class WorkspaceService {
 
   static async selectWorkspace() {
     try {
+      // @ts-ignore
       this.directoryHandle = await window.showDirectoryPicker({
         mode: 'readwrite'
       });
