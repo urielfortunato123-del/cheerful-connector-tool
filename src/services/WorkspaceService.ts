@@ -83,6 +83,36 @@ export class WorkspaceService {
     }
   }
 
+  static async loadProjectData(customDir?: FileSystemDirectoryHandle) {
+    const projectDir = customDir || this.directoryHandle;
+    if (!projectDir || !this.currentProject) return;
+
+    try {
+      const dbDir = await projectDir.getDirectoryHandle('database');
+      const tables = ['documents', 'projects', 'budgets', 'measurements', 'memorials', 'asbuilt', 'dailyLogs', 'financial', 'mapFeatures'];
+      
+      for (const tableName of tables) {
+        try {
+          const fileHandle = await dbDir.getFileHandle(`${tableName}.json`);
+          const file = await fileHandle.getFile();
+          const content = await file.text();
+          const data = JSON.parse(content);
+          
+          // @ts-ignore
+          await db[tableName].clear();
+          if (data && data.length > 0) {
+            // @ts-ignore
+            await db[tableName].bulkAdd(data);
+          }
+        } catch (e) {
+          // Table file might not exist yet for new projects
+        }
+      }
+    } catch (error) {
+      console.warn('Estrutura de banco de dados não encontrada ou erro ao carregar:', error);
+    }
+  }
+
   static async saveProject() {
     if (!this.directoryHandle || !this.currentProject) return;
 
