@@ -369,7 +369,16 @@ export default function GISMap({
                   : `${calculateSpatialMetrics('line', activePoints).distance} km`
                 }
               </span>
-           </div>
+      </div>
+
+      {/* Mini Map Placeholder */}
+      <div className="absolute bottom-4 right-16 z-[1000] w-32 h-32 rounded-3xl border-4 border-background/80 shadow-2xl overflow-hidden bg-muted group/mini hover:scale-110 transition-transform">
+        <div className="w-full h-full opacity-50 bg-[url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/10/374/617')] bg-cover"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.8)]"></div>
+        </div>
+        <div className="absolute bottom-1 left-0 right-0 text-center text-[7px] font-black uppercase text-white/50 tracking-tighter">Mini-Map V1</div>
+      </div>
            <Button 
             size="sm" 
             className="rounded-2xl font-black uppercase text-[10px] ml-4 h-12 px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
