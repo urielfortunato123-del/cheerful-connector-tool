@@ -357,20 +357,37 @@ export default function GISMap({
                 eventHandlers={{ click: () => onSelectFeature(f.id!) }}
               >
                 <Tooltip sticky>
-                  <div className="p-3 font-sans bg-background/90 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl min-w-[160px]">
+                  <div className="p-3 font-sans bg-background/90 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl min-w-[200px]">
                     <div className="text-[10px] font-black uppercase text-primary mb-2 flex items-center justify-between">
                       {f.name}
                       <Info className="h-3 w-3" />
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="p-2 bg-white/5 rounded-xl">
-                        <div className="text-[8px] uppercase text-muted-foreground font-bold">Extensão</div>
-                        <div className="text-xs font-black">{f.properties.distance} km</div>
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="p-2 bg-white/5 rounded-xl">
+                          <div className="text-[8px] uppercase text-muted-foreground font-bold">Métrica</div>
+                          <div className="text-xs font-black">
+                            {f.properties.distance ? `${f.properties.distance} km` : f.properties.area ? `${f.properties.area} km²` : 'N/A'}
+                          </div>
+                        </div>
+                        <div className="p-2 bg-white/5 rounded-xl">
+                          <div className="text-[8px] uppercase text-muted-foreground font-bold">Categoria</div>
+                          <div className="text-xs font-black capitalize">{f.category}</div>
+                        </div>
                       </div>
-                      <div className="p-2 bg-white/5 rounded-xl">
-                        <div className="text-[8px] uppercase text-muted-foreground font-bold">Categoria</div>
-                        <div className="text-xs font-black capitalize">{f.category}</div>
-                      </div>
+                      
+                      {f.properties.status && (
+                        <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
+                          <div className="text-[8px] uppercase text-primary font-bold">Status Operacional</div>
+                          <div className="text-[10px] font-black">{f.properties.status}</div>
+                        </div>
+                      )}
+                      
+                      {f.properties.description && (
+                        <div className="text-[9px] text-muted-foreground leading-tight italic border-t border-white/5 pt-2">
+                          {f.properties.description}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Tooltip>
