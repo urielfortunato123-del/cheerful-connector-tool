@@ -58,16 +58,28 @@ export interface Measurement {
 
 export interface MapFeature {
   id?: number;
-  type: 'line' | 'area' | 'point';
+  type: 'point' | 'line' | 'area';
+  category: 'obras' | 'drenagem' | 'pavimentação' | 'contratos' | 'financeiro' | 'acidentes' | 'sinalização' | 'normas' | 'medições' | 'projetos' | 'geral';
   name: string;
-  coordinates: [number, number][];
+  coordinates: any; // GeoJSON geometry or coordinates array
   properties: {
     distance?: number;
     area?: number;
-    color?: string;
+    volume?: number;
+    width?: number;
     description?: string;
+    color?: string;
+    thickness?: number;
+    standard?: string; 
+    riskLevel?: 'Low' | 'Medium' | 'High';
+    budgetEstimate?: number;
+    projectId?: number;
+    linkedModuleId?: number;
+    linkedModuleType?: string;
+    aiInsights?: string;
   };
   createdAt: number;
+  updatedAt: number;
 }
 
 export interface Memorial {
