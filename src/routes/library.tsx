@@ -25,6 +25,14 @@ import { indexDocument, searchDocuments } from "@/lib/document-processor";
 import { LibraryExplorer } from "@/components/library/explorer/LibraryExplorer";
 import { DocumentGrid } from "@/components/library/DocumentGrid";
 import { LibraryHeader } from "@/components/library/LibraryHeader";
+import { DocumentViewer } from "@/components/library/viewer/DocumentViewer";
+import { AskAI } from "@/components/library/AskAI";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/library")({
@@ -38,6 +46,9 @@ function Library() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [currentHierarchy, setCurrentHierarchy] = useState<string[]>([]);
+  const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
+  const [isAskingAI, setIsAskingAI] = useState(false);
+  const [selectedDocForAI, setSelectedDocForAI] = useState<Document | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     pdf: 0,
@@ -229,11 +240,38 @@ function Library() {
                 documents={documents} 
                 viewMode={viewMode}
                 onRefresh={loadDocuments}
+                onPreview={(doc) => setPreviewDoc(doc)}
+                onAsk={(doc) => {
+                  setSelectedDocForAI(doc);
+                  setIsAskingAI(true);
+                }}
               />
             )}
           </div>
         </div>
       </div>
+
+      <DocumentViewer 
+        document={previewDoc}
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+      />
+
+      <Dialog open={isAskingAI} onOpenChange={setIsAskingAI}>
+        <DialogContent className="max-w-4xl p-0 h-[80vh] overflow-hidden">
+          <div className="flex flex-col h-full">
+            <div className="p-4 border-b bg-muted/30">
+              <h2 className="font-bold flex items-center gap-2">
+                <BrainCircuit className="h-5 w-5 text-primary" />
+                Análise Técnica IA: {selectedDocForAI?.nome}
+              </h2>
+            </div>
+            <div className="flex-1 overflow-hidden">
+               <AskAI />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
