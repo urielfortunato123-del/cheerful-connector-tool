@@ -40,7 +40,11 @@ export class WorkspaceService {
       console.error('Erro ao selecionar workspace:', error);
       return false;
     }
-  }
+  static async createProject(name: string) {
+    if (!this.directoryHandle) {
+      const selected = await this.selectWorkspace();
+      if (!selected) return null;
+    }
 
     try {
       const projectDir = await this.directoryHandle!.getDirectoryHandle(name, { create: true });
