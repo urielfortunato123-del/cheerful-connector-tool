@@ -249,7 +249,9 @@ export default function GISContainer() {
         onClose={() => setIsModuleModalOpen(false)}
         feature={pendingFeature}
         projects={projects}
+        isEditMode={isEditMode}
         onExecute={handleModuleExecution}
+        onUpdate={handleFeatureUpdate}
       />
     </div>
   );
