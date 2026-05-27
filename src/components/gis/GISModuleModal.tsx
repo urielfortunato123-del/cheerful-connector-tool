@@ -77,7 +77,7 @@ export default function GISModuleModal({
   ];
 
   const handleExecute = (moduleId: string) => {
-    onExecute(moduleId, parseInt(selectedProjectId) || 0, selectedUnit);
+    onExecute(moduleId, parseInt(selectedId) || 0, selectedUnit);
   };
 
   const handleSaveName = () => {
