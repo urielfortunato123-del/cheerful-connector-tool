@@ -53,6 +53,7 @@ export default function GISSidebar({
   features, 
   onSelect, 
   onDelete, 
+  onEdit,
   onDuplicate,
   onExport,
   onExportKML,
