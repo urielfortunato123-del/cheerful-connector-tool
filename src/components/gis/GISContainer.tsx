@@ -3,6 +3,8 @@ import GISToolbar, { GISTool } from "./GISToolbar";
 import GISSidebar from "./GISSidebar";
 import GISModuleModal from "./GISModuleModal";
 import GISAIInsights from "./GISAIInsights";
+import GISProjectSelector from "./GISProjectSelector";
+import GISProjectModal from "./GISProjectModal";
 import { MapFeature, db, Project } from "@/lib/db";
 import { toast } from "sonner";
 import { exportToGeoJSON, exportToKML } from "@/lib/gis-utils";
@@ -17,10 +19,13 @@ export type EngineeringLayer = 'obras' | 'drenagem' | 'pavimentacao' | 'contrato
 export default function GISContainer() {
   const [activeTool, setActiveTool] = useState<GISTool>('select');
   const [features, setFeatures] = useState<MapFeature[]>([]);
+  const [filteredFeatures, setFilteredFeatures] = useState<MapFeature[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [selectedFeatureId, setSelectedFeatureId] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isAIInsightsOpen, setIsAIInsightsOpen] = useState(false);
   const [pendingFeature, setPendingFeature] = useState<MapFeature | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -55,6 +60,19 @@ export default function GISContainer() {
       console.error("Erro ao carregar dados do GIS:", error);
     }
   }, []);
+
+  useEffect(() => {
+    if (selectedProjectId) {
+      const filtered = features.filter(f => f.properties.projectId === selectedProjectId || !f.properties.projectId);
+      setFilteredFeatures(filtered);
+      
+      if (selectedFeatureId && !filtered.find(f => f.id === selectedFeatureId)) {
+        setSelectedFeatureId(null);
+      }
+    } else {
+      setFilteredFeatures(features);
+    }
+  }, [features, selectedProjectId, selectedFeatureId]);
 
   const handleFeatureCreate = async (partialFeature: Partial<MapFeature>) => {
     const fullFeature: MapFeature = {
@@ -133,9 +151,17 @@ export default function GISContainer() {
   const handleModuleExecution = async (dest: string, projectId: number, unit?: string) => {
     if (!pendingFeature) return;
 
-    if (dest === 'save') {
-      setIsModuleModalOpen(false);
-      return;
+    if (dest === 'save' || projectId > 0) {
+      if (pendingFeature.id) {
+        await handleFeatureUpdate(pendingFeature.id, { 
+          properties: { ...pendingFeature.properties, projectId } 
+        });
+      }
+      if (dest === 'save') {
+        setIsModuleModalOpen(false);
+        setPendingFeature(null);
+        return;
+      }
     }
 
     const finalUnit = unit || (pendingFeature.type === 'line' ? 'km' : 'km²');
@@ -171,9 +197,47 @@ export default function GISContainer() {
       });
       toast.success("Memorial Técnico gerado!");
     }
+    
+    if (dest === 'log') {
+      await db.dailyLogs.add({
+        projectId,
+        data: Date.now(),
+        clima: "Não informado",
+        equipe: "Equipe GIS",
+        observacoes: `Ocorrência registrada via GIS no trecho ${pendingFeature.name}.`
+      });
+      toast.success("Ocorrência registrada no Diário!");
+    }
 
     setIsModuleModalOpen(false);
     setPendingFeature(null);
+  };
+
+  const handleProjectSelect = (projectId: number) => {
+    setSelectedProjectId(projectId);
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      toast.success(`Projeto "${project.nome}" selecionado`, {
+        description: "Vínculos de engenharia atualizados."
+      });
+      // Aqui poderíamos filtrar as feições do mapa baseadas no projeto
+    }
+  };
+
+  const handleProjectCreated = (project: Project) => {
+    setProjects(prev => [...prev, project]);
+    setSelectedProjectId(project.id!);
+  };
+
+  const handleToggleFavorite = async (projectId: number) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    const newStatus = !project.favorito;
+    await db.projects.update(projectId, { favorito: newStatus });
+    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, favorito: newStatus } : p));
+    
+    toast.success(newStatus ? "Adicionado aos favoritos" : "Removido dos favoritos");
   };
 
   const toggleEngineeringLayer = (layer: EngineeringLayer) => {
@@ -197,7 +261,7 @@ export default function GISContainer() {
   return (
     <div className="flex h-full w-full overflow-hidden rounded-3xl border border-white/10 bg-background shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
       <GISSidebar 
-        features={features}
+        features={filteredFeatures}
         onSelect={(f) => setSelectedFeatureId(f.id!)}
         onDelete={handleDelete}
         onEdit={handleEditRequest}
@@ -215,6 +279,16 @@ export default function GISContainer() {
       />
 
       <div className="flex-1 relative h-full">
+        <div className="absolute top-4 left-4 z-[1000]">
+          <GISProjectSelector 
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onSelect={handleProjectSelect}
+            onToggleFavorite={handleToggleFavorite}
+            onCreateNew={() => setIsProjectModalOpen(true)}
+          />
+        </div>
+
         <GISToolbar 
           activeTool={activeTool}
           onToolSelect={setActiveTool}
@@ -243,7 +317,7 @@ export default function GISContainer() {
           <Suspense fallback={<div className="w-full h-full bg-muted animate-pulse flex items-center justify-center"><span className="text-xs font-bold">INICIANDO MOTOR GRÁFICO...</span></div>}>
             <GISMap 
               activeTool={activeTool}
-              features={features}
+              features={filteredFeatures}
               onFeatureCreate={handleFeatureCreate}
               selectedFeatureId={selectedFeatureId}
               onSelectFeature={setSelectedFeatureId}
@@ -264,9 +338,16 @@ export default function GISContainer() {
         onClose={() => setIsModuleModalOpen(false)}
         feature={pendingFeature}
         projects={projects}
+        selectedProjectId={selectedProjectId}
         isEditMode={isEditMode}
         onExecute={handleModuleExecution}
         onUpdate={handleFeatureUpdate}
+      />
+
+      <GISProjectModal 
+        isOpen={isProjectModalOpen}
+        onClose={() => setIsProjectModalOpen(false)}
+        onProjectCreated={handleProjectCreated}
       />
     </div>
   );

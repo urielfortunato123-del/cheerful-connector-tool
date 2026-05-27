@@ -28,11 +28,16 @@ export interface Project {
   id?: number;
   nome: string;
   rodovia: string;
+  contrato?: string;
+  cliente?: string;
+  tipoObra?: string;
   kmInicial: number;
   kmFinal: number;
   lado: 'N' | 'S' | 'L' | 'O' | 'Crescente' | 'Decrescente';
   status: 'Em Planejamento' | 'Em Execução' | 'Concluído' | 'Paralisado';
   dataCriacao: number;
+  geometriaVinculada?: any; // Armazena GeoJSON ou ID de feição
+  favorito?: boolean;
 }
 
 export interface Budget {
@@ -154,7 +159,7 @@ export class InfraFlowDB extends Dexie {
     super('InfraFlowDB_V5');
     this.version(1).stores({
       documents: '++id, nome, tipo, categoria, subcategoria, orgao, indexed, favorito, *hierarquia, *tags',
-      projects: '++id, nome, rodovia, status',
+      projects: '++id, nome, rodovia, contrato, cliente, status, favorito',
       budgets: '++id, projectId',
       measurements: '++id, projectId',
       memorials: '++id, projectId',

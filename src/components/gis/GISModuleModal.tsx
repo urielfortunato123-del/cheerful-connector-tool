@@ -30,6 +30,7 @@ interface GISModuleModalProps {
   onClose: () => void;
   feature: MapFeature | null;
   projects: Project[];
+  selectedProjectId?: number | null;
   isEditMode?: boolean;
   onExecute: (dest: string, projectId: number, unit: string) => void;
   onUpdate?: (id: number, updates: any) => void;
@@ -40,11 +41,12 @@ export default function GISModuleModal({
   onClose, 
   feature, 
   projects, 
+  selectedProjectId,
   isEditMode = false,
   onExecute,
   onUpdate
 }: GISModuleModalProps) {
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [selectedId, setSelectedId] = useState<string>("");
   const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [editName, setEditName] = useState("");
 
@@ -53,7 +55,11 @@ export default function GISModuleModal({
       setEditName(feature.name);
       setSelectedUnit(feature.type === 'line' ? 'km' : 'km²');
     }
-  }, [feature, isOpen]);
+    
+    if (selectedProjectId) {
+      setSelectedId(selectedProjectId.toString());
+    }
+  }, [feature, isOpen, selectedProjectId]);
 
   const units = useMemo(() => {
     if (feature?.type === 'line') return ['mm', 'cm', 'm', 'km'];
@@ -71,7 +77,7 @@ export default function GISModuleModal({
   ];
 
   const handleExecute = (moduleId: string) => {
-    onExecute(moduleId, parseInt(selectedProjectId) || 0, selectedUnit);
+    onExecute(moduleId, parseInt(selectedId) || 0, selectedUnit);
   };
 
   const handleSaveName = () => {
@@ -147,7 +153,7 @@ export default function GISModuleModal({
 
             <div className="space-y-3 p-5 rounded-[2rem] bg-white/5 border border-white/5">
               <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Projeto Destino</Label>
-              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+              <Select value={selectedId} onValueChange={setSelectedId}>
                 <SelectTrigger className="bg-background/50 border-white/10 h-10 rounded-xl text-xs font-bold">
                   <SelectValue placeholder="Selecione o projeto..." />
                 </SelectTrigger>
