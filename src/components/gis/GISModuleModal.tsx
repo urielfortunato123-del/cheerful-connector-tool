@@ -28,7 +28,9 @@ interface GISModuleModalProps {
   onClose: () => void;
   feature: MapFeature | null;
   projects: Project[];
+  isEditMode?: boolean;
   onExecute: (dest: string, projectId: number, unit: string) => void;
+  onUpdate?: (id: number, updates: any) => void;
 }
 
 export default function GISModuleModal({ 
