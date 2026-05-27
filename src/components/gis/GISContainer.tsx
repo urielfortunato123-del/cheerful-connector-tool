@@ -5,7 +5,7 @@ import GISModuleModal from "./GISModuleModal";
 import GISAIInsights from "./GISAIInsights";
 import { MapFeature, db, Project } from "@/lib/db";
 import { toast } from "sonner";
-import { exportToGeoJSON, generateAIPrompt, exportToKML } from "@/lib/gis-utils";
+import { exportToGeoJSON, exportToKML } from "@/lib/gis-utils";
 
 // Lazy load GISMap to avoid SSR issues with Leaflet
 const GISMap = lazy(() => import("./GISMap"));
@@ -36,12 +36,16 @@ export default function GISContainer() {
   }, []);
 
   const loadData = useCallback(async () => {
-    const [fData, pData] = await Promise.all([
-      db.mapFeatures.toArray(),
-      db.projects.toArray()
-    ]);
-    setFeatures(fData);
-    setProjects(pData);
+    try {
+      const [fData, pData] = await Promise.all([
+        db.mapFeatures.toArray(),
+        db.projects.toArray()
+      ]);
+      setFeatures(fData);
+      setProjects(pData);
+    } catch (error) {
+      console.error("Erro ao carregar dados do GIS:", error);
+    }
   }, []);
 
   useEffect(() => {
@@ -121,8 +125,6 @@ export default function GISContainer() {
     const quantity = pendingFeature.properties.distance || pendingFeature.properties.area || 0;
 
     if (dest === 'budget' || dest === 'measurement') {
-      const table = dest === 'budget' ? db.budgets : db.measurements;
-      
       if (dest === 'measurement') {
         await db.measurements.add({
           projectId,
@@ -134,7 +136,6 @@ export default function GISContainer() {
           coordinates: pendingFeature.coordinates
         });
       } else {
-        // Simple integration for budget
         await db.budgets.add({
           projectId,
           itens: [{ descricao: pendingFeature.name, quantidade: quantity, unidade: finalUnit, valorUnitario: 0 }],
@@ -148,7 +149,7 @@ export default function GISContainer() {
     if (dest === 'memorial') {
       await db.memorials.add({
         projectId,
-        conteudo: `Memorial Descritivo Técnico gerado via IA para o trecho ${pendingFeature.name}. Extensão: ${pendingFeature.properties.distance}${finalUnit}. Baseado em Normas DER/DNIT.`,
+        conteudo: `Memorial Descritivo Técnico gerado via IA para o trecho ${pendingFeature.name}. Extensão: ${quantity}${finalUnit}. Baseado em Normas DER/DNIT.`,
         dataCriacao: Date.now()
       });
       toast.success("Memorial Técnico gerado!");
@@ -168,7 +169,7 @@ export default function GISContainer() {
   };
 
   return (
-    <div className=\"flex h-full w-full overflow-hidden rounded-3xl border border-white/10 bg-background shadow-[0_0_50px_rgba(0,0,0,0.5)] relative\">
+    <div className="flex h-full w-full overflow-hidden rounded-3xl border border-white/10 bg-background shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
       <GISSidebar 
         features={features}
         onSelect={(f) => setSelectedFeatureId(f.id!)}
@@ -186,17 +187,17 @@ export default function GISContainer() {
         onGpsToggle={() => setIsGpsActive(!isGpsActive)}
       />
 
-      <div className=\"flex-1 relative h-full\">
+      <div className="flex-1 relative h-full">
         <GISToolbar 
           activeTool={activeTool}
           onToolSelect={setActiveTool}
           onClear={() => {
             if (selectedFeatureId) handleDelete(selectedFeatureId);
           }}
-          onSave={() => toast.success(\"Base de dados GIS sincronizada localmente.\")}
+          onSave={() => toast.success("Base de dados GIS sincronizada localmente.")}
           onAI={() => {
             if (!selectedFeatureId) {
-              toast.error(\"Selecione um objeto no mapa para análise IA.\");
+              toast.error("Selecione um objeto no mapa para análise IA.");
               return;
             }
             setIsAIInsightsOpen(true);
@@ -210,7 +211,7 @@ export default function GISContainer() {
         />
 
         {isClient ? (
-          <Suspense fallback={<div className=\"w-full h-full bg-muted animate-pulse flex items-center justify-center\"><span className=\"text-xs font-bold\">INICIANDO MOTOR GRÁFICO...</span></div>}>
+          <Suspense fallback={<div className="w-full h-full bg-muted animate-pulse flex items-center justify-center"><span className="text-xs font-bold">INICIANDO MOTOR GRÁFICO...</span></div>}>
             <GISMap 
               activeTool={activeTool}
               features={features}
@@ -224,7 +225,7 @@ export default function GISContainer() {
             />
           </Suspense>
         ) : (
-          <div className=\"w-full h-full bg-muted animate-pulse flex items-center justify-center\"><span className=\"text-xs font-bold font-mono\">CARREGANDO GIS...</span></div>
+          <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center"><span className="text-xs font-bold font-mono">CARREGANDO GIS...</span></div>
         )}
       </div>
 
