@@ -174,6 +174,11 @@ export default function MapView() {
       <MapSidebar 
         features={mapFeatures} 
         onSelect={(f) => setSelectedFeature(f)}
+        onEdit={(f) => {
+          setMarkers(f.coordinates);
+          setIsMeasuring(true);
+          toast.info("Trecho carregado para edição.");
+        }}
         onDelete={deleteFeature}
         onForward={handleForward}
         onAIRequest={handleAIRequest}
