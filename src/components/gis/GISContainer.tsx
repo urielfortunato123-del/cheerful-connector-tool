@@ -281,7 +281,7 @@ export default function GISContainer() {
           <Suspense fallback={<div className="w-full h-full bg-muted animate-pulse flex items-center justify-center"><span className="text-xs font-bold">INICIANDO MOTOR GRÁFICO...</span></div>}>
             <GISMap 
               activeTool={activeTool}
-              features={features}
+              features={filteredFeatures}
               onFeatureCreate={handleFeatureCreate}
               selectedFeatureId={selectedFeatureId}
               onSelectFeature={setSelectedFeatureId}
