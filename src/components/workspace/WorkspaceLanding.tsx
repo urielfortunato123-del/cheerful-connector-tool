@@ -43,21 +43,24 @@ export function WorkspaceLanding() {
   };
 
   const handleOpenWorkspace = async () => {
-    setIsLoading(true);
     try {
+      // Call selectWorkspace FIRST to preserve user gesture context
       const selected = await WorkspaceService.selectWorkspace();
       if (selected) {
+        setIsLoading(true);
         // If selectWorkspace found a project, it's already in localStorage
         const active = WorkspaceService.getCurrentProject();
         if (active) {
-          window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: active }));
-          navigate({ to: '/' });
+          // The event infraflow_project_changed is already dispatched in selectWorkspace
+          console.log('Workspace selected and active project found');
         } else {
+          // If no metadata.json was found in root, we allow the user to name a new project in that folder
           setIsCreating(true);
         }
       }
     } catch (error) {
       console.error(error);
+      toast.error('Erro ao abrir workspace');
     } finally {
       setIsLoading(false);
     }
