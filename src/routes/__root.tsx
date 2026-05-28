@@ -128,22 +128,38 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const hydrated = useHydrated();
-  const activeProject = hydrated ? WorkspaceService.getCurrentProject() : null;
-
-  const [workspaceActive, setWorkspaceActive] = React.useState(!!activeProject);
+  const [workspaceActive, setWorkspaceActive] = React.useState(
+    typeof window !== 'undefined' ? !!WorkspaceService.getCurrentProject() : false
+  );
 
   React.useEffect(() => {
+    if (!hydrated) return;
+
+    // Check if there is an active project on load
+    const activeProject = WorkspaceService.getCurrentProject();
     if (activeProject) {
       setWorkspaceActive(true);
     }
 
     const handleProjectChange = () => {
+      console.log('Project change detected, activating workspace');
       setWorkspaceActive(true);
     };
 
     window.addEventListener('infraflow_project_changed', handleProjectChange);
-    return () => window.removeEventListener('infraflow_project_changed', handleProjectChange);
-  }, [activeProject]);
+    // Also listen for storage changes in case of multi-tab
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'infraflow_active_project' && e.newValue) {
+        setWorkspaceActive(true);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      window.removeEventListener('infraflow_project_changed', handleProjectChange);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [hydrated]);
 
   if (!hydrated) return null;
 

@@ -16,37 +16,50 @@ export class WorkspaceService {
   private static currentProject: ProjectMetadata | null = null;
 
   static async selectWorkspace() {
+    if (typeof window === 'undefined') return false;
+    
+    if (!('showDirectoryPicker' in window)) {
+      toast.error('Seu navegador não suporta a File System Access API. Use Chrome ou Edge.');
+      return false;
+    }
+
     try {
+      console.log('Opening directory picker...');
       // @ts-ignore
       this.directoryHandle = await window.showDirectoryPicker({
         mode: 'readwrite'
       });
       
-      // Persist the directory handle for later retrieval (e.g. after reload)
+      console.log('Directory selected:', this.directoryHandle.name);
+      // Persist the directory handle for later retrieval
       await set('infraflow_directory_handle', this.directoryHandle);
       
-      // Try to read existing project if metadata exists
+      // Try to read existing project if metadata exists in the ROOT of selected folder
       try {
         const metaFile = await this.directoryHandle.getFileHandle('metadata.json');
         const file = await metaFile.getFile();
         const content = await file.text();
         const metadata = JSON.parse(content);
+        console.log('Project metadata found in folder root:', metadata.name);
         this.currentProject = metadata;
         localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
         
-        // Load existing database data into IndexedDB
         await this.loadProjectData();
         window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: metadata }));
         
         toast.success('Workspace carregado com sucesso');
         return true;
       } catch (e) {
-        // No metadata file, maybe it's a new directory or project selection is needed
-        toast.success('Pasta selecionada. Prossiga para criar ou abrir projeto.');
+        console.log('No metadata.json found in root, ready for new project or manual subfolder navigation');
         return true;
       }
     } catch (error) {
-      console.error('Erro ao selecionar workspace:', error);
+      if ((error as Error).name === 'AbortError') {
+        console.log('User cancelled directory selection');
+      } else {
+        console.error('Erro ao selecionar workspace:', error);
+        toast.error('Erro ao acessar a pasta selecionada');
+      }
       return false;
     }
   }
@@ -69,15 +82,18 @@ export class WorkspaceService {
   }
 
   static async createProject(name: string) {
+    console.log('Starting createProject for:', name);
     if (!this.directoryHandle) {
+      console.log('No directory handle, requesting user to select one...');
       const selected = await this.selectWorkspace();
       if (!selected) return null;
     }
 
     try {
+      console.log('Creating directory for project:', name);
       const projectDir = await this.directoryHandle!.getDirectoryHandle(name, { create: true });
       
-      // Create subdirectories
+      console.log('Creating subdirectories...');
       const dirs = ['database', 'pdfs', 'orcamentos', 'mapas', 'medicoes', 'backups', 'logs', 'cache_ia'];
       for (const dir of dirs) {
         await projectDir.getDirectoryHandle(dir, { create: true });
@@ -90,20 +106,24 @@ export class WorkspaceService {
         lastModified: Date.now()
       };
 
-      // Save metadata
+      console.log('Saving metadata.json...');
       const metaFile = await projectDir.getFileHandle('metadata.json', { create: true });
       const writable = await metaFile.createWritable();
       await writable.write(JSON.stringify(metadata));
       await writable.close();
 
+      console.log('Project created successfully, updating state...');
       this.currentProject = metadata;
       localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
+      
+      // Dispatch event to notify the UI
       window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: metadata }));
+      console.log('infraflow_project_changed event dispatched');
       
       return metadata;
     } catch (error) {
       console.error('Erro ao criar projeto:', error);
-      toast.error('Erro ao criar estrutura do projeto');
+      toast.error('Erro ao criar estrutura do projeto. Verifique as permissões da pasta.');
       return null;
     }
   }
