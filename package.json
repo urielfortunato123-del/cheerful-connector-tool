@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && mkdir -p .output/server && cp dist/server/server.js .output/server/index.mjs && cp -r dist/server/assets .output/server/assets",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
