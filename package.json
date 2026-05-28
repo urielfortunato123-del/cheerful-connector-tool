@@ -57,6 +57,7 @@
     "dexie": "^4.4.2",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.40.0",
+    "hono": "^4.12.23",
     "idb-keyval": "^6.2.4",
     "input-otp": "^1.4.2",
     "jspdf": "^4.2.1",
