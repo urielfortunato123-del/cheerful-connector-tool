@@ -128,7 +128,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const hydrated = useHydrated();
-  const [workspaceActive, setWorkspaceActive] = React.useState(false);
+  const [workspaceActive, setWorkspaceActive] = React.useState(
+    typeof window !== 'undefined' ? !!WorkspaceService.getCurrentProject() : false
+  );
 
   React.useEffect(() => {
     if (!hydrated) return;
