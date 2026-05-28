@@ -5,14 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "NITRO_PRESET=node-server vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
+    "@hono/node-server": "^2.0.4",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -56,6 +61,7 @@
     "dexie": "^4.4.2",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.40.0",
+    "hono": "^4.12.23",
     "idb-keyval": "^6.2.4",
     "input-otp": "^1.4.2",
     "jspdf": "^4.2.1",

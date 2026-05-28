@@ -3,7 +3,12 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   tanstackStart: {
-    server: { entry: "server" },
+    server: { 
+      entry: "server",
+    },
+    nitro: {
+      preset: "node-server"
+    }
   },
   vite: {
     plugins: [
