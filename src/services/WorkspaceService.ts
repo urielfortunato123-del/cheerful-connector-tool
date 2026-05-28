@@ -15,6 +15,10 @@ export class WorkspaceService {
   private static directoryHandle: FileSystemDirectoryHandle | null = null;
   private static currentProject: ProjectMetadata | null = null;
 
+  static hasDirectoryHandle() {
+    return !!this.directoryHandle;
+  }
+
   static async selectWorkspace() {
     if (typeof window === 'undefined') return false;
     
