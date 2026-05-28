@@ -16,37 +16,50 @@ export class WorkspaceService {
   private static currentProject: ProjectMetadata | null = null;
 
   static async selectWorkspace() {
+    if (typeof window === 'undefined') return false;
+    
+    if (!('showDirectoryPicker' in window)) {
+      toast.error('Seu navegador não suporta a File System Access API. Use Chrome ou Edge.');
+      return false;
+    }
+
     try {
+      console.log('Opening directory picker...');
       // @ts-ignore
       this.directoryHandle = await window.showDirectoryPicker({
         mode: 'readwrite'
       });
       
-      // Persist the directory handle for later retrieval (e.g. after reload)
+      console.log('Directory selected:', this.directoryHandle.name);
+      // Persist the directory handle for later retrieval
       await set('infraflow_directory_handle', this.directoryHandle);
       
-      // Try to read existing project if metadata exists
+      // Try to read existing project if metadata exists in the ROOT of selected folder
       try {
         const metaFile = await this.directoryHandle.getFileHandle('metadata.json');
         const file = await metaFile.getFile();
         const content = await file.text();
         const metadata = JSON.parse(content);
+        console.log('Project metadata found in folder root:', metadata.name);
         this.currentProject = metadata;
         localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
         
-        // Load existing database data into IndexedDB
         await this.loadProjectData();
         window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: metadata }));
         
         toast.success('Workspace carregado com sucesso');
         return true;
       } catch (e) {
-        // No metadata file, maybe it's a new directory or project selection is needed
-        toast.success('Pasta selecionada. Prossiga para criar ou abrir projeto.');
+        console.log('No metadata.json found in root, ready for new project or manual subfolder navigation');
         return true;
       }
     } catch (error) {
-      console.error('Erro ao selecionar workspace:', error);
+      if ((error as Error).name === 'AbortError') {
+        console.log('User cancelled directory selection');
+      } else {
+        console.error('Erro ao selecionar workspace:', error);
+        toast.error('Erro ao acessar a pasta selecionada');
+      }
       return false;
     }
   }
