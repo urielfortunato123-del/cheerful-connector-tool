@@ -19,12 +19,20 @@ export function WorkspaceLanding() {
       return;
     }
     
+    // Check for directory handle BEFORE setting loading state
+    // This ensures we call showDirectoryPicker as a direct result of the click if needed
+    if (!WorkspaceService.hasDirectoryHandle()) {
+      const selected = await WorkspaceService.selectWorkspace();
+      if (!selected) return; // User cancelled or error already toasted
+    }
+
     setIsLoading(true);
     try {
       const project = await WorkspaceService.createProject(projectName);
       if (project) {
         toast.success('Workspace criado com sucesso');
-        navigate({ to: '/' });
+        // The event infraflow_project_changed is already dispatched in createProject
+        // which will trigger the UI update in __root.tsx
       }
     } catch (error) {
       console.error(error);
@@ -35,21 +43,24 @@ export function WorkspaceLanding() {
   };
 
   const handleOpenWorkspace = async () => {
-    setIsLoading(true);
     try {
+      // Call selectWorkspace FIRST to preserve user gesture context
       const selected = await WorkspaceService.selectWorkspace();
       if (selected) {
+        setIsLoading(true);
         // If selectWorkspace found a project, it's already in localStorage
         const active = WorkspaceService.getCurrentProject();
         if (active) {
-          window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: active }));
-          navigate({ to: '/' });
+          // The event infraflow_project_changed is already dispatched in selectWorkspace
+          console.log('Workspace selected and active project found');
         } else {
+          // If no metadata.json was found in root, we allow the user to name a new project in that folder
           setIsCreating(true);
         }
       }
     } catch (error) {
       console.error(error);
+      toast.error('Erro ao abrir workspace');
     } finally {
       setIsLoading(false);
     }
