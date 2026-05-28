@@ -19,12 +19,20 @@ export function WorkspaceLanding() {
       return;
     }
     
+    // Check for directory handle BEFORE setting loading state
+    // This ensures we call showDirectoryPicker as a direct result of the click if needed
+    if (!WorkspaceService.hasDirectoryHandle()) {
+      const selected = await WorkspaceService.selectWorkspace();
+      if (!selected) return; // User cancelled or error already toasted
+    }
+
     setIsLoading(true);
     try {
       const project = await WorkspaceService.createProject(projectName);
       if (project) {
         toast.success('Workspace criado com sucesso');
-        navigate({ to: '/' });
+        // The event infraflow_project_changed is already dispatched in createProject
+        // which will trigger the UI update in __root.tsx
       }
     } catch (error) {
       console.error(error);
