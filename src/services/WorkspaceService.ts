@@ -82,15 +82,18 @@ export class WorkspaceService {
   }
 
   static async createProject(name: string) {
+    console.log('Starting createProject for:', name);
     if (!this.directoryHandle) {
+      console.log('No directory handle, requesting user to select one...');
       const selected = await this.selectWorkspace();
       if (!selected) return null;
     }
 
     try {
+      console.log('Creating directory for project:', name);
       const projectDir = await this.directoryHandle!.getDirectoryHandle(name, { create: true });
       
-      // Create subdirectories
+      console.log('Creating subdirectories...');
       const dirs = ['database', 'pdfs', 'orcamentos', 'mapas', 'medicoes', 'backups', 'logs', 'cache_ia'];
       for (const dir of dirs) {
         await projectDir.getDirectoryHandle(dir, { create: true });
@@ -103,20 +106,24 @@ export class WorkspaceService {
         lastModified: Date.now()
       };
 
-      // Save metadata
+      console.log('Saving metadata.json...');
       const metaFile = await projectDir.getFileHandle('metadata.json', { create: true });
       const writable = await metaFile.createWritable();
       await writable.write(JSON.stringify(metadata));
       await writable.close();
 
+      console.log('Project created successfully, updating state...');
       this.currentProject = metadata;
       localStorage.setItem('infraflow_active_project', JSON.stringify(metadata));
+      
+      // Dispatch event to notify the UI
       window.dispatchEvent(new CustomEvent('infraflow_project_changed', { detail: metadata }));
+      console.log('infraflow_project_changed event dispatched');
       
       return metadata;
     } catch (error) {
       console.error('Erro ao criar projeto:', error);
-      toast.error('Erro ao criar estrutura do projeto');
+      toast.error('Erro ao criar estrutura do projeto. Verifique as permissões da pasta.');
       return null;
     }
   }
