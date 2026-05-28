@@ -30,11 +30,13 @@ export class WorkspaceService {
     try {
       console.log('Opening directory picker...');
       // @ts-ignore
-      this.directoryHandle = await window.showDirectoryPicker({
+      const handle = await window.showDirectoryPicker({
         mode: 'readwrite'
       });
       
+      this.directoryHandle = handle;
       console.log('Directory selected:', this.directoryHandle.name);
+      
       // Persist the directory handle for later retrieval
       await set('infraflow_directory_handle', this.directoryHandle);
       
@@ -57,12 +59,20 @@ export class WorkspaceService {
         console.log('No metadata.json found in root, ready for new project or manual subfolder navigation');
         return true;
       }
-    } catch (error) {
-      if ((error as Error).name === 'AbortError') {
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
         console.log('User cancelled directory selection');
+        return false;
+      }
+      
+      console.error('Erro ao selecionar workspace:', error);
+      // More specific error messages
+      if (error.name === 'SecurityError') {
+        toast.error('Erro de segurança: a ação deve ser iniciada pelo usuário.');
+      } else if (error.name === 'NotAllowedError') {
+        toast.error('Permissão negada para acessar a pasta.');
       } else {
-        console.error('Erro ao selecionar workspace:', error);
-        toast.error('Erro ao acessar a pasta selecionada');
+        toast.error(`Erro ao acessar pasta: ${error.message || 'Erro desconhecido'}`);
       }
       return false;
     }
