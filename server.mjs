@@ -15,7 +15,7 @@ app.use('*', serveStatic({ root: './dist/client' }))
 
 // Fallback to TanStack Start handler
 app.all('*', async (c) => {
-  return serverHandler.fetch(c.req.raw)
+  return serverHandler.fetch(c.req.raw, {}, {})
 })
 
 const port = process.env.PORT || 3000
