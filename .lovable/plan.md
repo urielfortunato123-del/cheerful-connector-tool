@@ -1,31 +1,25 @@
-# Plano de Implementação: Upgrades Profissionais InfraFlow
+I will propose and implement several UX/UI improvements to the Intelligent Library and the security reporting feature based on current application patterns.
 
-Vou implementar as 4 melhorias sugeridas para elevar o InfraFlow ao nível de software corporativo de infraestrutura pesada.
+### 1. Unified Reporting Dashboard
+Instead of just a button for the security report, I will create a dedicated "Compliance & Security" section within the library to house multiple report types (Security, Storage, AI Usage).
 
-## 1. Relatórios Técnicos Automatizados (PDF)
-*   Implementar motor de geração de PDF usando `jspdf` e `jspdf-autotable`.
-*   Criar templates profissionais para "Diário de Obra" e "Boletim de Medição".
-*   Adicionar botões de "Exportar Relatório" nas telas correspondentes.
+### 2. Enhanced Document Interactions
+- **Batch Actions**: Add a checkbox system to the `DocumentGrid` to allow users to delete or download multiple files at once.
+- **Smart Filters**: Implement a filtering sidebar in the library to filter by Agency (DER/DNIT), Category, or AI Status.
+- **Improved Preview**: Add a more robust PDF/Image viewer component that supports zooming and basic annotation markers.
 
-## 2. Dashboard Georreferenciado Ativo
-*   Integrar os dados de `measurements` e `dailyLogs` ao componente `MapView`.
-*   Implementar marcadores no mapa que mostram detalhes ao clicar (fotos, serviços, datas).
-*   Permitir filtragem por estaca (km) ou projeto no mapa.
+### 3. AI Copilot Enhancements
+- **Suggested Questions**: Add "chips" with common questions below the chat input to help users start a conversation.
+- **Source Highlighting**: If possible, add visual cues when the AI references specific documents.
 
-## 3. Assistente de Campo por Voz com IA
-*   Implementar interface de gravação de áudio nas telas de entrada de dados.
-*   Criar `server-fn` para transcrição e processamento via IA (LLM) para extrair entidades técnicas (clima, equipe, serviços).
-*   Preenchimento automático dos formulários a partir do áudio.
+### 4. Visual Polish
+- **Animation Overhaul**: Use Framer Motion for smoother grid transitions and layout changes.
+- **Dark Mode Optimization**: Ensure the "Security Report" and "Glassmorphism" effects look great in both themes.
 
-## 4. Inteligência de Custos (Importador SICRO/DER)
-*   Criar funcionalidade para importar tabelas de preços via Excel/PDF (usando OCR se necessário).
-*   Implementar alertas visuais de "Budget Overrun" nas medições.
-*   Dashboard de evolução financeira Real vs Orçado.
-
-## Detalhes Técnicos
-*   **Storage:** Utilização do Dexie (IndexedDB) para persistência total offline de relatórios e mapas.
-*   **PDF:** Geração client-side para garantir funcionamento sem internet.
-*   **IA:** Integração com modelos capazes de entender terminologia de engenharia rodoviária brasileira (CBUQ, BGTC, Estacas, etc).
-
----
-*Vou iniciar a implementação destas funcionalidades agora.*
+### Technical Details
+- Modify `src/components/library/LibraryHeader.tsx` to include the new reporting menu.
+- Update `src/components/library/DocumentGrid.tsx` to support selection state.
+- Enhance `src/components/library/AskAI.tsx` with suggestion chips.
+- Update `src/components/library/DocumentCard.tsx` with a selection checkbox.
+- Create `src/components/library/LibraryFilters.tsx`.
+- Update `src/lib/db.ts` if needed for batch operations (DEXIE handles this well).

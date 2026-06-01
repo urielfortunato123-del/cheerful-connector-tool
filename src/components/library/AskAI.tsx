@@ -43,10 +43,29 @@ export function AskAI({ context }: { context?: string }) {
 
       <ScrollArea className="flex-1 p-4">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-[400px] text-center text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-[400px] text-center text-muted-foreground p-6">
             <Library className="h-12 w-12 mb-4 opacity-20" />
-            <p>Faça uma pergunta técnica baseada nos seus documentos.</p>
-            <p className="text-sm">Ex: "Como elaborar um as-built conforme DER?"</p>
+            <p className="font-medium">Faça uma pergunta técnica baseada nos seus documentos.</p>
+            <p className="text-sm mb-6 opacity-70 italic">O Co-piloto analisará as normas e manuais indexados para responder.</p>
+            
+            <div className="flex flex-wrap justify-center gap-2">
+              {[
+                "Como elaborar as-built?",
+                "Normas para sinalização",
+                "Padrão de drenagem DER",
+                "Manual de pavimentação"
+              ].map(q => (
+                <Button 
+                  key={q} 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-[10px] h-7 bg-background/50 hover:bg-primary/5 hover:text-primary hover:border-primary/30"
+                  onClick={() => { setQuestion(q); }}
+                >
+                  {q}
+                </Button>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="space-y-4">

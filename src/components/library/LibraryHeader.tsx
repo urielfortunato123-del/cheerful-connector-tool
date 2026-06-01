@@ -8,11 +8,23 @@ import {
   FileCode,
   BrainCircuit,
   ShieldCheck,
-  Download
+  Download,
+  ChevronDown,
+  FileBarChart,
+  ShieldAlert,
+  HardDrive
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel
+} from "@/components/ui/dropdown-menu";
 
 interface LibraryHeaderProps {
   stats: {
@@ -60,15 +72,31 @@ export function LibraryHeader({ stats, onUpload, onSync, isSyncing }: LibraryHea
           <Button variant="outline" className="gap-2 h-9 text-xs" onClick={onSync} disabled={isSyncing}>
             <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} /> Sincronizar Portais
           </Button>
-          <Button 
-            variant="outline" 
-            className="gap-2 h-9 text-xs border-green-500/50 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20" 
-            asChild
-          >
-            <a href="/security-report.html" target="_blank" rel="noopener noreferrer">
-              <ShieldCheck className="h-4 w-4" /> Relatório de Segurança
-            </a>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="gap-2 h-9 text-xs border-green-500/50 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20" 
+              >
+                <ShieldCheck className="h-4 w-4" /> Compliance <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel>Centro de Conformidade</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="gap-2 cursor-pointer" asChild>
+                <a href="/security-report.html" target="_blank" rel="noopener noreferrer">
+                  <ShieldAlert className="h-4 w-4 text-red-500" /> Relatório de Vulnerabilidades
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <FileBarChart className="h-4 w-4 text-blue-500" /> Auditoria de Acessos
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <HardDrive className="h-4 w-4 text-amber-500" /> Relatório de Armazenamento
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
