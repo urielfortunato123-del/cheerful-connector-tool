@@ -216,10 +216,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Engenharia Rodoviária</span>
                 </div>
+                <ThemeToggle />
                 <div className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-primary cursor-pointer transition-colors">
                   <User className="h-4 w-4" />
                 </div>
               </div>
+
             </div>
           </header>
           <div className="flex-1 p-8 max-w-[1600px] mx-auto w-full">{children}</div>
