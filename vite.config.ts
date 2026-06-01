@@ -86,5 +86,8 @@ export default defineConfig({
         canvas: 'false',
       },
     },
+    ssr: {
+      noExternal: ['h3-v2'],
+    },
   },
 });
