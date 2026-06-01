@@ -1,44 +1,37 @@
-# Plan: UI/UX Premium Overhaul - InfraFlow
+# Plan: Advanced UI/UX, Accessibility, and Multi-Theme Support
 
-Upgrade the entire application to a high-end, modern "Glassmorphism Dark" theme as requested by the user's reference images.
+Implement high-end refinements including theme switching, responsiveness, loading states, and accessibility compliance.
 
 ## Technical Details
-- **Theme**: Dark mode by default with oklch colors.
-- **Components**: shadcn/ui with custom glassmorphism styles.
-- **Icons**: Lucide React.
-- **Charts**: Recharts with custom styling (gradients, glows).
+- **Theme**: Add `next-themes` (if not present) or custom Context for Light/Dark toggle.
+- **Responsiveness**: Use Sheet/Drawer for mobile navigation. Grid adjustments for tablet/mobile.
+- **Accessibility**: ARIA labels, semantic HTML, contrast checks (WCAG 2.1).
+- **Feedback**: Skeleton loaders and global error boundaries.
 
 ## Steps
 
-### 1. Global Styles Refresh
-Update `src/styles.css` with:
-- Improved `.glass-card` with multiple shadow layers.
-- Custom gradient text and background utilities.
-- Sidebar "glow" and active state enhancements.
-- Animated background patterns.
+### 1. Theme Support (Light/Dark Mode)
+- Update `src/styles.css` with light-theme oklch variables.
+- Refine `.glass-card` for light mode (subtle shadows, higher opacity).
+- Create a `ThemeToggle` component in `AppLayout`.
 
-### 2. Layout & Navigation (AppLayout.tsx)
-- Refine the sidebar with better spacing and grouping.
-- Add a profile/user section in the footer.
-- Improve the header with a "Search" bar and cleaner project selector.
-- Add a subtle border glow to the sidebar.
+### 2. Responsiveness Overhaul
+- **Sidebar**: Ensure it transforms into a mobile drawer/sheet on small screens.
+- **Dashboard**: Ensure charts scale and stack.
+- **Tables**: Wrap tables in responsive containers and optimize for mobile cards.
+- **Header**: Adjust layout for narrow viewports.
 
-### 3. Dashboard Upgrade (index.tsx)
-- Replace simple stat cards with "Metric Cards" featuring mini-sparklines.
-- Implement a primary "Performance Over Time" area chart with smooth curves.
-- Add a "Circular Activity" chart for task distribution.
-- Redesign the AI Assistant section to be more compact and integrated.
-- Add a "Recent Activities" feed.
+### 3. Loading & Error States
+- Create `LoadingSkeleton` for stats and charts.
+- Implement `ErrorBoundary` component.
+- Add "Empty States" with illustrations for pages without data.
 
-### 4. Financial Page Polish (financial.tsx)
-- Align with the new premium cards.
-- Improve the transaction list with better status indicators.
-- Add a "Budget Health" indicator.
+### 4. Accessibility & Audit
+- Add `aria-label` to all icon-only buttons.
+- Ensure correct heading hierarchy (H1, H2, etc.).
+- Improve keyboard focus indicators (visible orange rings).
+- Contrast: Ensure orange `#FF6B00` on white and black meets accessibility standards (or adjust for light mode).
 
-### 5. Projects Page Polish (projects.tsx)
-- Better project cards with progress bars for each highway section.
-- Improved search and filtering UI.
-
-### 6. Final Polish & Performance
-- Add micro-animations (framer-motion if available, or Tailwind transitions).
-- Ensure responsiveness across all screen sizes.
+### 5. Regression & Consistency
+- Add a "Design System" page (internal) to preview components in all states.
+- Standardize spacing using Tailwind's `space-y-X` and `gap-X`.
