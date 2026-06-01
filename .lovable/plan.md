@@ -1,25 +1,44 @@
-I will propose and implement several UX/UI improvements to the Intelligent Library and the security reporting feature based on current application patterns.
+# Plan: UI/UX Premium Overhaul - InfraFlow
 
-### 1. Unified Reporting Dashboard
-Instead of just a button for the security report, I will create a dedicated "Compliance & Security" section within the library to house multiple report types (Security, Storage, AI Usage).
+Upgrade the entire application to a high-end, modern "Glassmorphism Dark" theme as requested by the user's reference images.
 
-### 2. Enhanced Document Interactions
-- **Batch Actions**: Add a checkbox system to the `DocumentGrid` to allow users to delete or download multiple files at once.
-- **Smart Filters**: Implement a filtering sidebar in the library to filter by Agency (DER/DNIT), Category, or AI Status.
-- **Improved Preview**: Add a more robust PDF/Image viewer component that supports zooming and basic annotation markers.
+## Technical Details
+- **Theme**: Dark mode by default with oklch colors.
+- **Components**: shadcn/ui with custom glassmorphism styles.
+- **Icons**: Lucide React.
+- **Charts**: Recharts with custom styling (gradients, glows).
 
-### 3. AI Copilot Enhancements
-- **Suggested Questions**: Add "chips" with common questions below the chat input to help users start a conversation.
-- **Source Highlighting**: If possible, add visual cues when the AI references specific documents.
+## Steps
 
-### 4. Visual Polish
-- **Animation Overhaul**: Use Framer Motion for smoother grid transitions and layout changes.
-- **Dark Mode Optimization**: Ensure the "Security Report" and "Glassmorphism" effects look great in both themes.
+### 1. Global Styles Refresh
+Update `src/styles.css` with:
+- Improved `.glass-card` with multiple shadow layers.
+- Custom gradient text and background utilities.
+- Sidebar "glow" and active state enhancements.
+- Animated background patterns.
 
-### Technical Details
-- Modify `src/components/library/LibraryHeader.tsx` to include the new reporting menu.
-- Update `src/components/library/DocumentGrid.tsx` to support selection state.
-- Enhance `src/components/library/AskAI.tsx` with suggestion chips.
-- Update `src/components/library/DocumentCard.tsx` with a selection checkbox.
-- Create `src/components/library/LibraryFilters.tsx`.
-- Update `src/lib/db.ts` if needed for batch operations (DEXIE handles this well).
+### 2. Layout & Navigation (AppLayout.tsx)
+- Refine the sidebar with better spacing and grouping.
+- Add a profile/user section in the footer.
+- Improve the header with a "Search" bar and cleaner project selector.
+- Add a subtle border glow to the sidebar.
+
+### 3. Dashboard Upgrade (index.tsx)
+- Replace simple stat cards with "Metric Cards" featuring mini-sparklines.
+- Implement a primary "Performance Over Time" area chart with smooth curves.
+- Add a "Circular Activity" chart for task distribution.
+- Redesign the AI Assistant section to be more compact and integrated.
+- Add a "Recent Activities" feed.
+
+### 4. Financial Page Polish (financial.tsx)
+- Align with the new premium cards.
+- Improve the transaction list with better status indicators.
+- Add a "Budget Health" indicator.
+
+### 5. Projects Page Polish (projects.tsx)
+- Better project cards with progress bars for each highway section.
+- Improved search and filtering UI.
+
+### 6. Final Polish & Performance
+- Add micro-animations (framer-motion if available, or Tailwind transitions).
+- Ensure responsiveness across all screen sizes.
