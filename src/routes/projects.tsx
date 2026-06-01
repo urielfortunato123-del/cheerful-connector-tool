@@ -63,9 +63,12 @@ function Projects() {
   }, []);
 
   const loadProjects = async () => {
+    setLoading(true);
     const allProjects = await db.projects.toArray();
     setProjects(allProjects);
+    setLoading(false);
   };
+
 
   const handleCreateProject = async () => {
     if (!newProject.nome || !newProject.rodovia) {
