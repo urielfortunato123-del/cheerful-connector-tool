@@ -18,6 +18,7 @@ import { Route as MeasurementsRouteImport } from './routes/measurements'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as FinancialRouteImport } from './routes/financial'
+import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as DailyLogRouteImport } from './routes/daily-log'
 import { Route as BudgetsRouteImport } from './routes/budgets'
 import { Route as AsBuiltRouteImport } from './routes/as-built'
@@ -69,6 +70,11 @@ const FinancialRoute = FinancialRouteImport.update({
   path: '/financial',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DesignSystemRoute = DesignSystemRouteImport.update({
+  id: '/design-system',
+  path: '/design-system',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DailyLogRoute = DailyLogRouteImport.update({
   id: '/daily-log',
   path: '/daily-log',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/as-built': typeof AsBuiltRoute
   '/budgets': typeof BudgetsRoute
   '/daily-log': typeof DailyLogRoute
+  '/design-system': typeof DesignSystemRoute
   '/financial': typeof FinancialRoute
   '/library': typeof LibraryRoute
   '/map': typeof MapRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/as-built': typeof AsBuiltRoute
   '/budgets': typeof BudgetsRoute
   '/daily-log': typeof DailyLogRoute
+  '/design-system': typeof DesignSystemRoute
   '/financial': typeof FinancialRoute
   '/library': typeof LibraryRoute
   '/map': typeof MapRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/as-built': typeof AsBuiltRoute
   '/budgets': typeof BudgetsRoute
   '/daily-log': typeof DailyLogRoute
+  '/design-system': typeof DesignSystemRoute
   '/financial': typeof FinancialRoute
   '/library': typeof LibraryRoute
   '/map': typeof MapRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/as-built'
     | '/budgets'
     | '/daily-log'
+    | '/design-system'
     | '/financial'
     | '/library'
     | '/map'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/as-built'
     | '/budgets'
     | '/daily-log'
+    | '/design-system'
     | '/financial'
     | '/library'
     | '/map'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/as-built'
     | '/budgets'
     | '/daily-log'
+    | '/design-system'
     | '/financial'
     | '/library'
     | '/map'
@@ -201,6 +213,7 @@ export interface RootRouteChildren {
   AsBuiltRoute: typeof AsBuiltRoute
   BudgetsRoute: typeof BudgetsRoute
   DailyLogRoute: typeof DailyLogRoute
+  DesignSystemRoute: typeof DesignSystemRoute
   FinancialRoute: typeof FinancialRoute
   LibraryRoute: typeof LibraryRoute
   MapRoute: typeof MapRoute
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FinancialRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/design-system': {
+      id: '/design-system'
+      path: '/design-system'
+      fullPath: '/design-system'
+      preLoaderRoute: typeof DesignSystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/daily-log': {
       id: '/daily-log'
       path: '/daily-log'
@@ -321,6 +341,7 @@ const rootRouteChildren: RootRouteChildren = {
   AsBuiltRoute: AsBuiltRoute,
   BudgetsRoute: BudgetsRoute,
   DailyLogRoute: DailyLogRoute,
+  DesignSystemRoute: DesignSystemRoute,
   FinancialRoute: FinancialRoute,
   LibraryRoute: LibraryRoute,
   MapRoute: MapRoute,
@@ -334,3 +355,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
