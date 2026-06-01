@@ -120,10 +120,10 @@ const SSRErrorsDashboard = () => {
     .map(([id, count]) => ({ id, count }));
 
   return (
-    <div className="p-6 space-y-6 bg-slate-50 min-h-screen">
+    <div className="p-6 space-y-6 bg-background min-h-screen">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">SSR Monitoring</h1>
-        <div className="text-sm text-muted-foreground bg-white px-3 py-1 rounded-full border">
+        <div className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full border">
           Live Updates Every 30s
         </div>
       </div>
@@ -239,7 +239,7 @@ const SSRErrorsDashboard = () => {
           <CardContent>
             <div className="space-y-4">
               {errors?.slice(0, 3).map((error) => (
-                <div key={error.id} className="border-l-4 border-destructive p-3 bg-white rounded shadow-sm">
+                <div key={error.id} className="border-l-4 border-destructive p-3 bg-card rounded shadow-sm">
                   <div className="flex justify-between items-start mb-1">
                     <span className="font-bold text-sm">{error.method} {error.path}</span>
                     <span className="text-[10px] text-muted-foreground">{new Date(error.created_at).toLocaleTimeString()}</span>
@@ -264,7 +264,7 @@ const SSRErrorsDashboard = () => {
                 </CardTitle>
                 <CardDescription>Configure error thresholds for notifications</CardDescription>
               </div>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              <Badge variant="outline" className="bg-blue-50/10 text-blue-500 border-blue-200/20">
                 System Managed
               </Badge>
             </div>
@@ -272,9 +272,9 @@ const SSRErrorsDashboard = () => {
           <CardContent>
             <div className="space-y-6">
               {alerts?.map((alert) => (
-                <div key={alert.id} className="flex flex-col space-y-3 p-4 border rounded-lg bg-white shadow-sm">
+                <div key={alert.id} className="flex flex-col space-y-3 p-4 border rounded-lg bg-card shadow-sm">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-700">{alert.alert_name}</span>
+                    <span className="font-semibold text-foreground">{alert.alert_name}</span>
                     <Button 
                       variant={alert.is_enabled ? "outline" : "secondary"} 
                       size="sm"
@@ -283,7 +283,7 @@ const SSRErrorsDashboard = () => {
                       {alert.is_enabled ? (
                         <><Bell className="h-4 w-4 mr-2 text-green-500" /> Enabled</>
                       ) : (
-                        <><BellOff className="h-4 w-4 mr-2 text-slate-400" /> Disabled</>
+                        <><BellOff className="h-4 w-4 mr-2 text-muted-foreground" /> Disabled</>
                       )}
                     </Button>
                   </div>
@@ -306,7 +306,7 @@ const SSRErrorsDashboard = () => {
                       <label className="text-xs text-muted-foreground block mb-1">Status</label>
                       <div className="pt-2">
                         {alert.is_enabled ? (
-                          <Badge className="bg-green-100 text-green-700 border-green-200">Monitoring</Badge>
+                          <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Monitoring</Badge>
                         ) : (
                           <Badge variant="secondary">Idle</Badge>
                         )}
@@ -335,10 +335,10 @@ const SSRErrorsDashboard = () => {
           <CardContent>
             <div className="space-y-3">
               {history?.map((notif) => (
-                <div key={notif.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-slate-50 transition-colors">
+                <div key={notif.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-muted/50 transition-colors">
                   <div className="flex items-start gap-3">
-                    <div className="mt-1 bg-red-100 p-1.5 rounded-full">
-                      <AlertCircle className="h-4 w-4 text-red-600" />
+                    <div className="mt-1 bg-red-500/10 p-1.5 rounded-full">
+                      <AlertCircle className="h-4 w-4 text-red-500" />
                     </div>
                     <div>
                       <div className="text-sm font-medium">{notif.alert_settings?.alert_name}</div>
