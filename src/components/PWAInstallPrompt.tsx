@@ -3,6 +3,7 @@ import { Download, Smartphone, Monitor, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -17,6 +18,7 @@ export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     // Detect if already installed
@@ -26,8 +28,21 @@ export function PWAInstallPrompt() {
 
     if (isStandalone) return;
 
-    // Detect mobile
-    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    // Detect mobile and iOS
+    const ua = navigator.userAgent;
+    const mobile = /iPhone|iPad|iPod|Android/i.test(ua);
+    const ios = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+    
+    setIsMobile(mobile);
+    setIsIOS(ios);
+
+    // Show prompt for iOS immediately (since it doesn't support beforeinstallprompt)
+    if (ios && !isStandalone) {
+      const hasDismissed = sessionStorage.getItem('pwa_prompt_dismissed');
+      if (!hasDismissed) {
+        setIsVisible(true);
+      }
+    }
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -35,21 +50,21 @@ export function PWAInstallPrompt() {
       
       const hasDismissed = sessionStorage.getItem('pwa_prompt_dismissed');
       if (!hasDismissed) {
-        setTimeout(() => setIsVisible(true), 2000);
+        // Show immediately when event is received
+        setIsVisible(true);
       }
     };
 
     const triggerHandler = () => {
-      if (deferredPrompt) {
+      if (deferredPrompt || ios) {
         setIsVisible(true);
       } else {
-        // Fallback for browsers that already installed or don't support it
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                            (window.navigator as any).standalone;
         if (isStandalone) {
           toast.info("O aplicativo já está instalado.");
         } else {
-          toast.info("Acesse as configurações do seu navegador para instalar o aplicativo.");
+          setIsVisible(true); // Show instructions even if prompt isn't supported
         }
       }
     };
@@ -88,7 +103,7 @@ export function PWAInstallPrompt() {
 
   return (
     <AnimatePresence>
-      {isVisible && deferredPrompt && (
+      {isVisible && (
         <motion.div
           initial={{ opacity: 0, y: 50, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -105,34 +120,53 @@ export function PWAInstallPrompt() {
             >
               <X size={16} />
             </button>
-
+            
             <div className="flex gap-4">
               <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0 border border-primary/30 orange-glow">
-                {isMobile ? <Smartphone className="text-primary" /> : <Monitor className="text-primary" />}
+                {isIOS ? <Smartphone className="text-primary" /> : (isMobile ? <Smartphone className="text-primary" /> : <Monitor className="text-primary" />)}
               </div>
               
               <div className="flex-1">
                 <h3 className="text-sm font-black uppercase tracking-wider text-white mb-1">
                   Instalar InfraFlow
                 </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-                  Acesse o sistema diretamente da sua tela inicial com suporte offline e melhor performance.
-                </p>
+                
+                {isIOS ? (
+                  <div className="text-xs text-muted-foreground leading-relaxed mb-4">
+                    <p className="mb-2">Para instalar no seu iPhone/iPad:</p>
+                    <ol className="list-decimal list-inside space-y-1">
+                      <li>Toque no ícone de <strong>Compartilhar</strong> (quadrado com seta)</li>
+                      <li>Role para baixo e toque em <strong>Tela de Início</strong></li>
+                      <li>Toque em <strong>Adicionar</strong> no canto superior</li>
+                    </ol>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+                    {deferredPrompt 
+                      ? "Acesse o sistema diretamente da sua tela inicial com suporte offline e melhor performance."
+                      : "Para instalar, use a opção 'Instalar' ou 'Adicionar à tela de início' no menu do seu navegador."}
+                  </p>
+                )}
                 
                 <div className="flex gap-2">
+                  {deferredPrompt && (
+                    <Button 
+                      onClick={handleInstall}
+                      className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold text-[10px] uppercase tracking-widest h-9"
+                    >
+                      <Download className="mr-2 h-3 w-3" />
+                      Instalar Agora
+                    </Button>
+                  )}
                   <Button 
-                    onClick={handleInstall}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold text-[10px] uppercase tracking-widest h-9"
-                  >
-                    <Download className="mr-2 h-3 w-3" />
-                    Instalar Agora
-                  </Button>
-                  <Button 
-                    variant="ghost"
+                    variant={deferredPrompt ? "ghost" : "default"}
                     onClick={handleDismiss}
-                    className="h-9 text-[10px] uppercase tracking-widest font-bold hover:bg-white/5"
+                    className={cn(
+                      "h-9 text-[10px] uppercase tracking-widest font-bold",
+                      !deferredPrompt && "flex-1 bg-primary hover:bg-primary/90 text-white"
+                    )}
                   >
-                    Agora não
+                    {deferredPrompt ? "Agora não" : "Entendido"}
                   </Button>
                 </div>
               </div>
