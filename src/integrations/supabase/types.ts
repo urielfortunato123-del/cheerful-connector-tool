@@ -263,6 +263,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ssr_errors: {
+        Row: {
+          context: Json | null
+          created_at: string
+          deployment_id: string | null
+          error_message: string | null
+          id: string
+          method: string
+          path: string
+          stack_trace: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          deployment_id?: string | null
+          error_message?: string | null
+          id?: string
+          method: string
+          path: string
+          stack_trace?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          deployment_id?: string | null
+          error_message?: string | null
+          id?: string
+          method?: string
+          path?: string
+          stack_trace?: string | null
+        }
+        Relationships: []
+      }
       technical_standards: {
         Row: {
           category: string | null
