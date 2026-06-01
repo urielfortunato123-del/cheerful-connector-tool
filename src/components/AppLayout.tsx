@@ -46,6 +46,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { PWAInstallPrompt } from "./PWAInstallPrompt";
 
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, path: "/" },
