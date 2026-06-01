@@ -41,24 +41,24 @@ interface LibraryHeaderProps {
 
 export function LibraryHeader({ stats, onUpload, onSync, isSyncing }: LibraryHeaderProps) {
   return (
-    <div className="bg-card border-b p-4 space-y-4">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Database className="h-6 w-6 text-primary" />
+    <div className="bg-background/40 border-b border-white/5 p-6 space-y-6 backdrop-blur-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-2xl border border-primary/20 shadow-[0_0_20px_rgba(255,107,0,0.1)] group transition-all">
+            <Database className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Biblioteca Inteligente</h1>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3 text-green-500" /> 
-              Sincronização DER-SP / DNIT • Offline-First PWA
+            <h1 className="text-2xl font-black tracking-tight text-white uppercase">Biblioteca <span className="text-primary">Inteligente</span></h1>
+            <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
+              <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+              Sincronização DER-SP / DNIT • Motor IA v4.2
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div className="relative group">
-            <Button className="gap-2 h-9 text-xs font-semibold">
+            <Button className="h-11 px-6 font-black uppercase text-[10px] tracking-widest shadow-lg shadow-primary/20 gap-3">
               <Upload className="h-4 w-4" /> Importar Documentos
             </Button>
             <input 
@@ -69,36 +69,42 @@ export function LibraryHeader({ stats, onUpload, onSync, isSyncing }: LibraryHea
               accept=".pdf,.xlsx,.xls,.docx,.doc,.txt,.zip,.jpg,.jpeg,.png"
             />
           </div>
-          <Button variant="outline" className="gap-2 h-9 text-xs" onClick={onSync} disabled={isSyncing}>
-            <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} /> Sincronizar Portais
+          <Button variant="outline" className="h-11 px-6 glass-card border-white/10 font-bold uppercase text-[10px] tracking-widest gap-2" onClick={onSync} disabled={isSyncing}>
+            <RefreshCw className={cn("h-4 w-4 text-primary", isSyncing && "animate-spin")} /> Sincronizar Portais
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="gap-2 h-9 text-xs border-green-500/50 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20" 
+                className="h-11 px-6 glass-card border-primary/30 text-primary hover:bg-primary/10 font-black uppercase text-[10px] tracking-widest gap-2" 
               >
                 <ShieldCheck className="h-4 w-4" /> Compliance <ChevronDown className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel>Centro de Conformidade</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="gap-2 cursor-pointer" asChild>
+            <DropdownMenuContent align="end" className="w-72 glass-card border-white/10 p-2">
+              <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground p-3">Centro de Conformidade</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/5" />
+              <DropdownMenuItem className="gap-3 cursor-pointer p-4 rounded-xl hover:bg-white/5 transition-all group" asChild>
                 <a href="/security-report.html" target="_blank" rel="noopener noreferrer">
-                  <ShieldAlert className="h-4 w-4 text-red-500" /> Relatório de Vulnerabilidades
+                  <ShieldAlert className="h-5 w-5 text-red-500 group-hover:scale-110 transition-transform" />
+                  <div className="flex flex-col">
+                    <span className="font-bold text-white text-xs">Relatório de Vulnerabilidades</span>
+                    <span className="text-[10px] text-muted-foreground">Última varredura: Hoje</span>
+                  </div>
                 </a>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
-                <FileBarChart className="h-4 w-4 text-blue-500" /> Auditoria de Acessos
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
-                <HardDrive className="h-4 w-4 text-amber-500" /> Relatório de Armazenamento
+              <DropdownMenuItem className="gap-3 cursor-pointer p-4 rounded-xl hover:bg-white/5 transition-all group">
+                <FileBarChart className="h-5 w-5 text-blue-500 group-hover:scale-110 transition-transform" />
+                <div className="flex flex-col">
+                  <span className="font-bold text-white text-xs">Auditoria de Acessos</span>
+                  <span className="text-[10px] text-muted-foreground">Log de operações DER-SP</span>
+                </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
+
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <StatCard 
