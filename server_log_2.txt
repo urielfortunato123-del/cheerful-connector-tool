@@ -1,0 +1,10 @@
+--- RENDER DEPLOYMENT STARTUP ---
+Timestamp: 2026-06-01T16:58:41.904Z
+Node Version: v22.22.0
+Port: 3003
+OPENROUTER_API_KEY: Configurado
+OCR_SPACE_API_KEY: Configurado
+Loading SSR handler from ./dist/server/server.js...
+Attempting to listen on 0.0.0.0:3003...
+--- SERVER ACTIVE ---
+Listening on: http://0.0.0.0:3003
