@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { TableSkeleton } from "@/components/ui/skeleton-loader";
 
-import { useState, useEffect } from "react";
 import { 
   Card, 
   CardContent, 
