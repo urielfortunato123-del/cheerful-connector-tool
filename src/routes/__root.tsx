@@ -11,6 +11,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { Toaster } from "@/components/ui/sonner";
 import { WorkspaceService } from "@/services/WorkspaceService";
 import { WorkspaceLanding } from "@/components/workspace/WorkspaceLanding";
@@ -229,6 +230,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PWAInstallPrompt />
       {!workspaceActive ? (
         landingPage
       ) : (
