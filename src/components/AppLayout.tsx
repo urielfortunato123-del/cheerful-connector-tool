@@ -140,7 +140,41 @@ export function AppSidebar() {
 
 import { cn } from "@/lib/utils";
 
+const ThemeToggle = () => {
+  const [theme, setTheme] = React.useState<"light" | "dark">("dark");
+
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem("infraflow_theme") as "light" | "dark" | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle("dark", savedTheme === "dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    localStorage.setItem("infraflow_theme", newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 text-muted-foreground hover:text-primary transition-colors"
+      aria-label="Alternar Tema"
+    >
+      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
+  );
+};
+
 export function AppLayout({ children }: { children: React.ReactNode }) {
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background text-foreground bg-dot-pattern">
