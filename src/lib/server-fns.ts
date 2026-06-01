@@ -9,10 +9,10 @@ export const askGeneralAI = createServerFn({
     const extraContext = data?.context || "";
 
     const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-    console.log("Verificando OPENROUTER_API_KEY:", OPENROUTER_API_KEY ? "Presente (protegido)" : "AUSENTE");
     
     if (!OPENROUTER_API_KEY) {
-      return { answer: "⚠️ Erro de Configuração: A chave OPENROUTER_API_KEY não foi encontrada nas variáveis de ambiente do projeto." };
+      console.error("ERRO: OPENROUTER_API_KEY não encontrada no ambiente do servidor.");
+      return { answer: "⚠️ Erro de Configuração: A chave OPENROUTER_API_KEY não foi encontrada nas variáveis de ambiente. Verifique o painel do Render ou as Secrets do Lovable." };
     }
 
     const systemPrompt = `Você é o Assistente Global da InfraFlow, um sistema premium de infraestrutura rodoviária brasileira.
@@ -44,7 +44,7 @@ ${extraContext ? `CONTEXTO ATUAL DA PÁGINA: ${extraContext}` : ""}`;
             "X-Title": "InfraFlow",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: "google/gemini-2.0-flash-001",
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: question },

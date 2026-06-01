@@ -21,6 +21,7 @@ import {
   Sun
 } from "lucide-react";
 import * as React from "react";
+import { cn } from "@/lib/utils";
 
 import { Link, useLocation } from "@tanstack/react-router";
 import { WorkspaceService } from "@/services/WorkspaceService";
@@ -139,7 +140,6 @@ export function AppSidebar() {
 }
 
 
-import { cn } from "@/lib/utils";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = React.useState<"light" | "dark">("dark");
