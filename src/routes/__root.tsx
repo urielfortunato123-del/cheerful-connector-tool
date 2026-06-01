@@ -163,12 +163,17 @@ function RootComponent() {
 
   if (!hydrated) return null;
 
+  // For visual consistency, we wrap the landing page in a similar background
+  const landingPage = (
+    <div className="fixed inset-0 z-[100] bg-background overflow-auto bg-dot-pattern">
+      <WorkspaceLanding />
+    </div>
+  );
+
   return (
     <QueryClientProvider client={queryClient}>
       {!workspaceActive ? (
-        <div className="fixed inset-0 z-[100] bg-background overflow-auto">
-          <WorkspaceLanding />
-        </div>
+        landingPage
       ) : (
         <AppLayout>
           <Outlet />
@@ -178,4 +183,5 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
 
