@@ -33,8 +33,15 @@ async function startServer() {
   });
 
   // 2. Serve static assets
-  // Serving from the root of the client build directory
-  app.use('*', serveStatic({ root: './dist/client' }));
+  // First, try to serve specific static assets
+  app.use('/assets/*', serveStatic({ root: './dist/client' }));
+  app.use('/favicon.ico', serveStatic({ path: './dist/client/favicon.ico' }));
+  app.use('/manifest.webmanifest', serveStatic({ path: './dist/client/manifest.webmanifest' }));
+  app.use('/registerSW.js', serveStatic({ path: './dist/client/registerSW.js' }));
+  app.get('/logo.png', serveStatic({ path: './dist/client/logo.png' }));
+  app.get('/pwa-*.png', serveStatic({ root: './dist/client' }));
+  app.get('/apple-touch-icon.png', serveStatic({ path: './dist/client/apple-touch-icon.png' }));
+  app.get('/splash-screen.png', serveStatic({ path: './dist/client/splash-screen.png' }));
 
   // 3. SSR Handler
   const port = Number(process.env.PORT) || 3000;
