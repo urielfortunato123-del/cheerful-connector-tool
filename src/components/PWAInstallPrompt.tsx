@@ -30,25 +30,38 @@ export function PWAInstallPrompt() {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 
     const handler = (e: Event) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       
-      // Check if we've already shown it this session to avoid being annoying
       const hasDismissed = sessionStorage.getItem('pwa_prompt_dismissed');
       if (!hasDismissed) {
-        // Show the prompt after a short delay for better UX
         setTimeout(() => setIsVisible(true), 2000);
       }
     };
 
+    const triggerHandler = () => {
+      if (deferredPrompt) {
+        setIsVisible(true);
+      } else {
+        // Fallback for browsers that already installed or don't support it
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                           (window.navigator as any).standalone;
+        if (isStandalone) {
+          toast.info("O aplicativo já está instalado.");
+        } else {
+          toast.info("Acesse as configurações do seu navegador para instalar o aplicativo.");
+        }
+      }
+    };
+
     window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('trigger-pwa-install', triggerHandler);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('trigger-pwa-install', triggerHandler);
     };
-  }, []);
+  }, [deferredPrompt]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
