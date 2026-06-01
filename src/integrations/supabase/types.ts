@@ -239,6 +239,30 @@ export type Database = {
         }
         Relationships: []
       }
+      pwa_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          platform: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          platform?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          platform?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       technical_standards: {
         Row: {
           category: string | null
