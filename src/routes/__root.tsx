@@ -186,14 +186,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const hydrated = useHydrated();
-  const [workspaceActive, setWorkspaceActive] = React.useState(
-    typeof window !== 'undefined' ? !!WorkspaceService.getCurrentProject() : false
-  );
+  const [workspaceActive, setWorkspaceActive] = React.useState(false);
 
   React.useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || typeof window === 'undefined') return;
 
-    // Check if there is an active project on load
+    // Initial check
     const activeProject = WorkspaceService.getCurrentProject();
     if (activeProject) {
       setWorkspaceActive(true);
