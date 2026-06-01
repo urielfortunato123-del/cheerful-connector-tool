@@ -3,6 +3,7 @@ import { Download, Smartphone, Monitor, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
