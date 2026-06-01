@@ -196,7 +196,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background text-foreground bg-dot-pattern">
-        <PWAInstallPrompt />
         <AppSidebar />
         <main className="flex-1 overflow-x-hidden overflow-y-auto scroll-smooth flex flex-col">
           <header className="sticky top-0 z-10 flex h-16 items-center border-b border-border/40 bg-background/40 px-6 backdrop-blur-xl">
