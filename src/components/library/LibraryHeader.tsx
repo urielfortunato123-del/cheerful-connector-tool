@@ -6,7 +6,9 @@ import {
   FileText, 
   FileSpreadsheet, 
   FileCode,
-  BrainCircuit
+  BrainCircuit,
+  ShieldCheck,
+  Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,6 +59,15 @@ export function LibraryHeader({ stats, onUpload, onSync, isSyncing }: LibraryHea
           </div>
           <Button variant="outline" className="gap-2 h-9 text-xs" onClick={onSync} disabled={isSyncing}>
             <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} /> Sincronizar Portais
+          </Button>
+          <Button 
+            variant="outline" 
+            className="gap-2 h-9 text-xs border-green-500/50 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20" 
+            asChild
+          >
+            <a href="/security-report.html" target="_blank" rel="noopener noreferrer">
+              <ShieldCheck className="h-4 w-4" /> Relatório de Segurança
+            </a>
           </Button>
         </div>
       </div>
