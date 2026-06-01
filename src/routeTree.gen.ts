@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StandardsRouteImport } from './routes/standards'
+import { Route as SsrMonitoringRouteImport } from './routes/ssr-monitoring'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -28,6 +29,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const StandardsRoute = StandardsRouteImport.update({
   id: '/standards',
   path: '/standards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SsrMonitoringRoute = SsrMonitoringRouteImport.update({
+  id: '/ssr-monitoring',
+  path: '/ssr-monitoring',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
+  '/ssr-monitoring': typeof SsrMonitoringRoute
   '/standards': typeof StandardsRoute
 }
 export interface FileRoutesByTo {
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
+  '/ssr-monitoring': typeof SsrMonitoringRoute
   '/standards': typeof StandardsRoute
 }
 export interface FileRoutesById {
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
+  '/ssr-monitoring': typeof SsrMonitoringRoute
   '/standards': typeof StandardsRoute
 }
 export interface FileRouteTypes {
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/projects'
     | '/settings'
+    | '/ssr-monitoring'
     | '/standards'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/projects'
     | '/settings'
+    | '/ssr-monitoring'
     | '/standards'
   id:
     | '__root__'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/projects'
     | '/settings'
+    | '/ssr-monitoring'
     | '/standards'
   fileRoutesById: FileRoutesById
 }
@@ -222,6 +234,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ProjectsRoute: typeof ProjectsRoute
   SettingsRoute: typeof SettingsRoute
+  SsrMonitoringRoute: typeof SsrMonitoringRoute
   StandardsRoute: typeof StandardsRoute
 }
 
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       path: '/standards'
       fullPath: '/standards'
       preLoaderRoute: typeof StandardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ssr-monitoring': {
+      id: '/ssr-monitoring'
+      path: '/ssr-monitoring'
+      fullPath: '/ssr-monitoring'
+      preLoaderRoute: typeof SsrMonitoringRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -350,6 +370,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ProjectsRoute: ProjectsRoute,
   SettingsRoute: SettingsRoute,
+  SsrMonitoringRoute: SsrMonitoringRoute,
   StandardsRoute: StandardsRoute,
 }
 export const routeTree = rootRouteImport
