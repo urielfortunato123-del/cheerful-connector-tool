@@ -17,16 +17,25 @@ export default defineConfig({
           short_name: 'InfraFlow',
           description: 'Sistema técnico offline-first para engenharia rodoviária (DER/DNIT)',
           theme_color: '#0ea5e9',
+          background_color: '#000000',
+          display: 'standalone',
+          orientation: 'portrait',
           icons: [
             {
-              src: 'logo.png',
+              src: 'pwa-192x192.png',
               sizes: '192x192',
               type: 'image/png'
             },
             {
-              src: 'logo.png',
+              src: 'pwa-512x512.png',
               sizes: '512x512',
               type: 'image/png'
+            },
+            {
+              src: 'maskable-icon-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable'
             }
           ]
         },
