@@ -283,7 +283,7 @@ const SSRErrorsDashboard = () => {
                       {alert.is_enabled ? (
                         <><Bell className="h-4 w-4 mr-2 text-green-500" /> Enabled</>
                       ) : (
-                        <><BellOff className="h-4 w-4 mr-2 text-slate-400" /> Disabled</>
+                        <><BellOff className="h-4 w-4 mr-2 text-muted-foreground" /> Disabled</>
                       )}
                     </Button>
                   </div>
