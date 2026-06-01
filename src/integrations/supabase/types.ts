@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_settings: {
+        Row: {
+          alert_name: string
+          created_at: string | null
+          id: string
+          is_enabled: boolean | null
+          notification_webhook_url: string | null
+          threshold_count: number
+          time_window_minutes: number
+          updated_at: string | null
+        }
+        Insert: {
+          alert_name: string
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          notification_webhook_url?: string | null
+          threshold_count?: number
+          time_window_minutes?: number
+          updated_at?: string | null
+        }
+        Update: {
+          alert_name?: string
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          notification_webhook_url?: string | null
+          threshold_count?: number
+          time_window_minutes?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       daily_logs: {
         Row: {
           activities: string | null
@@ -262,6 +295,41 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      ssr_error_notifications: {
+        Row: {
+          alert_id: string | null
+          error_count: number
+          id: string
+          sent_at: string | null
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          alert_id?: string | null
+          error_count: number
+          id?: string
+          sent_at?: string | null
+          window_end: string
+          window_start: string
+        }
+        Update: {
+          alert_id?: string | null
+          error_count?: number
+          id?: string
+          sent_at?: string | null
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ssr_error_notifications_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alert_settings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ssr_errors: {
         Row: {

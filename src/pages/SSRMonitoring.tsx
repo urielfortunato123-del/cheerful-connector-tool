@@ -1,9 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { AlertCircle, Activity, TrendingUp, History } from "lucide-react";
+import { AlertCircle, Activity, TrendingUp, History, Bell, Settings, BellOff } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const SSRErrorsDashboard = () => {
   const { data: errors, isLoading } = useQuery({
@@ -19,6 +24,66 @@ const SSRErrorsDashboard = () => {
     },
     refetchInterval: 30000,
   });
+
+  const { data: alerts, refetch: refetchAlerts } = useQuery({
+    queryKey: ["ssr-alerts-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("alert_settings")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: history } = useQuery({
+    queryKey: ["ssr-notifications"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ssr_error_notifications")
+        .select("*, alert_settings(alert_name)")
+        .order("sent_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const updateThreshold = async (id: string, count: number) => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("alert_settings")
+        .update({ threshold_count: count })
+        .eq("id", id);
+      
+      if (error) throw error;
+      toast.success("Threshold updated successfully");
+      refetchAlerts();
+    } catch (err: any) {
+      toast.error("Failed to update threshold: " + err.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const toggleAlert = async (id: string, enabled: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("alert_settings")
+        .update({ is_enabled: enabled })
+        .eq("id", id);
+      
+      if (error) throw error;
+      toast.success(enabled ? "Alert enabled" : "Alert disabled");
+      refetchAlerts();
+    } catch (err: any) {
+      toast.error("Failed to toggle alert: " + err.message);
+    }
+  };
 
   if (isLoading) return <div className="p-8">Loading dashboard...</div>;
 
@@ -183,6 +248,116 @@ const SSRErrorsDashboard = () => {
                   <div className="text-[10px] text-muted-foreground font-mono">Deploy: {error.deployment_id?.substring(0, 7)}</div>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Alert Configuration
+                </CardTitle>
+                <CardDescription>Configure error thresholds for notifications</CardDescription>
+              </div>
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                System Managed
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {alerts?.map((alert) => (
+                <div key={alert.id} className="flex flex-col space-y-3 p-4 border rounded-lg bg-white shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-slate-700">{alert.alert_name}</span>
+                    <Button 
+                      variant={alert.is_enabled ? "outline" : "secondary"} 
+                      size="sm"
+                      onClick={() => toggleAlert(alert.id, !alert.is_enabled)}
+                    >
+                      {alert.is_enabled ? (
+                        <><Bell className="h-4 w-4 mr-2 text-green-500" /> Enabled</>
+                      ) : (
+                        <><BellOff className="h-4 w-4 mr-2 text-slate-400" /> Disabled</>
+                      )}
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground block mb-1">
+                        Threshold (Errors in {alert.time_window_minutes}m)
+                      </label>
+                      <Input 
+                        type="number" 
+                        defaultValue={alert.threshold_count}
+                        className="h-9"
+                        onBlur={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (val !== alert.threshold_count) updateThreshold(alert.id, val);
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground block mb-1">Status</label>
+                      <div className="pt-2">
+                        {alert.is_enabled ? (
+                          <Badge className="bg-green-100 text-green-700 border-green-200">Monitoring</Badge>
+                        ) : (
+                          <Badge variant="secondary">Idle</Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {!alerts?.length && (
+                <div className="text-center py-6 text-muted-foreground italic">
+                  No alert configurations found.
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Recent Alert History
+            </CardTitle>
+            <CardDescription>Last triggered alerts based on thresholds</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {history?.map((notif) => (
+                <div key={notif.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1 bg-red-100 p-1.5 rounded-full">
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">{notif.alert_settings?.alert_name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {notif.error_count} errors detected
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-medium">{notif.sent_at ? new Date(notif.sent_at).toLocaleDateString() : 'N/A'}</div>
+                    <div className="text-[10px] text-muted-foreground">{notif.sent_at ? new Date(notif.sent_at).toLocaleTimeString() : ''}</div>
+                  </div>
+                </div>
+              ))}
+              {!history?.length && (
+                <div className="text-center py-10 text-muted-foreground">
+                  No alerts have been triggered yet.
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
