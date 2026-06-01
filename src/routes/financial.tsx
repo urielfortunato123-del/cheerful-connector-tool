@@ -76,11 +76,14 @@ function FinancialDashboard() {
   }, []);
 
   const loadData = async () => {
+    setIsLoading(true); // Assuming setIsLoading is available or I should add it
     const allEntries = await db.financial.toArray();
     const allProjects = await db.projects.toArray();
     setEntries(allEntries);
     setProjects(allProjects);
+    setLoading(false);
   };
+
 
   const handleAddEntry = async () => {
     if (!newEntry.valor || !newEntry.descricao || !newEntry.projectId) {
