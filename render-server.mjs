@@ -31,6 +31,11 @@ async function startServer() {
       memory: process.memoryUsage()
     }, 200);
   });
+  
+  // Test Error Route
+  app.get('/debug-error', (c) => {
+    throw new Error('This is a simulated SSR error for monitoring validation');
+  });
 
   // 2. Serve static assets
   // First, try to serve specific static assets
