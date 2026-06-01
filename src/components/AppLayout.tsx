@@ -16,9 +16,12 @@ import {
   Save,
   Download,
   XCircle,
-  Briefcase
+  Briefcase,
+  Moon,
+  Sun
 } from "lucide-react";
 import * as React from "react";
+
 import { Link, useLocation } from "@tanstack/react-router";
 import { WorkspaceService } from "@/services/WorkspaceService";
 import { Button } from "@/components/ui/button";
@@ -92,7 +95,8 @@ export function AppSidebar() {
                   location.pathname === item.path && "bg-primary/15 text-primary font-bold shadow-[0_0_15px_rgba(255,107,0,0.1)]"
                 )}
               >
-                <Link to={item.path} className="flex items-center gap-3">
+                <Link to={item.path} className="flex items-center gap-3" aria-label={`Ir para ${item.title}`}>
+
                   <item.icon className={cn("h-5 w-5", location.pathname === item.path ? "text-primary" : "text-muted-foreground")} />
                   <span className="text-sm">{item.title}</span>
                 </Link>
@@ -137,7 +141,41 @@ export function AppSidebar() {
 
 import { cn } from "@/lib/utils";
 
+const ThemeToggle = () => {
+  const [theme, setTheme] = React.useState<"light" | "dark">("dark");
+
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem("infraflow_theme") as "light" | "dark" | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle("dark", savedTheme === "dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    localStorage.setItem("infraflow_theme", newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 text-muted-foreground hover:text-primary transition-colors"
+      aria-label="Alternar Tema"
+    >
+      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
+  );
+};
+
 export function AppLayout({ children }: { children: React.ReactNode }) {
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background text-foreground bg-dot-pattern">
@@ -179,10 +217,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Engenharia Rodoviária</span>
                 </div>
+                <ThemeToggle />
                 <div className="h-8 w-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-primary cursor-pointer transition-colors">
                   <User className="h-4 w-4" />
                 </div>
               </div>
+
             </div>
           </header>
           <div className="flex-1 p-8 max-w-[1600px] mx-auto w-full">{children}</div>

@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { TableSkeleton } from "@/components/ui/skeleton-loader";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +44,9 @@ export const Route = createFileRoute("/projects")({
 });
 
 function Projects() {
+  const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newProject, setNewProject] = useState<Partial<Project>>({
@@ -59,9 +63,12 @@ function Projects() {
   }, []);
 
   const loadProjects = async () => {
+    setLoading(true);
     const allProjects = await db.projects.toArray();
     setProjects(allProjects);
+    setLoading(false);
   };
+
 
   const handleCreateProject = async () => {
     if (!newProject.nome || !newProject.rodovia) {
@@ -104,7 +111,10 @@ function Projects() {
     p.rodovia.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (loading) return <TableSkeleton />;
+
   return (
+
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>

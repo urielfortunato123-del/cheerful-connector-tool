@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { TableSkeleton } from "@/components/ui/skeleton-loader";
+
 import { 
   Card, 
   CardContent, 
@@ -57,7 +59,9 @@ export const Route = createFileRoute("/financial")({
 });
 
 function FinancialDashboard() {
+  const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<Financial[]>([]);
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEntry, setNewEntry] = useState<Partial<Financial>>({
@@ -72,11 +76,14 @@ function FinancialDashboard() {
   }, []);
 
   const loadData = async () => {
+    setLoading(true);
     const allEntries = await db.financial.toArray();
     const allProjects = await db.projects.toArray();
     setEntries(allEntries);
     setProjects(allProjects);
+    setLoading(false);
   };
+
 
   const handleAddEntry = async () => {
     if (!newEntry.valor || !newEntry.descricao || !newEntry.projectId) {
@@ -123,7 +130,10 @@ function FinancialDashboard() {
 
   const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6'];
 
+  if (loading) return <TableSkeleton />;
+
   return (
+
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
