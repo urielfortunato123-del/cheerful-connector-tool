@@ -45,8 +45,8 @@ async function startServer() {
   const host = '0.0.0.0'; // Important for Render
 
   try {
-    console.log('Loading SSR handler from ./dist/server/server.js...');
-    const serverHandler = await import('./dist/server/server.js');
+    console.log('Loading SSR handler from .output/server/index.mjs...');
+    const serverHandler = await import('./.output/server/index.mjs');
     
     if (!serverHandler.default || typeof serverHandler.default.fetch !== 'function') {
       console.error('Invalid server handler exported from dist/server/server.js');
