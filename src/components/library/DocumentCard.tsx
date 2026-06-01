@@ -10,7 +10,8 @@ import {
   CheckCircle2,
   Clock,
   MoreVertical,
-  Sparkles
+  Sparkles,
+  Check
 } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,9 +34,11 @@ interface DocumentCardProps {
   onRefresh: () => void;
   onPreview?: (doc: Document) => void;
   onAsk?: (doc: Document) => void;
+  isSelected?: boolean;
+  onToggleSelect?: (id: number) => void;
 }
 
-export function DocumentCard({ document, viewMode, onRefresh, onPreview, onAsk }: DocumentCardProps) {
+export function DocumentCard({ document, viewMode, onRefresh, onPreview, onAsk, isSelected, onToggleSelect }: DocumentCardProps) {
   const isPDF = document.tipo === 'pdf';
   const isExcel = ['xlsx', 'xls', 'csv'].includes(document.tipo);
 
@@ -93,9 +96,21 @@ export function DocumentCard({ document, viewMode, onRefresh, onPreview, onAsk }
 
   if (viewMode === "list") {
     return (
-      <tr className="hover:bg-muted/30 transition-colors group">
+      <tr className={cn(
+        "hover:bg-muted/30 transition-colors group",
+        isSelected && "bg-primary/5"
+      )}>
         <td className="px-4 py-3">
           <div className="flex items-center gap-3">
+            <div 
+              className={cn(
+                "w-4 h-4 rounded border flex items-center justify-center cursor-pointer transition-colors",
+                isSelected ? "bg-primary border-primary text-white" : "border-muted-foreground/30 hover:border-primary/50"
+              )}
+              onClick={() => onToggleSelect?.(document.id!)}
+            >
+              {isSelected && <Check className="h-3 w-3" />}
+            </div>
             <div className="p-2 bg-muted rounded-md group-hover:bg-background transition-colors">
               {getFileIcon()}
             </div>
@@ -157,7 +172,19 @@ export function DocumentCard({ document, viewMode, onRefresh, onPreview, onAsk }
   }
 
   return (
-    <Card className="group overflow-hidden border-border/50 hover:border-primary/40 hover:shadow-md transition-all duration-300 bg-card">
+    <Card className={cn(
+      "group overflow-hidden border-border/50 hover:border-primary/40 hover:shadow-md transition-all duration-300 bg-card relative",
+      isSelected && "ring-2 ring-primary ring-inset border-primary/50"
+    )}>
+      <div 
+        className={cn(
+          "absolute top-2 left-2 z-10 w-5 h-5 rounded border flex items-center justify-center cursor-pointer transition-all",
+          isSelected ? "bg-primary border-primary text-white opacity-100" : "bg-background/80 border-muted-foreground/30 opacity-0 group-hover:opacity-100 hover:border-primary/50"
+        )}
+        onClick={() => onToggleSelect?.(document.id!)}
+      >
+        {isSelected && <Check className="h-3.5 w-3.5" />}
+      </div>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-3">
           <div className={cn(
