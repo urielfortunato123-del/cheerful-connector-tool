@@ -21,6 +21,29 @@ console.log('OCR_SPACE_API_KEY:', process.env.OCR_SPACE_API_KEY ? 'Configurado' 
 
 async function startServer() {
   const app = new Hono();
+  
+  // Global Hono Error Handler
+  app.onError((err, c) => {
+    const timestamp = new Date().toISOString();
+    const url = new URL(c.req.url);
+    
+    console.error('--- SERVER ERROR ---');
+    console.error('Timestamp:', timestamp);
+    console.error('Request:', `${c.req.method} ${url.pathname}`);
+    console.error('Context:', JSON.stringify({
+      method: c.req.method,
+      path: url.pathname,
+      query: Object.fromEntries(url.searchParams.entries()),
+      userAgent: c.req.header('user-agent'),
+      ip: c.req.header('x-forwarded-for') || 'unknown',
+      headers: Object.fromEntries(c.req.raw.headers.entries()),
+    }, null, 2));
+    console.error('Error:', err.message);
+    console.error('Stack:', err.stack);
+    console.error('--------------------');
+    
+    return c.text(`Internal Server Error (Ref: ${timestamp})`, 500);
+  });
 
   // 1. Health Check (Must be first for fast response)
   app.get('/health', (c) => {
@@ -59,12 +82,46 @@ async function startServer() {
     }
 
     app.all('*', async (c) => {
+      const startTime = Date.now();
+      const url = new URL(c.req.url);
+      
+      // Basic context for all requests
+      const getContext = () => ({
+        timestamp: new Date().toISOString(),
+        method: c.req.method,
+        path: url.pathname,
+        query: Object.fromEntries(url.searchParams.entries()),
+        userAgent: c.req.header('user-agent'),
+        ip: c.req.header('x-forwarded-for') || 'unknown',
+      });
+
       try {
-        // Pass the request to TanStack Start handler
-        return await serverHandler.default.fetch(c.req.raw);
+        const response = await serverHandler.default.fetch(c.req.raw);
+        
+        // Log slow requests or specific interesting paths if needed
+        const duration = Date.now() - startTime;
+        if (duration > 1000) {
+          console.log(`[SLOW REQUEST] ${c.req.method} ${url.pathname} took ${duration}ms`);
+        }
+        
+        return response;
       } catch (error) {
-        console.error('SSR Runtime Error:', error);
-        return c.text('Internal Server Error', 500);
+        const context = getContext();
+        const duration = Date.now() - startTime;
+        
+        console.error('--- SSR RUNTIME ERROR ---');
+        console.error('Timestamp:', context.timestamp);
+        console.error('Request:', `${context.method} ${context.path}`);
+        console.error('Duration:', `${duration}ms`);
+        console.error('Context:', JSON.stringify({
+          ...context,
+          headers: Object.fromEntries(c.req.raw.headers.entries()),
+        }, null, 2));
+        console.error('Error:', error.message);
+        console.error('Stack:', error.stack);
+        console.error('--------------------------');
+        
+        return c.text(`Internal Server Error (Ref: ${context.timestamp})`, 500);
       }
     });
 
