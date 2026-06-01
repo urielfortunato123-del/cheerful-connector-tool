@@ -348,8 +348,8 @@ const SSRErrorsDashboard = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-medium">{new Date(notif.sent_at).toLocaleDateString()}</div>
-                    <div className="text-[10px] text-muted-foreground">{new Date(notif.sent_at).toLocaleTimeString()}</div>
+                    <div className="text-xs font-medium">{notif.sent_at ? new Date(notif.sent_at).toLocaleDateString() : 'N/A'}</div>
+                    <div className="text-[10px] text-muted-foreground">{notif.sent_at ? new Date(notif.sent_at).toLocaleTimeString() : ''}</div>
                   </div>
                 </div>
               ))}
