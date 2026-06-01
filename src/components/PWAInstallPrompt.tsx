@@ -37,10 +37,12 @@ export function PWAInstallPrompt() {
   };
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     // Detect if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                      (window.navigator as any).standalone || 
-                     document.referrer.includes('android-app://');
+                     (document.referrer && document.referrer.includes('android-app://'));
 
     if (isStandalone) return;
 
