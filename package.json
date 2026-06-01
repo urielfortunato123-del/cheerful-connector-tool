@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "start": "node render-server.mjs"
+    "start": "node render-server.mjs",
+    "serve": "node render-server.mjs"
   },
   "engines": {
     "node": ">=20"

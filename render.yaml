@@ -2,16 +2,18 @@ services:
   - type: web
     name: infraflow-app
     runtime: node
-    plan: free # Can be 'paid' or 'free'
+    plan: free
     buildCommand: npm install && npm run build
-    startCommand: npm run start
+    startCommand: node render-server.mjs
     healthCheckPath: /health
     envVars:
       - key: NODE_VERSION
         value: 20
       - key: PORT
-        value: 10000 # Default Render port
+        value: 10000
       - key: VITE_SUPABASE_URL
         sync: false
       - key: VITE_SUPABASE_ANON_KEY
         sync: false
+      - key: NODE_ENV
+        value: production
