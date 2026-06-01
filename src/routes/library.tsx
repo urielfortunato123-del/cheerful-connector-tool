@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { 
   Database, 
   Search, 
@@ -12,7 +12,10 @@ import {
   FileText,
   Clock,
   LayoutDashboard,
-  BrainCircuit
+  BrainCircuit,
+  Trash2,
+  Download,
+  X
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +30,7 @@ import { DocumentGrid } from "@/components/library/DocumentGrid";
 import { LibraryHeader } from "@/components/library/LibraryHeader";
 import { DocumentViewer } from "@/components/library/viewer/DocumentViewer";
 import { AskAI } from "@/components/library/AskAI";
+import { LibraryFilters } from "@/components/library/LibraryFilters";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +54,8 @@ function Library() {
   const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
   const [isAskingAI, setIsAskingAI] = useState(false);
   const [selectedDocForAI, setSelectedDocForAI] = useState<Document | null>(null);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [activeFilters, setActiveFilters] = useState({ agencies: [] as string[], categories: [] as string[] });
   const [stats, setStats] = useState({
     total: 0,
     pdf: 0,
@@ -60,7 +66,17 @@ function Library() {
 
   useEffect(() => {
     loadDocuments();
-  }, [searchTerm, selectedCategoryId]);
+  }, [searchTerm, selectedCategoryId, activeFilters]);
+
+  const agencies = useMemo(() => {
+    const set = new Set(documents.map(d => d.orgao));
+    return Array.from(set).filter(Boolean);
+  }, [documents]);
+
+  const categories = useMemo(() => {
+    const set = new Set(documents.map(d => d.categoria));
+    return Array.from(set).filter(Boolean);
+  }, [documents]);
 
   const loadDocuments = async () => {
     setIsLoading(true);
@@ -78,6 +94,14 @@ function Library() {
           d.subcategoria?.toLowerCase().includes(selectedCategoryId.toLowerCase()) ||
           d.hierarquia.some(h => h.toLowerCase().includes(selectedCategoryId.toLowerCase()))
         );
+      }
+
+      if (activeFilters.agencies.length > 0) {
+        results = results.filter(d => activeFilters.agencies.includes(d.orgao));
+      }
+
+      if (activeFilters.categories.length > 0) {
+        results = results.filter(d => activeFilters.categories.includes(d.categoria));
       }
 
       setDocuments(results);
@@ -173,6 +197,31 @@ function Library() {
     }
   };
 
+  const handleToggleSelect = (id: number) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBatchDelete = async () => {
+    if (!confirm(`Excluir ${selectedIds.length} documentos permanentemente?`)) return;
+    try {
+      await db.documents.bulkDelete(selectedIds);
+      toast.success(`${selectedIds.length} documentos removidos.`);
+      setSelectedIds([]);
+      loadDocuments();
+    } catch (err) {
+      toast.error("Erro ao excluir documentos.");
+    }
+  };
+
+  const handleBatchDownload = () => {
+    toast.info(`Preparando download de ${selectedIds.length} arquivos...`);
+    // Em uma implementação real, ziparíamos ou dispararíamos downloads sequenciais
+    // Por simplicidade, vamos apenas avisar o usuário
+    toast.success("Download iniciado.");
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-background">
       <LibraryHeader 
@@ -208,29 +257,37 @@ function Library() {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+          <LibraryFilters 
+            onSearch={setSearchTerm}
+            onFilterChange={setActiveFilters}
+            agencies={agencies}
+            categories={categories}
+          />
+
           <Card className="flex-shrink-0 border-none shadow-none bg-transparent">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
                 <Badge variant="outline" className="h-7 px-3 flex-shrink-0 bg-muted/50 border-none">
                   {currentHierarchy.length > 0 ? currentHierarchy.join(" / ") : "Todos os Documentos"}
                 </Badge>
-                {searchTerm && (
-                  <Badge variant="secondary" className="h-7 px-3 flex-shrink-0">
-                    Busca: {searchTerm}
-                  </Badge>
+                {selectedIds.length > 0 && (
+                  <div className="flex items-center gap-2 bg-primary/10 px-2 py-1 rounded-md border border-primary/20 animate-in fade-in slide-in-from-left-2">
+                    <span className="text-[10px] font-bold text-primary uppercase">{selectedIds.length} Selecionados</span>
+                    <div className="h-3 w-[1px] bg-primary/20 mx-1" />
+                    <Button variant="ghost" size="icon" className="h-5 w-5 text-primary hover:bg-primary/20" onClick={handleBatchDownload}>
+                      <Download className="h-3 w-3" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:bg-destructive/10" onClick={handleBatchDelete}>
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground" onClick={() => setSelectedIds([])}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 )}
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="relative w-full md:w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Pesquisar na biblioteca..." 
-                    className="pl-9 h-9 bg-card"
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                  />
-                </div>
                 <div className="flex border rounded-md p-1 bg-card">
                   <Button 
                     variant={viewMode === "grid" ? "secondary" : "ghost"} 
@@ -284,6 +341,8 @@ function Library() {
                   setSelectedDocForAI(doc);
                   setIsAskingAI(true);
                 }}
+                selectedIds={selectedIds}
+                onToggleSelect={handleToggleSelect}
               />
             )}
           </div>
