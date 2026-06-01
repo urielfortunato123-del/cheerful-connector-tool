@@ -82,6 +82,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "InfraFlow — Gestão de Infraestrutura" },
       { name: "description", content: "Plataforma premium de engenharia de infraestrutura rodoviária." },
       { name: "author", content: "InfraFlow" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "InfraFlow" },
+      { name: "format-detection", content: "telephone=no" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "msapplication-TileColor", content: "#0ea5e9" },
+      { name: "theme-color", content: "#0ea5e9" },
     ],
     links: [
       {
@@ -97,11 +104,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "icon",
         type: "image/png",
-        href: "/logo.png?v=2"
+        href: "/pwa-192x192.png"
       },
       {
         rel: "apple-touch-icon",
-        href: "/logo.png?v=2"
+        href: "/apple-touch-icon.png"
+      },
+      {
+        rel: "manifest",
+        href: "/manifest.webmanifest"
       }
     ],
   }),
