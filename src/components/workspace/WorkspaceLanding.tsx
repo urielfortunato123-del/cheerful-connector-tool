@@ -74,51 +74,63 @@ export function WorkspaceLanding() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background">
-      <div className="max-w-4xl w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-        <div className="text-center space-y-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full bg-primary/5 blur-[120px] rounded-full -translate-y-1/2" />
+      
+      <div className="max-w-4xl w-full space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10">
+        <div className="text-center space-y-6">
           <div className="flex justify-center">
-            <div className="h-48 w-full max-w-md flex items-center justify-center group hover:scale-105 transition-transform duration-500 overflow-hidden">
+            <div className="h-48 w-full max-w-md flex items-center justify-center group hover:scale-105 transition-all duration-700">
+              <div className="absolute inset-0 bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               <img 
                 src="/logo.png?v=2" 
                 alt="Logo" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_30px_rgba(255,107,0,0.3)]"
               />
             </div>
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-            Sistema Operacional de Engenharia Rodoviária Profissional
-          </p>
+          <div className="space-y-2">
+            <h1 className="text-5xl font-black tracking-tighter text-white uppercase">Infra<span className="text-primary">Flow</span></h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium tracking-tight">
+              Sistema Operacional de Engenharia Rodoviária Profissional
+            </p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
-          <Card className="glass-card hover:border-primary/50 transition-all group cursor-pointer" onClick={() => setIsCreating(true)}>
-            <CardHeader className="text-center">
-              <div className="mx-auto h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
-                <Plus className="h-6 w-6 text-primary" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
+          <Card className="glass-card hover:border-primary/50 hover:bg-white/[0.03] transition-all group cursor-pointer border-white/5 py-4" onClick={() => setIsCreating(true)}>
+            <CardHeader className="text-center space-y-4">
+              <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-500 shadow-[0_0_20px_rgba(255,107,0,0.1)]">
+                <Plus className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle>Novo Projeto</CardTitle>
-              <CardDescription>Criar um novo workspace completo</CardDescription>
+              <div>
+                <CardTitle className="text-xl font-black uppercase tracking-tight">Novo Projeto</CardTitle>
+                <CardDescription className="text-xs font-medium text-muted-foreground/60 mt-1">Iniciar um novo workspace técnico</CardDescription>
+              </div>
             </CardHeader>
           </Card>
 
-          <Card className="glass-card hover:border-primary/50 transition-all group cursor-pointer" onClick={handleOpenWorkspace}>
-            <CardHeader className="text-center">
-              <div className="mx-auto h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
-                <FolderOpen className="h-6 w-6 text-primary" />
+          <Card className="glass-card hover:border-primary/50 hover:bg-white/[0.03] transition-all group cursor-pointer border-white/5 py-4" onClick={handleOpenWorkspace}>
+            <CardHeader className="text-center space-y-4">
+              <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-500 shadow-[0_0_20px_rgba(255,107,0,0.1)]">
+                <FolderOpen className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle>Abrir Projeto</CardTitle>
-              <CardDescription>Carregar projeto de uma pasta local</CardDescription>
+              <div>
+                <CardTitle className="text-xl font-black uppercase tracking-tight">Abrir Projeto</CardTitle>
+                <CardDescription className="text-xs font-medium text-muted-foreground/60 mt-1">Carregar dados de um diretório local</CardDescription>
+              </div>
             </CardHeader>
           </Card>
 
-          <Card className="glass-card hover:border-primary/50 transition-all group cursor-pointer relative overflow-hidden">
-            <CardHeader className="text-center">
-              <div className="mx-auto h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
-                <RotateCcw className="h-6 w-6 text-primary" />
+          <Card className="glass-card hover:border-primary/50 hover:bg-white/[0.03] transition-all group cursor-pointer border-white/5 py-4 relative overflow-hidden" onClick={() => {}}>
+            <CardHeader className="text-center space-y-4">
+              <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-500 shadow-[0_0_20px_rgba(255,107,0,0.1)]">
+                <RotateCcw className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle>Restaurar Backup</CardTitle>
-              <CardDescription>Importar arquivo .zip de backup</CardDescription>
+              <div>
+                <CardTitle className="text-xl font-black uppercase tracking-tight">Restaurar Backup</CardTitle>
+                <CardDescription className="text-xs font-medium text-muted-foreground/60 mt-1">Sincronizar via arquivo .zip</CardDescription>
+              </div>
             </CardHeader>
             <input 
               type="file" 
@@ -130,46 +142,42 @@ export function WorkspaceLanding() {
         </div>
 
         {isCreating && (
-          <div className="pt-8 space-y-4 max-w-md mx-auto animate-in zoom-in-95 duration-300">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-muted-foreground uppercase tracking-widest px-1">Nome do Workspace</label>
+          <div className="pt-4 space-y-6 max-w-md mx-auto animate-in zoom-in-95 fade-in duration-500">
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-primary uppercase tracking-[0.3em] px-1">Identificador do Workspace</label>
               <Input 
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder="Ex: Duplicação_BR_153_Lote_04"
-                className="h-12 text-lg bg-black/40 border-primary/20 focus:border-primary"
+                className="h-14 text-lg bg-white/5 border-white/10 focus:border-primary/50 transition-all font-bold placeholder:text-muted-foreground/30 placeholder:font-medium rounded-xl"
                 disabled={isLoading}
               />
             </div>
             <div className="flex gap-4">
-              <Button variant="outline" className="flex-1 h-12" onClick={() => setIsCreating(false)} disabled={isLoading}>Cancelar</Button>
-              <Button className="flex-1 h-12 font-bold" onClick={handleCreateProject} disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {isLoading ? 'Criando...' : 'Criar Workspace'}
+              <Button variant="outline" className="flex-1 h-14 glass-card border-white/10 font-bold uppercase text-[10px] tracking-widest hover:bg-white/5 transition-all" onClick={() => setIsCreating(false)} disabled={isLoading}>Cancelar</Button>
+              <Button className="flex-1 h-14 font-black uppercase text-[10px] tracking-[0.2em] shadow-[0_0_30px_rgba(255,107,0,0.2)] hover:shadow-[0_0_40px_rgba(255,107,0,0.4)] transition-all" onClick={handleCreateProject} disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+                {isLoading ? 'Inicializando...' : 'Criar Workspace'}
               </Button>
             </div>
           </div>
         )}
 
-        <div className="pt-12 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div className="space-y-1">
-            <Database className="h-5 w-5 mx-auto text-primary/60" />
-            <p className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">Local DB Sinc</p>
-          </div>
-          <div className="space-y-1">
-            <HardDrive className="h-5 w-5 mx-auto text-primary/60" />
-            <p className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">File System API</p>
-          </div>
-          <div className="space-y-1">
-            <Briefcase className="h-5 w-5 mx-auto text-primary/60" />
-            <p className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">Workspace Logic</p>
-          </div>
-          <div className="space-y-1">
-            <Cpu className="h-5 w-5 mx-auto text-primary/60" />
-            <p className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">Geo-IA Context</p>
-          </div>
+        <div className="pt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center border-t border-white/5">
+          {[
+            { icon: Database, label: "Local DB Sinc" },
+            { icon: HardDrive, label: "File System API" },
+            { icon: Briefcase, label: "Workspace Logic" },
+            { icon: Cpu, label: "Geo-IA Context" }
+          ].map((item, idx) => (
+            <div key={idx} className="space-y-3 group cursor-default">
+              <item.icon className="h-6 w-6 mx-auto text-muted-foreground group-hover:text-primary transition-colors duration-500" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-white transition-colors duration-500">{item.label}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 }
+
