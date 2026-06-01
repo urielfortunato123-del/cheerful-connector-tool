@@ -52,49 +52,48 @@ export function PWAInstallPrompt() {
     setIsMobile(mobile);
     setIsIOS(ios);
 
-    // Show prompt for iOS immediately (since it doesn't support beforeinstallprompt)
+    // Show prompt for iOS immediately
     if (ios && !isStandalone) {
-      const hasDismissed = sessionStorage.getItem('pwa_prompt_dismissed');
-      if (!hasDismissed) {
+      // We show it automatically as requested, but maybe with a slight delay for better UX
+      const timer = setTimeout(() => {
         setIsVisible(true);
         logEvent('displayed');
-      }
+      }, 1500);
+      return () => clearTimeout(timer);
     }
 
     const handler = (e: Event) => {
+      console.log('beforeinstallprompt event fired');
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       
-      const hasDismissed = sessionStorage.getItem('pwa_prompt_dismissed');
-      if (!hasDismissed) {
-        // Show immediately when event is received
-        setIsVisible(true);
-        logEvent('displayed');
-      }
+      // Automatically show the custom prompt when the browser says it's ready
+      // We removed the session check to ensure it always appears as requested
+      setIsVisible(true);
+      logEvent('displayed');
     };
 
     const triggerHandler = () => {
-      if (deferredPrompt || ios) {
-        setIsVisible(true);
-        logEvent('displayed');
-      } else {
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                           (window.navigator as any).standalone;
-        if (isStandalone) {
-          toast.info("O aplicativo já está instalado.");
-        } else {
-          setIsVisible(true); // Show instructions even if prompt isn't supported
-          logEvent('displayed');
-        }
-      }
+      setIsVisible(true);
+      logEvent('displayed');
     };
 
     window.addEventListener('beforeinstallprompt', handler);
     window.addEventListener('trigger-pwa-install', triggerHandler);
 
+    // Fallback: If after 5 seconds the prompt haven't appeared and it's not iOS/Standalone,
+    // we could show it anyway to guide the user (optional, but requested "automatic")
+    const fallbackTimer = setTimeout(() => {
+      if (!deferredPrompt && !ios && !isStandalone) {
+        setIsVisible(true);
+        logEvent('displayed');
+      }
+    }, 5000);
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
       window.removeEventListener('trigger-pwa-install', triggerHandler);
+      clearTimeout(fallbackTimer);
     };
   }, [deferredPrompt]);
 
