@@ -130,7 +130,10 @@ function FinancialDashboard() {
 
   const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6'];
 
+  if (loading) return <TableSkeleton />;
+
   return (
+
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
