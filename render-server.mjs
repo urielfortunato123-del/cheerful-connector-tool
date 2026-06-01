@@ -1,6 +1,21 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { serveStatic } from '@hono/node-server/serve-static';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase for SSR error logging
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = (supabaseUrl && supabaseServiceKey) 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null;
+
+if (!supabase) {
+  console.warn('Supabase credentials missing. SSR error logging to database disabled.');
+}
+
+const DEPLOYMENT_ID = process.env.RENDER_GIT_COMMIT || 'local';
+
 
 // Global Error Handling
 process.on('uncaughtException', (err) => {
@@ -23,27 +38,44 @@ async function startServer() {
   const app = new Hono();
   
   // Global Hono Error Handler
-  app.onError((err, c) => {
+  app.onError(async (err, c) => {
     const timestamp = new Date().toISOString();
     const url = new URL(c.req.url);
-    
-    console.error('--- SERVER ERROR ---');
-    console.error('Timestamp:', timestamp);
-    console.error('Request:', `${c.req.method} ${url.pathname}`);
-    console.error('Context:', JSON.stringify({
+    const context = {
       method: c.req.method,
       path: url.pathname,
       query: Object.fromEntries(url.searchParams.entries()),
       userAgent: c.req.header('user-agent'),
       ip: c.req.header('x-forwarded-for') || 'unknown',
       headers: Object.fromEntries(c.req.raw.headers.entries()),
-    }, null, 2));
+    };
+    
+    console.error('--- SERVER ERROR ---');
+    console.error('Timestamp:', timestamp);
+    console.error('Request:', `${c.req.method} ${url.pathname}`);
+    console.error('Context:', JSON.stringify(context, null, 2));
     console.error('Error:', err.message);
     console.error('Stack:', err.stack);
     console.error('--------------------');
     
+    if (supabase) {
+      try {
+        await supabase.from('ssr_errors').insert({
+          path: url.pathname,
+          method: c.req.method,
+          error_message: err.message,
+          stack_trace: err.stack,
+          context: context,
+          deployment_id: DEPLOYMENT_ID
+        });
+      } catch (logErr) {
+        console.error('Failed to log error to Supabase:', logErr.message);
+      }
+    }
+    
     return c.text(`Internal Server Error (Ref: ${timestamp})`, 500);
   });
+
 
   // 1. Health Check (Must be first for fast response)
   app.get('/health', (c) => {
@@ -113,15 +145,33 @@ async function startServer() {
         console.error('Timestamp:', context.timestamp);
         console.error('Request:', `${context.method} ${context.path}`);
         console.error('Duration:', `${duration}ms`);
-        console.error('Context:', JSON.stringify({
+        const fullContext = {
           ...context,
           headers: Object.fromEntries(c.req.raw.headers.entries()),
-        }, null, 2));
+          duration_ms: duration
+        };
+        console.error('Context:', JSON.stringify(fullContext, null, 2));
         console.error('Error:', error.message);
         console.error('Stack:', error.stack);
         console.error('--------------------------');
         
+        if (supabase) {
+          try {
+            await supabase.from('ssr_errors').insert({
+              path: context.path,
+              method: context.method,
+              error_message: error.message,
+              stack_trace: error.stack,
+              context: fullContext,
+              deployment_id: DEPLOYMENT_ID
+            });
+          } catch (logErr) {
+            console.error('Failed to log SSR error to Supabase:', logErr.message);
+          }
+        }
+        
         return c.text(`Internal Server Error (Ref: ${context.timestamp})`, 500);
+
       }
     });
 
