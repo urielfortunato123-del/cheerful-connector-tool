@@ -124,7 +124,13 @@
     color: var(--color-foreground);
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
+
 
 .glass-card {
   background: rgba(255, 255, 255, 0.45);
