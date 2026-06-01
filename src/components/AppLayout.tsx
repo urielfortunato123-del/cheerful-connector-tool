@@ -46,6 +46,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { PWAInstallPrompt } from "./PWAInstallPrompt";
 
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, path: "/" },
@@ -124,6 +125,22 @@ export function AppSidebar() {
               </Link>
             </SidebarMenuButton>
           ))}
+          
+          <SidebarMenuButton
+            onClick={() => {
+              const event = new CustomEvent('trigger-pwa-install');
+              window.dispatchEvent(event);
+              toast.info("Iniciando instalação...");
+            }}
+            className="h-10 transition-all hover:bg-primary/10 text-muted-foreground hover:text-primary mt-1"
+            tooltip="Instalar Aplicativo"
+          >
+            <div className="flex items-center gap-3 w-full">
+              <Download className="h-5 w-5" />
+              <span className="text-sm">Instalar App</span>
+            </div>
+          </SidebarMenuButton>
+
           <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
             <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20">
               UF
@@ -179,6 +196,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background text-foreground bg-dot-pattern">
+        <PWAInstallPrompt />
         <AppSidebar />
         <main className="flex-1 overflow-x-hidden overflow-y-auto scroll-smooth flex flex-col">
           <header className="sticky top-0 z-10 flex h-16 items-center border-b border-border/40 bg-background/40 px-6 backdrop-blur-xl">
