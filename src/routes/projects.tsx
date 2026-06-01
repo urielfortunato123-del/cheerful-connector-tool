@@ -29,8 +29,10 @@ import {
   MoreVertical, 
   Trash2, 
   Edit,
-  FolderOpen
+  FolderOpen,
+  ChevronRight
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { db, Project } from "@/lib/db";
 import { toast } from "sonner";
 import { format } from "date-fns";
