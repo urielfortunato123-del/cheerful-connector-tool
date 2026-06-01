@@ -42,9 +42,9 @@ async function startServer() {
   const port = Number(process.env.PORT) || 3000;
 
   try {
-    console.log('Loading SSR handler from .output/server/index.mjs...');
+    console.log('Loading SSR handler from dist/server/server.js...');
     // Import the build-generated SSR handler
-    const serverHandler = await import('./.output/server/index.mjs');
+    const serverHandler = await import('./dist/server/server.js');
     
     if (!serverHandler.default || typeof serverHandler.default.fetch !== 'function') {
       throw new Error('SSR handler not found or invalid. Ensure build completed successfully.');
