@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { supabase } from "@/integrations/supabase/client";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -19,6 +20,21 @@ export function PWAInstallPrompt() {
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+
+  const logEvent = async (eventType: 'displayed' | 'accepted' | 'dismissed' | 'failed') => {
+    try {
+      const ua = navigator.userAgent;
+      const platform = /iPad|iPhone|iPod/.test(ua) ? 'ios' : (/Android/.test(ua) ? 'android' : 'desktop');
+      
+      await supabase.from('pwa_events').insert({
+        event_type: eventType,
+        platform,
+        user_agent: ua
+      });
+    } catch (error) {
+      console.error('Error logging PWA event:', error);
+    }
+  };
 
   useEffect(() => {
     // Detect if already installed
@@ -41,6 +57,7 @@ export function PWAInstallPrompt() {
       const hasDismissed = sessionStorage.getItem('pwa_prompt_dismissed');
       if (!hasDismissed) {
         setIsVisible(true);
+        logEvent('displayed');
       }
     }
 
@@ -52,12 +69,14 @@ export function PWAInstallPrompt() {
       if (!hasDismissed) {
         // Show immediately when event is received
         setIsVisible(true);
+        logEvent('displayed');
       }
     };
 
     const triggerHandler = () => {
       if (deferredPrompt || ios) {
         setIsVisible(true);
+        logEvent('displayed');
       } else {
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                            (window.navigator as any).standalone;
@@ -65,6 +84,7 @@ export function PWAInstallPrompt() {
           toast.info("O aplicativo já está instalado.");
         } else {
           setIsVisible(true); // Show instructions even if prompt isn't supported
+          logEvent('displayed');
         }
       }
     };
@@ -81,24 +101,34 @@ export function PWAInstallPrompt() {
   const handleInstall = async () => {
     if (!deferredPrompt) return;
 
-    // Show the install prompt
-    await deferredPrompt.prompt();
+    try {
+      // Show the install prompt
+      await deferredPrompt.prompt();
 
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      toast.success('Aplicativo instalado com sucesso!');
-      setIsVisible(false);
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        toast.success('Aplicativo instalado com sucesso!');
+        setIsVisible(false);
+        logEvent('accepted');
+      } else {
+        logEvent('dismissed');
+      }
+    } catch (error) {
+      console.error('PWA Installation failed:', error);
+      logEvent('failed');
+      toast.error('Falha ao iniciar a instalação.');
+    } finally {
+      // We've used the prompt, and can't use it again, throw it away
+      setDeferredPrompt(null);
     }
-    
-    // We've used the prompt, and can't use it again, throw it away
-    setDeferredPrompt(null);
   };
 
   const handleDismiss = () => {
     setIsVisible(false);
     sessionStorage.setItem('pwa_prompt_dismissed', 'true');
+    logEvent('dismissed');
   };
 
   return (
