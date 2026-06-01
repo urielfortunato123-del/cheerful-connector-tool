@@ -59,7 +59,9 @@ export const Route = createFileRoute("/financial")({
 });
 
 function FinancialDashboard() {
+  const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<Financial[]>([]);
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEntry, setNewEntry] = useState<Partial<Financial>>({
