@@ -21,6 +21,29 @@ console.log('OCR_SPACE_API_KEY:', process.env.OCR_SPACE_API_KEY ? 'Configurado' 
 
 async function startServer() {
   const app = new Hono();
+  
+  // Global Hono Error Handler
+  app.onError((err, c) => {
+    const timestamp = new Date().toISOString();
+    const url = new URL(c.req.url);
+    
+    console.error('--- SERVER ERROR ---');
+    console.error('Timestamp:', timestamp);
+    console.error('Request:', `${c.req.method} ${url.pathname}`);
+    console.error('Context:', JSON.stringify({
+      method: c.req.method,
+      path: url.pathname,
+      query: Object.fromEntries(url.searchParams.entries()),
+      userAgent: c.req.header('user-agent'),
+      ip: c.req.header('x-forwarded-for') || 'unknown',
+      headers: Object.fromEntries(c.req.raw.headers.entries()),
+    }, null, 2));
+    console.error('Error:', err.message);
+    console.error('Stack:', err.stack);
+    console.error('--------------------');
+    
+    return c.text(`Internal Server Error (Ref: ${timestamp})`, 500);
+  });
 
   // 1. Health Check (Must be first for fast response)
   app.get('/health', (c) => {
