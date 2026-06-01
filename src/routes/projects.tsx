@@ -44,7 +44,9 @@ export const Route = createFileRoute("/projects")({
 });
 
 function Projects() {
+  const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newProject, setNewProject] = useState<Partial<Project>>({
