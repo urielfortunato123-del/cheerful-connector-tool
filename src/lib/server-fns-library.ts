@@ -55,7 +55,15 @@ ${contextText}`;
         return { answer };
       }
       
-      return { answer: "⚠️ Serviço de IA temporariamente indisponível." };
+      if (response.status === 401) {
+        return { answer: "⚠️ Erro de Autenticação: A chave OPENROUTER_API_KEY é inválida." };
+      }
+      
+      if (response.status === 402) {
+        return { answer: "⚠️ Créditos de IA esgotados na OpenRouter." };
+      }
+      
+      return { answer: `⚠️ Serviço de IA temporariamente indisponível (Status ${response.status}).` };
     } catch (err) {
       console.error(err);
       return { answer: "⚠️ Erro ao consultar a biblioteca via IA." };

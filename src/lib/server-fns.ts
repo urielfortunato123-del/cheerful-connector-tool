@@ -70,15 +70,22 @@ ${extraContext ? `CONTEXTO ATUAL DA PÁGINA: ${extraContext}` : ""}`;
         }
 
         const text = await response.text().catch(() => "");
+        
+        if (response.status === 401) {
+          console.error(`[OpenRouter][${requestId}] Erro 401: Chave de API inválida.`);
+          return { answer: "⚠️ Erro de Autenticação: A chave OPENROUTER_API_KEY é inválida ou expirou." };
+        }
+        
         if (response.status === 429) {
           return { answer: "⚠️ Limite de requisições atingido na OpenRouter. Por favor, aguarde um momento." };
         }
+        
         if (response.status === 402) {
           return { answer: "⚠️ Créditos de IA esgotados na OpenRouter." };
         }
         
         console.error(`[OpenRouter][${requestId}] Erro detalhado:`, response.status, text);
-        return { answer: "⚠️ Serviço de IA temporariamente indisponível." };
+        return { answer: `⚠️ Erro no serviço de IA (Status ${response.status}).` };
       } catch (err) {
         const duration = Date.now() - startTime;
         lastError = String(err);
