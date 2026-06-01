@@ -17,3 +17,9 @@ services:
         sync: false
       - key: NODE_ENV
         value: production
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OCR_SPACE_API_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

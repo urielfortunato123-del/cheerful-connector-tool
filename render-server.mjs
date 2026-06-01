@@ -16,6 +16,8 @@ console.log('--- RENDER DEPLOYMENT STARTUP ---');
 console.log('Timestamp:', new Date().toISOString());
 console.log('Node Version:', process.version);
 console.log('Port:', process.env.PORT || '3000 (default)');
+console.log('OPENROUTER_API_KEY:', process.env.OPENROUTER_API_KEY ? 'Configurado' : 'AUSENTE');
+console.log('OCR_SPACE_API_KEY:', process.env.OCR_SPACE_API_KEY ? 'Configurado' : 'AUSENTE');
 
 async function startServer() {
   const app = new Hono();
