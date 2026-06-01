@@ -11,7 +11,23 @@ export default defineConfig({
     plugins: [
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png', 'maskable-icon-512x512.png', 'splash-screen.png'],
+        includeAssets: [
+          'favicon.ico', 
+          'apple-touch-icon.png', 
+          'pwa-192x192.png', 
+          'pwa-512x512.png', 
+          'maskable-icon-512x512.png', 
+          'splash-screen.png',
+          'apple-splash-1290-2796.png',
+          'apple-splash-1179-2556.png',
+          'apple-splash-1284-2778.png',
+          'apple-splash-1170-2532.png',
+          'apple-splash-1125-2436.png',
+          'apple-splash-828-1792.png',
+          'apple-splash-2048-2732.png',
+          'apple-splash-1668-2388.png',
+          'apple-splash-1536-2048.png'
+        ],
         manifest: {
           name: 'InfraFlow - Engenharia Rodoviária',
           short_name: 'InfraFlow',
