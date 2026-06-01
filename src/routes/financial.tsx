@@ -76,7 +76,7 @@ function FinancialDashboard() {
   }, []);
 
   const loadData = async () => {
-    setIsLoading(true); // Assuming setIsLoading is available or I should add it
+    setLoading(true);
     const allEntries = await db.financial.toArray();
     const allProjects = await db.projects.toArray();
     setEntries(allEntries);
