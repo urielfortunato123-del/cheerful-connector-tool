@@ -18,8 +18,10 @@ import {
   XCircle,
   Briefcase,
   Moon,
-  Sun
+  Sun,
+  ShieldAlert
 } from "lucide-react";
+
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -61,7 +63,9 @@ const menuItems = [
   { title: "Diário de Obra", icon: BookOpen, path: "/daily-log" },
   { title: "Financeiro", icon: BarChart3, path: "/financial" },
   { title: "Mapa da Rodovia", icon: MapIcon, path: "/map" },
+  { title: "Monitoramento SSR", icon: ShieldAlert, path: "/ssr-monitoring" },
 ];
+
 
 const footerItems = [
   { title: "Configurações", icon: Settings, path: "/settings" },
