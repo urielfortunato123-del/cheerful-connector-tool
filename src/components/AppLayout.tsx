@@ -95,7 +95,8 @@ export function AppSidebar() {
                   location.pathname === item.path && "bg-primary/15 text-primary font-bold shadow-[0_0_15px_rgba(255,107,0,0.1)]"
                 )}
               >
-                <Link to={item.path} className="flex items-center gap-3">
+                <Link to={item.path} className="flex items-center gap-3" aria-label={`Ir para ${item.title}`}>
+
                   <item.icon className={cn("h-5 w-5", location.pathname === item.path ? "text-primary" : "text-muted-foreground")} />
                   <span className="text-sm">{item.title}</span>
                 </Link>
