@@ -16,9 +16,12 @@ import {
   Save,
   Download,
   XCircle,
-  Briefcase
+  Briefcase,
+  Moon,
+  Sun
 } from "lucide-react";
 import * as React from "react";
+
 import { Link, useLocation } from "@tanstack/react-router";
 import { WorkspaceService } from "@/services/WorkspaceService";
 import { Button } from "@/components/ui/button";
