@@ -1,4 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { DashboardSkeleton } from "@/components/ui/skeleton-loader";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Activity,
