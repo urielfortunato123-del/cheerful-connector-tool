@@ -59,14 +59,28 @@ export function AtendimentoForm({ serviceType, isClient }: AtendimentoFormProps)
   const [models, setModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       request_type: serviceType,
       is_client: isClient,
       media_urls: [],
+      property_type: null,
+      purifier_model: null,
+      problem_type: null,
+      bought_before: null,
+      last_maintenance: null,
     }
   });
+
+  useEffect(() => {
+    // Reset form values when serviceType or isClient changes
+    form.reset({
+      ...form.getValues(),
+      request_type: serviceType,
+      is_client: isClient,
+    });
+  }, [serviceType, isClient, form]);
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -76,7 +90,8 @@ export function AtendimentoForm({ serviceType, isClient }: AtendimentoFormProps)
     fetchModels();
   }, []);
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: FormValues) => {
+
     setLoading(true);
     try {
       // Cleanup data based on type
