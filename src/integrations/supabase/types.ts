@@ -341,6 +341,7 @@ export type Database = {
           purifier_model: string | null
           request_type: string
           status: string
+          user_id: string | null
         }
         Insert: {
           address: string
@@ -368,6 +369,7 @@ export type Database = {
           purifier_model?: string | null
           request_type: string
           status?: string
+          user_id?: string | null
         }
         Update: {
           address?: string
@@ -395,6 +397,7 @@ export type Database = {
           purifier_model?: string | null
           request_type?: string
           status?: string
+          user_id?: string | null
         }
         Relationships: []
       }
