@@ -29,11 +29,11 @@ export default defineConfig({
           'apple-splash-1536-2048.png'
         ],
         manifest: {
-          name: 'InfraFlow - Engenharia Rodoviária',
-          short_name: 'InfraFlow',
-          description: 'Sistema técnico offline-first para engenharia rodoviária (DER/DNIT)',
-          theme_color: '#0ea5e9',
-          background_color: '#000000',
+          name: 'Acqua Soft Atendimento',
+          short_name: 'Acqua Soft',
+          description: 'Solicitações de atendimento Acqua Soft Purificadores',
+          theme_color: '#003366',
+          background_color: '#F0F9FF',
           display: 'standalone',
           orientation: 'portrait',
           icons: [
