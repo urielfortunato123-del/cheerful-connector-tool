@@ -1,6 +1,5 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// ReactQueryDevtools removed to avoid dependency issue
 import {
   Outlet,
   Link,
@@ -9,6 +8,7 @@ import {
   useHydrated,
   HeadContent,
   Scripts,
+  useLocation,
 } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -32,7 +32,7 @@ function NotFoundComponent() {
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Voltar ao Dashboard
+            Voltar ao Início
           </Link>
         </div>
       </div>
@@ -80,27 +80,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "InfraFlow — Gestão de Infraestrutura" },
-      { name: "description", content: "Plataforma premium de engenharia de infraestrutura rodoviária." },
-      { name: "author", content: "InfraFlow" },
+      { title: "Acqua Soft Atendimento" },
+      { name: "description", content: "Solicitações de atendimento Acqua Soft Purificadores." },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "InfraFlow" },
+      { name: "apple-mobile-web-app-title", content: "Acqua Soft" },
       { name: "format-detection", content: "telephone=no" },
       { name: "mobile-web-app-capable", content: "yes" },
-      { name: "msapplication-TileColor", content: "#0ea5e9" },
-      { name: "theme-color", content: "#0ea5e9" },
+      { name: "theme-color", content: "#003366" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
-      },
-      {
-        rel: "stylesheet",
-        href: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
-        integrity: "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=",
-        crossOrigin: ""
       },
       {
         rel: "icon",
@@ -114,52 +106,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "manifest",
         href: "/manifest.webmanifest"
-      },
-      // iOS Splash Screens
-      {
-        rel: "apple-touch-startup-image",
-        media: "screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)",
-        href: "/apple-splash-1290-2796.png"
-      },
-      {
-        rel: "apple-touch-startup-image",
-        media: "screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)",
-        href: "/apple-splash-1179-2556.png"
-      },
-      {
-        rel: "apple-touch-startup-image",
-        media: "screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)",
-        href: "/apple-splash-1284-2778.png"
-      },
-      {
-        rel: "apple-touch-startup-image",
-        media: "screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)",
-        href: "/apple-splash-1170-2532.png"
-      },
-      {
-        rel: "apple-touch-startup-image",
-        media: "screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)",
-        href: "/apple-splash-1125-2436.png"
-      },
-      {
-        rel: "apple-touch-startup-image",
-        media: "screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)",
-        href: "/apple-splash-828-1792.png"
-      },
-      {
-        rel: "apple-touch-startup-image",
-        media: "screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)",
-        href: "/apple-splash-2048-2732.png"
-      },
-      {
-        rel: "apple-touch-startup-image",
-        media: "screen and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)",
-        href: "/apple-splash-1668-2388.png"
-      },
-      {
-        rel: "apple-touch-startup-image",
-        media: "screen and (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)",
-        href: "/apple-splash-1536-2048.png"
       }
     ],
   }),
@@ -171,7 +117,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
@@ -186,59 +132,31 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const hydrated = useHydrated();
-  const [workspaceActive, setWorkspaceActive] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!hydrated || typeof window === 'undefined') return;
-
-    // Initial check
-    const activeProject = WorkspaceService.getCurrentProject();
-    if (activeProject) {
-      setWorkspaceActive(true);
-    }
-
-    const handleProjectChange = () => {
-      console.log('Project change detected, activating workspace');
-      setWorkspaceActive(true);
-    };
-
-    window.addEventListener('infraflow_project_changed', handleProjectChange);
-    // Also listen for storage changes in case of multi-tab
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'infraflow_active_project' && e.newValue) {
-        setWorkspaceActive(true);
-      }
-    };
-    window.addEventListener('storage', handleStorage);
-
-    return () => {
-      window.removeEventListener('infraflow_project_changed', handleProjectChange);
-      window.removeEventListener('storage', handleStorage);
-    };
-  }, [hydrated]);
+  const location = useLocation();
 
   if (!hydrated) return null;
 
-  // For visual consistency, we wrap the landing page in a similar background
-  const landingPage = (
-    <div className="fixed inset-0 z-[100] bg-background overflow-auto bg-dot-pattern">
-      <WorkspaceLanding />
-    </div>
-  );
+  // New routes for Acqua Soft bypass the old workspace logic
+  const isAcquaSoftRoute = ['/', '/atendimento', '/admin'].includes(location.pathname);
 
+  if (isAcquaSoftRoute) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <PWAInstallPrompt />
+        <Outlet />
+        <Toaster position="top-right" />
+      </QueryClientProvider>
+    );
+  }
+
+  // Fallback for old engineering routes
   return (
     <QueryClientProvider client={queryClient}>
       <PWAInstallPrompt />
-      {!workspaceActive ? (
-        landingPage
-      ) : (
-        <AppLayout>
-          <Outlet />
-        </AppLayout>
-      )}
+      <AppLayout>
+        <Outlet />
+      </AppLayout>
       <Toaster position="top-right" theme="dark" />
     </QueryClientProvider>
   );
 }
-
-

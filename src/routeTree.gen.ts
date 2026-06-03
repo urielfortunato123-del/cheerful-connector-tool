@@ -22,8 +22,10 @@ import { Route as FinancialRouteImport } from './routes/financial'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as DailyLogRouteImport } from './routes/daily-log'
 import { Route as BudgetsRouteImport } from './routes/budgets'
+import { Route as AtendimentoRouteImport } from './routes/atendimento'
 import { Route as AsBuiltRouteImport } from './routes/as-built'
 import { Route as AiAssistantRouteImport } from './routes/ai-assistant'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
 const StandardsRoute = StandardsRouteImport.update({
@@ -91,6 +93,11 @@ const BudgetsRoute = BudgetsRouteImport.update({
   path: '/budgets',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AtendimentoRoute = AtendimentoRouteImport.update({
+  id: '/atendimento',
+  path: '/atendimento',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AsBuiltRoute = AsBuiltRouteImport.update({
   id: '/as-built',
   path: '/as-built',
@@ -101,6 +108,11 @@ const AiAssistantRoute = AiAssistantRouteImport.update({
   path: '/ai-assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -109,8 +121,10 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/as-built': typeof AsBuiltRoute
+  '/atendimento': typeof AtendimentoRoute
   '/budgets': typeof BudgetsRoute
   '/daily-log': typeof DailyLogRoute
   '/design-system': typeof DesignSystemRoute
@@ -127,8 +141,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/as-built': typeof AsBuiltRoute
+  '/atendimento': typeof AtendimentoRoute
   '/budgets': typeof BudgetsRoute
   '/daily-log': typeof DailyLogRoute
   '/design-system': typeof DesignSystemRoute
@@ -146,8 +162,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/as-built': typeof AsBuiltRoute
+  '/atendimento': typeof AtendimentoRoute
   '/budgets': typeof BudgetsRoute
   '/daily-log': typeof DailyLogRoute
   '/design-system': typeof DesignSystemRoute
@@ -166,8 +184,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/ai-assistant'
     | '/as-built'
+    | '/atendimento'
     | '/budgets'
     | '/daily-log'
     | '/design-system'
@@ -184,8 +204,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/ai-assistant'
     | '/as-built'
+    | '/atendimento'
     | '/budgets'
     | '/daily-log'
     | '/design-system'
@@ -202,8 +224,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/ai-assistant'
     | '/as-built'
+    | '/atendimento'
     | '/budgets'
     | '/daily-log'
     | '/design-system'
@@ -221,8 +245,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AiAssistantRoute: typeof AiAssistantRoute
   AsBuiltRoute: typeof AsBuiltRoute
+  AtendimentoRoute: typeof AtendimentoRoute
   BudgetsRoute: typeof BudgetsRoute
   DailyLogRoute: typeof DailyLogRoute
   DesignSystemRoute: typeof DesignSystemRoute
@@ -331,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BudgetsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/atendimento': {
+      id: '/atendimento'
+      path: '/atendimento'
+      fullPath: '/atendimento'
+      preLoaderRoute: typeof AtendimentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/as-built': {
       id: '/as-built'
       path: '/as-built'
@@ -345,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AiAssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -357,8 +397,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AiAssistantRoute: AiAssistantRoute,
   AsBuiltRoute: AsBuiltRoute,
+  AtendimentoRoute: AtendimentoRoute,
   BudgetsRoute: BudgetsRoute,
   DailyLogRoute: DailyLogRoute,
   DesignSystemRoute: DesignSystemRoute,

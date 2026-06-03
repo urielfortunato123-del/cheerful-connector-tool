@@ -272,6 +272,24 @@ export type Database = {
         }
         Relationships: []
       }
+      purifier_models: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       pwa_events: {
         Row: {
           created_at: string
@@ -293,6 +311,90 @@ export type Database = {
           id?: string
           platform?: string | null
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      service_requests: {
+        Row: {
+          address: string
+          bought_before: boolean | null
+          city: string
+          created_at: string
+          customer_name: string
+          customer_phone: string
+          floor: string | null
+          google_maps_link: string | null
+          has_elevator: boolean | null
+          has_high_pressure_tank: boolean | null
+          id: string
+          is_client: boolean | null
+          last_maintenance: string | null
+          latitude: number | null
+          longitude: number | null
+          media_urls: Json | null
+          neighborhood: string
+          observations: string | null
+          other_model: string | null
+          problem_description: string | null
+          problem_type: string | null
+          property_type: string | null
+          purifier_model: string | null
+          request_type: string
+          status: string
+        }
+        Insert: {
+          address: string
+          bought_before?: boolean | null
+          city: string
+          created_at?: string
+          customer_name: string
+          customer_phone: string
+          floor?: string | null
+          google_maps_link?: string | null
+          has_elevator?: boolean | null
+          has_high_pressure_tank?: boolean | null
+          id?: string
+          is_client?: boolean | null
+          last_maintenance?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          media_urls?: Json | null
+          neighborhood: string
+          observations?: string | null
+          other_model?: string | null
+          problem_description?: string | null
+          problem_type?: string | null
+          property_type?: string | null
+          purifier_model?: string | null
+          request_type: string
+          status?: string
+        }
+        Update: {
+          address?: string
+          bought_before?: boolean | null
+          city?: string
+          created_at?: string
+          customer_name?: string
+          customer_phone?: string
+          floor?: string | null
+          google_maps_link?: string | null
+          has_elevator?: boolean | null
+          has_high_pressure_tank?: boolean | null
+          id?: string
+          is_client?: boolean | null
+          last_maintenance?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          media_urls?: Json | null
+          neighborhood?: string
+          observations?: string | null
+          other_model?: string | null
+          problem_description?: string | null
+          problem_type?: string | null
+          property_type?: string | null
+          purifier_model?: string | null
+          request_type?: string
+          status?: string
         }
         Relationships: []
       }
