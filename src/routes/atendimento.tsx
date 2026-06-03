@@ -4,9 +4,15 @@ import { Card } from "@/components/ui/card";
 import { AtendimentoForm } from "@/components/acqua-soft/AtendimentoForm";
 import { Calculator, RefreshCw, Wrench, ShieldCheck, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { z } from 'zod';
+
+const atendimentoSearchSchema = z.object({
+  isClient: z.boolean().catch(false),
+});
 
 export const Route = createFileRoute('/atendimento')({
   component: Atendimento,
+  validateSearch: atendimentoSearchSchema,
 });
 
 type ServiceType = 'orcamento' | 'troca_refil' | 'suporte_tecnico' | 'manutencao_preventiva' | null;
@@ -70,7 +76,7 @@ function Atendimento() {
               {isClient ? 'Identificado como Cliente' : 'Novo Cliente'}
             </p>
           </div>
-          <AtendimentoForm serviceType={serviceType} isClient={isClient} />
+          <AtendimentoForm serviceType={serviceType as any} isClient={isClient} />
         </Card>
       </div>
     </div>
