@@ -23,31 +23,33 @@ const formSchema = z.object({
   neighborhood: z.string().min(2, "Bairro obrigatório"),
   address: z.string().min(5, "Endereço completo"),
   request_type: z.string(),
-  is_client: z.boolean().default(false),
+  is_client: z.boolean(),
   
   // Property details
-  property_type: z.enum(['casa', 'apartamento', 'comercial']).optional(),
-  floor: z.string().optional(),
-  has_elevator: z.boolean().optional(),
-  has_high_pressure_tank: z.boolean().optional(),
+  property_type: z.enum(['casa', 'apartamento', 'comercial']).nullable().optional(),
+  floor: z.string().nullable().optional(),
+  has_elevator: z.boolean().nullable().optional(),
+  has_high_pressure_tank: z.boolean().nullable().optional(),
   
   // Equipment details
-  purifier_model: z.string().optional(),
-  other_model: z.string().optional(),
+  purifier_model: z.string().nullable().optional(),
+  other_model: z.string().nullable().optional(),
   
   // Service specific
-  problem_type: z.string().optional(),
-  problem_description: z.string().optional(),
-  last_maintenance: z.string().optional(),
-  bought_before: z.boolean().optional(),
-  observations: z.string().optional(),
+  problem_type: z.string().nullable().optional(),
+  problem_description: z.string().nullable().optional(),
+  last_maintenance: z.string().nullable().optional(),
+  bought_before: z.boolean().nullable().optional(),
+  observations: z.string().nullable().optional(),
   
   // Technical/Internal
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-  google_maps_link: z.string().optional(),
-  media_urls: z.array(z.string()).default([]),
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
+  google_maps_link: z.string().nullable().optional(),
+  media_urls: z.array(z.string()),
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface AtendimentoFormProps {
   serviceType: 'orcamento' | 'troca_refil' | 'suporte_tecnico' | 'manutencao_preventiva';
@@ -57,7 +59,6 @@ interface AtendimentoFormProps {
 export function AtendimentoForm({ serviceType, isClient }: AtendimentoFormProps) {
   const [loading, setLoading] = useState(false);
   const [models, setModels] = useState<string[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>("");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -70,11 +71,19 @@ export function AtendimentoForm({ serviceType, isClient }: AtendimentoFormProps)
       problem_type: null,
       bought_before: null,
       last_maintenance: null,
+      latitude: null,
+      longitude: null,
+      google_maps_link: null,
+      other_model: null,
+      problem_description: null,
+      observations: null,
+      floor: null,
+      has_elevator: null,
+      has_high_pressure_tank: null,
     }
   });
 
   useEffect(() => {
-    // Reset form values when serviceType or isClient changes
     form.reset({
       ...form.getValues(),
       request_type: serviceType,
@@ -91,22 +100,25 @@ export function AtendimentoForm({ serviceType, isClient }: AtendimentoFormProps)
   }, []);
 
   const onSubmit = async (data: FormValues) => {
-
     setLoading(true);
     try {
-      // Cleanup data based on type
-      if (data.property_type !== 'apartamento') {
-        data.floor = undefined;
-        data.has_elevator = undefined;
-      }
+      // Create a clean object for Supabase
+      const submissionData = {
+        ...data,
+        // Ensure nulls for optional fields if they are empty strings
+        other_model: data.other_model || null,
+        problem_description: data.problem_description || null,
+        observations: data.observations || null,
+        floor: data.floor || null,
+      };
 
       const { error } = await supabase
         .from('service_requests')
-        .insert([data]);
+        .insert([submissionData]);
 
       if (error) throw error;
 
-      const message = generateWhatsAppMessage(data);
+      const message = generateWhatsAppMessage(submissionData);
       window.open(`https://wa.me/5514981200302?text=${message}`, '_blank');
       toast.success("Atendimento registrado com sucesso!");
     } catch (e: any) {
@@ -118,7 +130,6 @@ export function AtendimentoForm({ serviceType, isClient }: AtendimentoFormProps)
 
   const watchPropertyType = form.watch("property_type");
   const watchModel = form.watch("purifier_model");
-  const watchProblemType = form.watch("problem_type");
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
