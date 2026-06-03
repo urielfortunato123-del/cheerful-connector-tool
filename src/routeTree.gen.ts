@@ -22,6 +22,7 @@ import { Route as FinancialRouteImport } from './routes/financial'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as DailyLogRouteImport } from './routes/daily-log'
 import { Route as BudgetsRouteImport } from './routes/budgets'
+import { Route as AtendimentoRouteImport } from './routes/atendimento'
 import { Route as AsBuiltRouteImport } from './routes/as-built'
 import { Route as AiAssistantRouteImport } from './routes/ai-assistant'
 import { Route as IndexRouteImport } from './routes/index'
@@ -91,6 +92,11 @@ const BudgetsRoute = BudgetsRouteImport.update({
   path: '/budgets',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AtendimentoRoute = AtendimentoRouteImport.update({
+  id: '/atendimento',
+  path: '/atendimento',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AsBuiltRoute = AsBuiltRouteImport.update({
   id: '/as-built',
   path: '/as-built',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/as-built': typeof AsBuiltRoute
+  '/atendimento': typeof AtendimentoRoute
   '/budgets': typeof BudgetsRoute
   '/daily-log': typeof DailyLogRoute
   '/design-system': typeof DesignSystemRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/as-built': typeof AsBuiltRoute
+  '/atendimento': typeof AtendimentoRoute
   '/budgets': typeof BudgetsRoute
   '/daily-log': typeof DailyLogRoute
   '/design-system': typeof DesignSystemRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/as-built': typeof AsBuiltRoute
+  '/atendimento': typeof AtendimentoRoute
   '/budgets': typeof BudgetsRoute
   '/daily-log': typeof DailyLogRoute
   '/design-system': typeof DesignSystemRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ai-assistant'
     | '/as-built'
+    | '/atendimento'
     | '/budgets'
     | '/daily-log'
     | '/design-system'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ai-assistant'
     | '/as-built'
+    | '/atendimento'
     | '/budgets'
     | '/daily-log'
     | '/design-system'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ai-assistant'
     | '/as-built'
+    | '/atendimento'
     | '/budgets'
     | '/daily-log'
     | '/design-system'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AiAssistantRoute: typeof AiAssistantRoute
   AsBuiltRoute: typeof AsBuiltRoute
+  AtendimentoRoute: typeof AtendimentoRoute
   BudgetsRoute: typeof BudgetsRoute
   DailyLogRoute: typeof DailyLogRoute
   DesignSystemRoute: typeof DesignSystemRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BudgetsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/atendimento': {
+      id: '/atendimento'
+      path: '/atendimento'
+      fullPath: '/atendimento'
+      preLoaderRoute: typeof AtendimentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/as-built': {
       id: '/as-built'
       path: '/as-built'
@@ -359,6 +379,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AiAssistantRoute: AiAssistantRoute,
   AsBuiltRoute: AsBuiltRoute,
+  AtendimentoRoute: AtendimentoRoute,
   BudgetsRoute: BudgetsRoute,
   DailyLogRoute: DailyLogRoute,
   DesignSystemRoute: DesignSystemRoute,
