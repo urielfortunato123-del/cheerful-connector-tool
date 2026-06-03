@@ -25,6 +25,7 @@ import { Route as BudgetsRouteImport } from './routes/budgets'
 import { Route as AtendimentoRouteImport } from './routes/atendimento'
 import { Route as AsBuiltRouteImport } from './routes/as-built'
 import { Route as AiAssistantRouteImport } from './routes/ai-assistant'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
 const StandardsRoute = StandardsRouteImport.update({
@@ -107,6 +108,11 @@ const AiAssistantRoute = AiAssistantRouteImport.update({
   path: '/ai-assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -115,6 +121,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/as-built': typeof AsBuiltRoute
   '/atendimento': typeof AtendimentoRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/as-built': typeof AsBuiltRoute
   '/atendimento': typeof AtendimentoRoute
@@ -154,6 +162,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/ai-assistant': typeof AiAssistantRoute
   '/as-built': typeof AsBuiltRoute
   '/atendimento': typeof AtendimentoRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/ai-assistant'
     | '/as-built'
     | '/atendimento'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/ai-assistant'
     | '/as-built'
     | '/atendimento'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/ai-assistant'
     | '/as-built'
     | '/atendimento'
@@ -233,6 +245,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AiAssistantRoute: typeof AiAssistantRoute
   AsBuiltRoute: typeof AsBuiltRoute
   AtendimentoRoute: typeof AtendimentoRoute
@@ -365,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AiAssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -377,6 +397,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AiAssistantRoute: AiAssistantRoute,
   AsBuiltRoute: AsBuiltRoute,
   AtendimentoRoute: AtendimentoRoute,
@@ -397,3 +418,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
